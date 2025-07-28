@@ -15,4 +15,8 @@ class AppIcons {
   static const Icon notifications = Icon(Icons.notifications_none);
   static const Icon privacy = Icon(Icons.shield);
   static const Icon sparkPlugs = Icon(Icons.auto_awesome);
-  static const Icon transmissionFluid = Icon(Icons.radio); }
+  static const Icon transmissionFluid = Icon(Icons.radio);
+  static const Icon loccation = Icon(Icons.location_on);
+
+}
+
