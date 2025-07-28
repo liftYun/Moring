@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스 임포트
 import 'package:moring/utils/bottom_nav_bar.dart'; // CustomBottomNavBar 위젯 임포트
 import 'package:moring/utils/app_theme.dart'; // CustomBottomNavBar 위젯 임포트
+import 'package:moring/utils/custom_app_bar.dart'; // CustomBottomNavBar 위젯 임포트
 import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트 (수정: utils/ -> models/ 로 경로 변경)
 import 'package:moring/widgets/car_360_viewer.dart'; // Car360Viewer 위젯 임포트
 
@@ -133,49 +134,27 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 메인 페이지는 모바일과 태블릿 규격에 맞게 UI 깨짐 현상이 없어야 한다.
-    // Scaffold, SingleChildScrollView, Expanded 등 Flutter의 반응형 위젯을 활용하여 구현됩니다.
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // 이전 화면으로 돌아가는 예시
-          },
-        ),
-        title: Text('Moring', style: Theme.of(context).textTheme.titleLarge),
-        centerTitle: true,
-        actions: [
-          // 차량 선택 드롭다운 메뉴 추가
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedCar,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
-                dropdownColor: Colors.grey[850], // 드롭다운 배경색
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    _setCarImages(newValue);
-                  }
-                },
-                items: _availableCars.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value.toUpperCase()), // 차량 이름을 대문자로 표시
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: AppIcons.notifications,
-            onPressed: () {
-              // 알림 버튼 액션
-            },
-          ),
-        ],
+      // 여기를 CustomAppBar로 교체해야 합니다.
+      appBar: CustomAppBar(
+        title: 'Moring',
+        onBackButtonPressed: () {
+          // 메인 페이지의 뒤로가기 버튼 동작 (예시: 앱 종료 또는 이전 화면이 없다면 null)
+          Navigator.pop(context);
+        },
+        showCarDropdown: true, // 메인 페이지에서는 차량 드롭다운 표시
+        availableCars: _availableCars,
+        selectedCar: _selectedCar,
+        onCarChanged: (newValue) {
+          if (newValue != null) {
+            _setCarImages(newValue); // HomePage의 차량 변경 로직 호출
+          }
+        },
+        onNotificationPressed: () {
+          // 알림 버튼 액션
+          print('알림 버튼 클릭!');
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+        },
       ),
       body: SingleChildScrollView( // 내용이 화면을 넘어갈 경우 스크roll 가능하도록
         child: Padding(
