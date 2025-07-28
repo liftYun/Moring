@@ -2,13 +2,14 @@ package com.dolijo.moring.member.entity;
 
 import com.dolijo.moring.member.valueobject.SocialType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "social_member")
 public class SocialMember {
     @Id
