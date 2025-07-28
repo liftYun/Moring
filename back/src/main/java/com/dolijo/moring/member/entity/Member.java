@@ -2,6 +2,7 @@ package com.dolijo.moring.member.entity;
 
 import com.dolijo.moring.common.base.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "member",
         indexes = {

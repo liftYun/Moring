@@ -4,6 +4,7 @@ import com.dolijo.moring.common.base.BaseEntity;
 import com.dolijo.moring.member.entity.valueobject.SocialType;
 import com.dolijo.moring.part.entity.valueobject.PartType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "social_member")
 public class SocialMember {
     @Id
