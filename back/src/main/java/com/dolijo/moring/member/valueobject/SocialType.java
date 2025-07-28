@@ -1,4 +1,4 @@
-package com.dolijo.moring.member.entity.valueobject;
+package com.dolijo.moring.member.valueobject;
 
 import lombok.Getter;
 
