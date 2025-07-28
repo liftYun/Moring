@@ -1,15 +1,10 @@
 package com.dolijo.moring.member.entity;
 
-import com.dolijo.moring.common.base.BaseEntity;
-import com.dolijo.moring.member.entity.valueobject.SocialType;
-import com.dolijo.moring.part.entity.valueobject.PartType;
+import com.dolijo.moring.member.valueobject.SocialType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
-
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @AllArgsConstructor

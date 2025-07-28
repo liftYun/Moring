@@ -26,7 +26,7 @@ public class Member extends BaseEntity {
     @Comment("회원 UUID")
     private String memberUuid;
 
-    
+
     @Column(nullable = false, length = 40, unique = true)
     @Comment("회원 이메일")
     private String email;
