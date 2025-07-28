@@ -2,15 +2,14 @@ package com.dolijo.moring.member.entity;
 
 import com.dolijo.moring.common.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@Getter
 @Table(
         name = "member",
         indexes = {
@@ -23,7 +22,7 @@ public class Member extends BaseEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "uuid", nullable = false, length = 40)
+    @Column(name = "member_uuid", nullable = false, length = 40)
     @Comment("회원 UUID")
     private String uuid;
 

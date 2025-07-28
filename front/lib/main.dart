@@ -3,8 +3,20 @@ import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스 임포트
 import 'package:moring/utils/bottom_nav_bar.dart'; // CustomBottomNavBar 위젯 임포트
 import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트 (수정: utils/ -> models/ 로 경로 변경)
 import 'package:moring/widgets/car_360_viewer.dart'; // Car360Viewer 위젯 임포트
+import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 
-void main() {
+import 'screens/login.dart';
+import 'screens/map.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔑 카카오 SDK 초기화 (반드시 runApp 이전에)
+  KakaoSdk.init(
+    nativeAppKey: 'b0c6ed29bed9644abb543aac61d3e0d6',
+    javaScriptAppKey: 'e9de537a4f886944859b124acbc8f5e4',
+  );
+
   runApp(const MyApp());
 }
 
@@ -52,6 +64,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const HomePage(),
+
+      // ↓ 로그인 화면을 첫 화면으로 지정
+      initialRoute: '/login',
+      routes: {
+        '/login': (c) => const LoginPage(),
+        '/home':  (c) => const HomePage(), // 또는 MapScreen()
+      },
     );
   }
 }
@@ -162,6 +181,10 @@ class _HomePageState extends State<HomePage> {
     // } else if (index == 3) {
     //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MorePage()));
     // }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomePage()),
+    );
   }
 
   @override
