@@ -23,9 +23,9 @@ public class Member extends BaseEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "member_uuid", nullable = false, length = 40)
+    @Column(name = "uuid", nullable = false, length = 40)
     @Comment("회원 UUID")
-    private String memberUuid;
+    private String uuid;
 
     
     @Column(nullable = false, length = 40, unique = true)
@@ -37,8 +37,8 @@ public class Member extends BaseEntity {
     private String nickName;
 
     @Builder
-    public Member(String memberUuid, String email, String nickName) {
-        this.memberUuid = memberUuid;
+    public Member(String uuid, String email, String nickName) {
+        this.uuid = uuid;
         this.email = email;
         this.nickName = nickName;
     }
