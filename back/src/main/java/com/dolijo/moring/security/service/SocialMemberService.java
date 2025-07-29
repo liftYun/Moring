@@ -70,8 +70,8 @@ import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.entity.SocialMember;
 import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.jwt.JWTUtil;
-import com.dolijo.moring.security.repository.RefreshTokenRepository;
-import com.dolijo.moring.security.repository.UserRepository;
+import com.dolijo.moring.security.repository.SocialMemberRepository;
+import com.dolijo.moring.security.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,17 +82,17 @@ import java.util.Date;
  */
 @Service
 @Transactional
-public class RefreshTokenService {
+public class SocialMemberService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
+    private final SocialMemberRepository socialMemberRepository;
+    private final MemberRepository memberRepository;
     private final JWTUtil jwtUtil;
 
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository,
-                               UserRepository userRepository,
+    public SocialMemberService(SocialMemberRepository socialMemberRepository,
+                               MemberRepository memberRepository,
                                JWTUtil jwtUtil) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.userRepository = userRepository;
+        this.socialMemberRepository = socialMemberRepository;
+        this.memberRepository = memberRepository;
         this.jwtUtil = jwtUtil;
     }
 
@@ -107,7 +107,7 @@ public class RefreshTokenService {
             return false;
         }
         // 2) DB에 저장된 토큰과 일치하고, 아직 만료되지 않았는지 확인
-        return refreshTokenRepository
+        return socialMemberRepository
                 .findByMemberUuidAndType(uuid, type)
                 .filter(ent ->
                         ent.getTokenId().equals(refreshToken) &&
@@ -119,7 +119,7 @@ public class RefreshTokenService {
      * 지정된 사용자(UUID)의 모든 리프레시 토큰을 삭제합니다.
      */
     public void deleteToken(String uuid) {
-        refreshTokenRepository.deleteByMemberUuid(uuid);
+        socialMemberRepository.deleteByMemberUuid(uuid);
     }
 
     /**
@@ -128,10 +128,10 @@ public class RefreshTokenService {
      */
     public void saveToken(String uuid, SocialType type, String refreshToken) {
         // 1) 기존 토큰 삭제
-        refreshTokenRepository.deleteByMemberUuid(uuid);
+        socialMemberRepository.deleteByMemberUuid(uuid);
 
         // 2) UserEntity 조회 (member 필수)
-        Member member = userRepository.findByUuid(uuid)
+        Member member = memberRepository.findByUuid(uuid)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Invalid user UUID: " + uuid));
 
@@ -143,7 +143,7 @@ public class RefreshTokenService {
                 .expiresAt(new Date(System.currentTimeMillis()
                         + jwtUtil.getRefreshExpiredMs()))
                 .build();
-        refreshTokenRepository.save(entity);
+        socialMemberRepository.save(entity);
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class IssueRefreshTokenDto {
+public class IssueSocialMemberDto {
     private Long id;
 //    private String uuid;
     private Member member;
@@ -23,7 +23,7 @@ public class IssueRefreshTokenDto {
     private Date expires;
     private Date created;
 
-    public static SocialMember from(IssueRefreshTokenDto dto){
+    public static SocialMember from(IssueSocialMemberDto dto){
         return SocialMember.builder()
                 .id(dto.id)
 //                .memberUuid(dto.uuid)

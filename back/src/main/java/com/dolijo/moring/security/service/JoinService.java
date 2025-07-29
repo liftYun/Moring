@@ -2,7 +2,7 @@ package com.dolijo.moring.security.service;
 
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.security.dto.in.RegistRequestDto;
-import com.dolijo.moring.security.repository.UserRepository;
+import com.dolijo.moring.security.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +15,10 @@ import java.util.UUID;
 @Transactional
 public class JoinService {
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
-    public JoinService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public JoinService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
     }
 
     /**
@@ -28,7 +28,7 @@ public class JoinService {
     public void joinProcess(RegistRequestDto dto) {
         String email = dto.getEmail();
         // 이메일 중복 체크
-        if (userRepository.existsByUserEmail(email)) {
+        if (memberRepository.existsByUserEmail(email)) {
             // 이미 존재 시 간단 리턴 (필요 시 예외 처리)
             return;
         }
@@ -38,7 +38,7 @@ public class JoinService {
                 .email(dto.getEmail())
                 .nickName(dto.getNickName())
                 .build();
-        userRepository.save(member);
+        memberRepository.save(member);
     }
 
     /**
@@ -48,26 +48,26 @@ public class JoinService {
      * @return 등록된 또는 기존 UserEntity
      */
     public Member registerKakaoUserIfNotExist(String email, String nickname) {
-        return userRepository.findByUserEmail(email)
+        return memberRepository.findByUserEmail(email)
                 .orElseGet(() -> {
                     Member member = Member.builder()
                             .uuid(UUID.randomUUID().toString())
                             .email(email)
                             .nickName(nickname)
                             .build();
-                    return userRepository.save(member);
+                    return memberRepository.save(member);
                 });
     }
 
     public Member registerSocialUserIfNotExist(String email, String nickname) {
-        return userRepository.findByUserEmail(email)
+        return memberRepository.findByUserEmail(email)
                 .orElseGet(() -> {
                     Member member = Member.builder()
                             .uuid(UUID.randomUUID().toString())
                             .email(email)
                             .nickName(nickname)
                             .build();
-                    return userRepository.save(member);
+                    return memberRepository.save(member);
                 });
     }
 }

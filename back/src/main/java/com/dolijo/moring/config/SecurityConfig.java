@@ -5,7 +5,7 @@ import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.jwt.LoginFilter;
 import com.dolijo.moring.security.jwt.OAuth2SuccessHandler;
 import com.dolijo.moring.security.service.CustomOAuth2UserService;
-import com.dolijo.moring.security.service.RefreshTokenService;
+import com.dolijo.moring.security.service.SocialMemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +19,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -33,20 +32,20 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final SocialMemberService socialMemberService;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     public SecurityConfig(
             AuthenticationConfiguration authenticationConfiguration,
             JWTUtil jwtUtil,
-            RefreshTokenService refreshTokenService,
+            SocialMemberService socialMemberService,
             CustomOAuth2UserService customOAuth2UserService,
             OAuth2SuccessHandler oAuth2SuccessHandler
     ) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
-        this.refreshTokenService = refreshTokenService;
+        this.socialMemberService = socialMemberService;
         this.customOAuth2UserService = customOAuth2UserService;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }

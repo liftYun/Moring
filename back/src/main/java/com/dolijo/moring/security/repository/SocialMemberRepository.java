@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<SocialMember, Long> {
+public interface SocialMemberRepository extends JpaRepository<SocialMember, Long> {
 
     // 이제 users.uuid 칼럼(memberUuid) 기준으로 조회
     Optional<SocialMember> findByMemberUuid(String memberUuid);

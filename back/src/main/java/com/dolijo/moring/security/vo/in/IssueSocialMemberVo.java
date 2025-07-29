@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Setter
 @Builder
-public class IssueRefreshTokenVo {
-    private int id;
+public class IssueSocialMemberVo {
+    private Long id;
     private String uuid;
     private String token;
 }

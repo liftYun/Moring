@@ -1,7 +1,7 @@
 package com.dolijo.moring.security.service;
 
 import com.dolijo.moring.member.entity.Member;
-import com.dolijo.moring.security.jwt.CustomOAuth2User;
+import com.dolijo.moring.security.jwt.CustomOAuth2Member;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -53,6 +53,6 @@ public class CustomOAuth2UserService
                 .registerSocialUserIfNotExist(email, nickname);
 
         // CustomOAuth2User 또는 DefaultOAuth2User 반환
-        return new CustomOAuth2User(member, attrs);
+        return new CustomOAuth2Member(member, attrs);
     }
 }

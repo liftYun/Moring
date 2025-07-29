@@ -10,7 +10,7 @@ import java.util.Optional;
  * JPA를 이용한 User 엔티티 CRUD 및 사용자 조회용 리포지토리
  */
 @Repository
-public interface UserRepository extends JpaRepository<Member, Integer> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     /**
      * 이메일(로그인 ID) 존재 여부 확인
