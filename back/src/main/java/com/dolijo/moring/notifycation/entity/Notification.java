@@ -3,10 +3,10 @@ package com.dolijo.moring.notifycation.entity;
 import com.dolijo.moring.common.base.BaseEntity;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.valueobject.GeneralNotificationType;
-import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.notifycation.valueobject.NotificationType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -39,4 +39,11 @@ public class Notification extends BaseEntity {
     @ColumnDefault("false")
     private Boolean readFlag;
 
+    @Builder
+    public Notification(Member member, NotificationType notificationType, GeneralNotificationType generalNotificationType, Boolean readFlag) {
+        this.member = member;
+        this.notificationType = notificationType;
+        this.generalNotificationType = generalNotificationType;
+        this.readFlag = readFlag;
+    }
 }

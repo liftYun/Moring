@@ -1,14 +1,12 @@
 package com.dolijo.moring.member.entity;
-
 import com.dolijo.moring.member.valueobject.SocialType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "social_member")
 @Builder
@@ -20,7 +18,7 @@ public class SocialMember {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_uuid", referencedColumnName = "member_uuid", nullable = false)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Enumerated(EnumType.STRING)
@@ -33,17 +31,15 @@ public class SocialMember {
     private String tokenId;
 
     /** 토큰 만료 시각 */
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "expires_at", nullable = false)
-    private Date expiresAt;
+    private LocalDateTime expiresAt;
 
     /** 생성 시각 */
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = new Date();
+        this.createdAt = new LocalDateTime();
     }
 }
