@@ -9,6 +9,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class MemberDetailResponseDto {
-    private Long id;
-    private String nickname;
+    private String nickName;
+    private String email;
 }
