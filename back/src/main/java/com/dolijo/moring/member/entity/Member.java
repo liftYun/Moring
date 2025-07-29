@@ -2,15 +2,13 @@ package com.dolijo.moring.member.entity;
 
 import com.dolijo.moring.common.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "member")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +17,7 @@ public class Member extends BaseEntity {
 
     @Column(name = "member_uuid", nullable = false, length = 40, unique = true)
     @Comment("회원 UUID")
-    private String memberUuid;
+    private String uuid;
 
     @Column(nullable = false, length = 40, unique = true)
     @Comment("회원 이메일")
@@ -30,8 +28,8 @@ public class Member extends BaseEntity {
     private String nickName;
 
     @Builder
-    public Member(String memberUuid, String email, String nickName) {
-        this.memberUuid = memberUuid;
+    public Member(String uuid, String email, String nickName) {
+        this.uuid = uuid;
         this.email = email;
         this.nickName = nickName;
     }
