@@ -16,7 +16,6 @@ public class MemberDetailRequestDto {
 
     public static Member from(MemberDetailRequestDto dto){
         return Member.builder()
-                .id(dto.id)
                 .uuid(dto.uuid)
                 .email(dto.email)
                 .build();

@@ -28,7 +28,6 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
 
     // users.uuid 기준 삭제
     @Modifying
-    @Transactional
 //    @Query("delete from SocialMember r where r.member = :member")
     @Query("DELETE FROM SocialMember sm WHERE sm.member.uuid = :uuid")
     void deleteByMemberUuid(@Param("uuid") String uuid);

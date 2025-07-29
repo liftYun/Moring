@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class RegistResponseDto {
-    private Long id;
-    private String nickname;
-    private String userEmail;
+    private String nickName;
+    private String email;
 }

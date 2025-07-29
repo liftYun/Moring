@@ -17,7 +17,7 @@ public class RegistRequestDto {
 
     public static Member from(RegistRequestDto dto){
         return Member.builder()
-                .id(dto.id)
+//                .id(dto.id)
                 .nickName(dto.nickName)
                 .email(dto.email)
                 .build();

@@ -68,13 +68,15 @@ package com.dolijo.moring.security.service;
 
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.entity.SocialMember;
+import com.dolijo.moring.member.repository.MemberRepository;
 import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.repository.SocialMemberRepository;
-import com.dolijo.moring.security.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -111,7 +113,7 @@ public class SocialMemberService {
                 .findByMemberUuidAndType(uuid, type)
                 .filter(ent ->
                         ent.getTokenId().equals(refreshToken) &&
-                                ent.getExpiresAt().after(new Date()))
+                                ent.getExpiresAt().isAfter(LocalDateTime.now()))
                 .isPresent();
     }
 
@@ -140,8 +142,11 @@ public class SocialMemberService {
                 .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
                 .type(type)
                 .tokenId(refreshToken)
-                .expiresAt(new Date(System.currentTimeMillis()
-                        + jwtUtil.getRefreshExpiredMs()))
+                .expiresAt(
+                        LocalDateTime.now()
+                                .plus(Duration.ofMillis(jwtUtil.getRefreshExpiredMs()))
+                )
+                .createdAt(LocalDateTime.now())
                 .build();
         socialMemberRepository.save(entity);
     }

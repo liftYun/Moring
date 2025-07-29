@@ -1,5 +1,7 @@
 package com.dolijo.moring.security.controller;
 
+import com.dolijo.moring.common.base.BaseEntity;
+import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.JoinService;
 import com.dolijo.moring.security.service.SocialMemberService;
@@ -44,8 +46,27 @@ public class JWTController {
 //        return ResponseEntity.ok().build();
 //    }
 
+//    @PostMapping("/logout/rToken")
+//    public ResponseEntity<?> logout(
+//            @CookieValue(name="refreshToken", required=true) String refreshToken,
+//            HttpServletResponse response
+//    ) {
+//        Claims claims = jwtUtil.parseClaims(refreshToken);
+//        System.out.println("logout to Refresh Token : " + claims);
+//        String uuid = claims.get("uuid", String.class);
+//        socialMemberService.deleteToken(uuid);
+//
+//        // 쿠키 만료 처리
+//        Cookie cookie = new Cookie("refreshToken", null);
+//        cookie.setHttpOnly(true);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(0);
+//        response.addCookie(cookie);
+//        return ResponseEntity.ok().build();
+//    }
+
     @PostMapping("/logout/rToken")
-    public ResponseEntity<?> logout(
+    public BaseResponse<?> logout(
             @CookieValue(name="refreshToken", required=true) String refreshToken,
             HttpServletResponse response
     ) {
@@ -60,7 +81,7 @@ public class JWTController {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return ResponseEntity.ok().build();
+        return BaseResponse.ok();
     }
     @PostMapping("/join")
     public String joinProcess(@RequestBody RegistRequestVo vo) {

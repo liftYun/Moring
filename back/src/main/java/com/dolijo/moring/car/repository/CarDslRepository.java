@@ -26,7 +26,7 @@ public class CarDslRepository {
                         car.nickname
                 ))
                 .from(car)
-                .where(car.member.memberUuid.eq(memberUuid))
+                .where(car.member.uuid.eq(memberUuid))
                 .fetch();
     }
 
