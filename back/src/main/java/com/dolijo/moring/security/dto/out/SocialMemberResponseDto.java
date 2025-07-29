@@ -11,7 +11,6 @@ import java.util.Date;
 @Getter
 @Builder
 public class SocialMemberResponseDto {
-    private Long id;
     private Member uuid;
     private SocialType type;
     private String token;
@@ -19,7 +18,6 @@ public class SocialMemberResponseDto {
 
     public static SocialMemberResponseDto from(SocialMember entity){
         return SocialMemberResponseDto.builder()
-                .id(entity.getId())
                 .uuid(entity.getMember())
                 .type(entity.getType())
                 .token(entity.getTokenId())

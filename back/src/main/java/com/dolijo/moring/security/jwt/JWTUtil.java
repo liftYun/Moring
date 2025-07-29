@@ -62,10 +62,10 @@ public class JWTUtil {
     }
 
     /** AccessToken 생성 (직접 호출용) */
-    public String createAccessToken(String uuid, String userEmail, String nickname) {
+    public String createAccessToken(String uuid, String nickname) {
         return Jwts.builder()
                 .claim("uuid", uuid)
-                .claim("userEmail", userEmail)
+//                .claim("userEmail", userEmail)
                 .claim("nickname", nickname)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessExpiredMs))
@@ -87,7 +87,7 @@ public class JWTUtil {
     public String generateAccessToken(Member member) {
         return createAccessToken(
                 member.getUuid(),
-                member.getEmail(),
+//                member.getEmail(),
                 member.getNickName()
         );
     }

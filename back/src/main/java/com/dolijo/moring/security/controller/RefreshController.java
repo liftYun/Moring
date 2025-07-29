@@ -62,7 +62,7 @@ public class RefreshController {
         String newRefreshToken = jwtUtil.createRefreshToken(uuid);
         String newAccessToken = jwtUtil.createAccessToken(
                 uuid,
-                userDetails.getUserEmail(),
+//                userDetails.getUserEmail(),
                 userDetails.getUserNickname()
         );
 
