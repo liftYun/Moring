@@ -28,7 +28,7 @@ public class JoinService {
     public void joinProcess(RegistRequestDto dto) {
         String email = dto.getEmail();
         // 이메일 중복 체크
-        if (memberRepository.existsByUserEmail(email)) {
+        if (memberRepository.existsByEmail(email)) {
             // 이미 존재 시 간단 리턴 (필요 시 예외 처리)
             return;
         }
@@ -48,7 +48,7 @@ public class JoinService {
      * @return 등록된 또는 기존 UserEntity
      */
     public Member registerKakaoUserIfNotExist(String email, String nickname) {
-        return memberRepository.findByUserEmail(email)
+        return memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     Member member = Member.builder()
                             .uuid(UUID.randomUUID().toString())
@@ -60,7 +60,7 @@ public class JoinService {
     }
 
     public Member registerSocialUserIfNotExist(String email, String nickname) {
-        return memberRepository.findByUserEmail(email)
+        return memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     Member member = Member.builder()
                             .uuid(UUID.randomUUID().toString())

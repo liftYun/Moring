@@ -15,15 +15,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     /**
      * 이메일(로그인 ID) 존재 여부 확인
      */
-    boolean existsByUserEmail(String email);
+    boolean existsByEmail(String email);
 
     /**
      * UUID로 사용자 조회
      */
-    Optional<Member> findByUuid(String member);
+    Optional<Member> findByUuid(String uuid);
 
     /**
      * 이메일로 사용자 조회
      */
-    Optional<Member> findByUserEmail(String email);
+    Optional<Member> findByEmail(String email);
 }

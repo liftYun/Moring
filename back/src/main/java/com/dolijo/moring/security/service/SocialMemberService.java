@@ -131,13 +131,13 @@ public class SocialMemberService {
         socialMemberRepository.deleteByMemberUuid(uuid);
 
         // 2) UserEntity 조회 (member 필수)
-        Member member = memberRepository.findByUuid(uuid)
+        Member findMember = memberRepository.findByUuid(uuid)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Invalid user UUID: " + uuid));
 
         // 3) 새로운 RefreshTokenEntity 생성 및 저장
         SocialMember entity = SocialMember.builder()
-                .member(member)  // ← UserEntity를 반드시 설정해야 null 에러 방지
+                .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
                 .type(type)
                 .tokenId(refreshToken)
                 .expiresAt(new Date(System.currentTimeMillis()
