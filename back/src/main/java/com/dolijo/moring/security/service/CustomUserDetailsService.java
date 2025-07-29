@@ -1,8 +1,8 @@
 package com.dolijo.moring.security.service;
 
 import com.dolijo.moring.member.entity.Member;
+import com.dolijo.moring.member.repository.MemberRepository;
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
-import com.dolijo.moring.security.repository.MemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

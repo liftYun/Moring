@@ -27,7 +27,7 @@ public class CarServiceImpl implements CarService{
     @Override
     public Long registerCar(RegisterCarRequestDto dto, String memberUuid) {
         // 1.존재하는 회원인지 확인
-        Member member = memberRepository.findByMemberUuid(memberUuid)
+        Member member = memberRepository.findByUuid(memberUuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER));
         // 2.이미 등록한 차량인지 확인
         if (carRepository.existsByVin(dto.getVin())) {
@@ -40,7 +40,7 @@ public class CarServiceImpl implements CarService{
     @Override
     public List<CarResponseDto> getCarsByMemberUuid(String memberUuid) {
         // 1.회원 존재 여부 확인
-        Member member = memberRepository.findByMemberUuid(memberUuid)
+        Member member = memberRepository.findByUuid(memberUuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER));
 
         return carDslRepository.findCarsByMemberUuid(memberUuid);

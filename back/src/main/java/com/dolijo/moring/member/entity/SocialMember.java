@@ -6,10 +6,10 @@ import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "social_member")
-@Builder
 @Getter
 public class SocialMember {
     @Id
@@ -40,6 +40,15 @@ public class SocialMember {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = new LocalDateTime();
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @Builder
+    public SocialMember(Member member, SocialType type, String tokenId, LocalDateTime expiresAt, LocalDateTime createdAt) {
+        this.member = member;
+        this.tokenId = tokenId;
+        this.type = type;
+        this.expiresAt = expiresAt;
+        this.createdAt = createdAt;
     }
 }

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Setter
@@ -20,12 +21,12 @@ public class IssueSocialMemberDto {
     private Member member;
     private String tokenId;
     private SocialType type;
-    private Date expires;
-    private Date created;
+    private LocalDateTime expires;
+    private LocalDateTime created;
 
     public static SocialMember from(IssueSocialMemberDto dto){
         return SocialMember.builder()
-                .id(dto.id)
+//                .id(dto.id)
 //                .memberUuid(dto.uuid)
                 .member(dto.member)
                 .type(dto.type)
