@@ -94,7 +94,7 @@ import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.JoinService;
-import com.dolijo.moring.security.service.RefreshTokenService;
+import com.dolijo.moring.security.service.SocialMemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.*;
@@ -113,20 +113,20 @@ public class KakaoAuthController {
 
     private final RestTemplate restTemplate;
     private final JoinService joinService;
-    private final RefreshTokenService refreshTokenService;
+    private final SocialMemberService socialMemberService;
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
     public KakaoAuthController(
             RestTemplate restTemplate,
             JoinService joinService,
-            RefreshTokenService refreshTokenService,
+            SocialMemberService socialMemberService,
             JWTUtil jwtUtil,
             ObjectMapper objectMapper
     ) {
         this.restTemplate = restTemplate;
         this.joinService = joinService;
-        this.refreshTokenService = refreshTokenService;
+        this.socialMemberService = socialMemberService;
         this.jwtUtil = jwtUtil;
         this.objectMapper = objectMapper;
     }
@@ -182,7 +182,7 @@ public class KakaoAuthController {
         // 5) 자체 JWT 토큰 발급
         String ourAccess  = jwtUtil.generateAccessToken(member);
         String ourRefresh = jwtUtil.generateRefreshToken(member);
-        refreshTokenService.saveToken(member.getUuid(), SocialType.KAKAO, ourRefresh);
+        socialMemberService.saveToken(member.getUuid(), SocialType.KAKAO, ourRefresh);
 
         // 6) 응답 헤더에 Access Token, Set-Cookie, JSON body
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + ourAccess);

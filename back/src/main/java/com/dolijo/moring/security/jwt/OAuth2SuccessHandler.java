@@ -3,7 +3,7 @@ package com.dolijo.moring.security.jwt;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.service.JoinService;
-import com.dolijo.moring.security.service.RefreshTokenService;
+import com.dolijo.moring.security.service.SocialMemberService;
 import com.dolijo.moring.security.vo.out.TokenResponseVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final SocialMemberService socialMemberService;
     private final JoinService joinService;
     private final RestTemplate restTemplate;      // RestTemplate 혹은 WebClient
     private final String kakaoClientId;           // application.yml 에서 주입
@@ -35,7 +35,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     public OAuth2SuccessHandler(
             JWTUtil jwtUtil,
-            RefreshTokenService refreshTokenService,
+            SocialMemberService socialMemberService,
             JoinService joinService,
             RestTemplateBuilder restTemplateBuilder,
             KakaoOAuth2Properties props
@@ -43,7 +43,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 //            @Value("${spring.security.oauth2.client.registration.kakao.redirectUri}") String kakaoRedirectUri
     ) {
         this.jwtUtil  = jwtUtil;
-        this.refreshTokenService = refreshTokenService;
+        this.socialMemberService = socialMemberService;
         this.joinService = joinService;
         this.restTemplate = restTemplateBuilder.build();
 //        this.kakaoClientId = kakaoClientId;
@@ -107,7 +107,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         Member member = joinService.registerKakaoUserIfNotExist(email, nickname);
 
         // 5) 카카오 리프레시 토큰 저장
-        refreshTokenService.saveToken(
+        socialMemberService.saveToken(
                 member.getUuid(),
                 SocialType.KAKAO,
                 kakaoRefreshToken

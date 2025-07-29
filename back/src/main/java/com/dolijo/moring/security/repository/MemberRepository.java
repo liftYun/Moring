@@ -10,20 +10,20 @@ import java.util.Optional;
  * JPA를 이용한 User 엔티티 CRUD 및 사용자 조회용 리포지토리
  */
 @Repository
-public interface UserRepository extends JpaRepository<Member, Integer> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     /**
      * 이메일(로그인 ID) 존재 여부 확인
      */
-    boolean existsByUserEmail(String email);
+    boolean existsByEmail(String email);
 
     /**
      * UUID로 사용자 조회
      */
-    Optional<Member> findByUuid(String member);
+    Optional<Member> findByUuid(String uuid);
 
     /**
      * 이메일로 사용자 조회
      */
-    Optional<Member> findByUserEmail(String email);
+    Optional<Member> findByEmail(String email);
 }

@@ -1,10 +1,10 @@
 package com.dolijo.moring.security.controller;
 
 import com.dolijo.moring.member.valueobject.SocialType;
-import com.dolijo.moring.security.dto.out.CustomUserDetails;
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.CustomUserDetailsService;
-import com.dolijo.moring.security.service.RefreshTokenService;
+import com.dolijo.moring.security.service.SocialMemberService;
 import com.dolijo.moring.security.vo.out.TokenResponseVo;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -24,16 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class RefreshController {
 
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final SocialMemberService socialMemberService;
     private final CustomUserDetailsService customUserDetailsService;
 
     public RefreshController(
             JWTUtil jwtUtil,
-            RefreshTokenService refreshTokenService,
+            SocialMemberService socialMemberService,
             CustomUserDetailsService customUserDetailsService
     ) {
         this.jwtUtil = jwtUtil;
-        this.refreshTokenService = refreshTokenService;
+        this.socialMemberService = socialMemberService;
         this.customUserDetailsService = customUserDetailsService;
     }
 
@@ -50,13 +50,13 @@ public class RefreshController {
         SocialType type = SocialType.valueOf(claims.get("type", String.class));
 
         // 2) DB 저장 토큰 검증
-        if (!refreshTokenService.isValid(uuid, refreshToken, type)) {
-            refreshTokenService.deleteToken(uuid);
+        if (!socialMemberService.isValid(uuid, refreshToken, type)) {
+            socialMemberService.deleteToken(uuid);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // 3) UserDetails 재조회
-        CustomUserDetails userDetails = customUserDetailsService.loadUserByUuid(uuid);
+        CustomMemberDetails userDetails = customUserDetailsService.loadUserByUuid(uuid);
 
         // 4) 새 토큰 생성
         String newRefreshToken = jwtUtil.createRefreshToken(uuid);
@@ -68,7 +68,7 @@ public class RefreshController {
 
 
         // 5) DB에 새 리프레시 토큰 저장
-        refreshTokenService.saveToken(uuid, type, newRefreshToken);
+        socialMemberService.saveToken(uuid, type, newRefreshToken);
 
         // 6) HTTP-only 쿠키로 새 리프레시 토큰 설정
         Cookie cookie = new Cookie("refreshToken", newRefreshToken);

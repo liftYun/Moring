@@ -1,9 +1,9 @@
 package com.dolijo.moring.security.jwt;
 
-import com.dolijo.moring.security.dto.out.CustomUserDetails;
-import com.dolijo.moring.security.dto.out.RefreshTokenResponseDto;
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import com.dolijo.moring.member.valueobject.SocialType;
-import com.dolijo.moring.security.service.RefreshTokenService;
+import com.dolijo.moring.security.dto.out.SocialMemberResponseDto;
+import com.dolijo.moring.security.service.SocialMemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,12 +23,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final SocialMemberService socialMemberService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, SocialMemberService socialMemberService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.refreshTokenService = refreshTokenService;
+        this.socialMemberService = socialMemberService;
     }
 
     @Override
@@ -49,12 +49,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authentication) throws IOException {
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        RefreshTokenResponseDto refreshTokenResponseDto = (RefreshTokenResponseDto) authentication.getCredentials();
+        CustomMemberDetails customMemberDetails = (CustomMemberDetails) authentication.getPrincipal();
+        SocialMemberResponseDto refreshTokenResponseDto = (SocialMemberResponseDto) authentication.getCredentials();
 
-        String userEmail = customUserDetails.getUserEmail();
-        String nickname = customUserDetails.getUserNickname();
-        String uuid = customUserDetails.getUserUuid();
+        String userEmail = customMemberDetails.getUserEmail();
+        String nickname = customMemberDetails.getUserNickname();
+        String uuid = customMemberDetails.getUserUuid();
         SocialType type = refreshTokenResponseDto.getType();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -67,7 +67,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String refreshToken = jwtUtil.createRefreshToken(uuid);
 
         // Refresh Token 을 DB 혹은 Redis 등에 저장 (토큰 회수/무효화 위해)
-        refreshTokenService.saveToken(uuid, type, refreshToken);
+        socialMemberService.saveToken(uuid, type, refreshToken);
 
         response.addHeader("Authorization", "Bearer " + accessToken);
 

@@ -1,8 +1,8 @@
 package com.dolijo.moring.security.service;
 
 import com.dolijo.moring.member.entity.Member;
-import com.dolijo.moring.security.dto.out.CustomUserDetails;
-import com.dolijo.moring.security.repository.UserRepository;
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
+import com.dolijo.moring.security.repository.MemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,10 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public CustomUserDetailsService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
     }
 
     /**
@@ -38,10 +38,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 //    }
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = userRepository.findByUserEmail(email)
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with email: " + email));
-        return new CustomUserDetails(member);
+        return new CustomMemberDetails(member);
     }
 
     /**
@@ -50,10 +50,10 @@ public class CustomUserDetailsService implements UserDetailsService {
      * @return CustomUserDetails
      * @throws UsernameNotFoundException 사용자 미존재 시 예외 발생
      */
-    public CustomUserDetails loadUserByUuid(String uuid) throws UsernameNotFoundException {
-        Member member = userRepository.findByUuid(uuid)
+    public CustomMemberDetails loadUserByUuid(String uuid) throws UsernameNotFoundException {
+        Member member = memberRepository.findByUuid(uuid)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with UUID: " + uuid));
-        return new CustomUserDetails(member);
+        return new CustomMemberDetails(member);
     }
 }

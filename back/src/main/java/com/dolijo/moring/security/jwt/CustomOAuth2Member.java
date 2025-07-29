@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * OAuth2User와 UserEntity를 연결하는 커스텀 OAuth2User 구현체
  */
-public class CustomOAuth2User extends DefaultOAuth2User {
+public class CustomOAuth2Member extends DefaultOAuth2User {
 
     private final Member member;
 
@@ -20,7 +20,7 @@ public class CustomOAuth2User extends DefaultOAuth2User {
      * @param member       DB에 저장된 사용자 엔티티
      * @param attributes OAuth2 프로바이더(카카오)로부터 받은 사용자 정보 맵
      */
-    public CustomOAuth2User(Member member, Map<String, Object> attributes) {
+    public CustomOAuth2Member(Member member, Map<String, Object> attributes) {
         // DefaultOAuth2User 생성: 권한, 속성, 사용자 식별자 키
         super(getAuthorities(member), attributes, "id");
         this.member = member;

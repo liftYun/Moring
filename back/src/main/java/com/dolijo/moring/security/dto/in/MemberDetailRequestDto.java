@@ -8,13 +8,13 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @Builder
-public class UserDetailRequestDto {
+public class MemberDetailRequestDto {
     private Long id;
     private String uuid;
     private String nickName;
     private String email;
 
-    public static Member from(UserDetailRequestDto dto){
+    public static Member from(MemberDetailRequestDto dto){
         return Member.builder()
                 .id(dto.id)
                 .uuid(dto.uuid)
