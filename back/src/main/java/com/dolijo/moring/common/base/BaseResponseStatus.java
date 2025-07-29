@@ -25,6 +25,8 @@ public enum BaseResponseStatus {
     WRONG_JWT_TOKEN(HttpStatus.UNAUTHORIZED, false, 401, "다시 로그인 해주세요"),
     NO_SIGN_IN(HttpStatus.UNAUTHORIZED, false, 401, "로그인을 먼저 진행해주세요"),
     NO_ACCESS_AUTHORITY(HttpStatus.FORBIDDEN, false, 403, "접근 권한이 없습니다"),
+    NO_EXIST_MEMBER(HttpStatus.NOT_FOUND, false, 404, "요청하신 정보를 찾을 수 없습니다."),
+
 
     /**
      * 5XX: Server Error(서버 에러)
@@ -50,12 +52,18 @@ public enum BaseResponseStatus {
     NO_SUPPORTED_PROVIDER(HttpStatus.BAD_REQUEST, false, 400, "지원하지 않는 플랫폼입니다"),
     DUPLICATED_NICKNAME(HttpStatus.CONFLICT, false, 409, "이미 사용중인 닉네임입니다."),
     SAME_NICKNAME(HttpStatus.CONFLICT, false, 409, "현재 사용중인 닉네임입니다."),
-    INVALID_EMAIL_ADDRESS(HttpStatus.BAD_REQUEST, false, 400, "이메일을 다시 확인해주세요.");
+    INVALID_EMAIL_ADDRESS(HttpStatus.BAD_REQUEST, false, 400, "이메일을 다시 확인해주세요."),
 
 
+    /**
+     * Notification
+     */
 
-
-    // Notification
+    /**
+     * Car
+     */
+    ALREADY_REGISTERED_CAR(HttpStatus.CONFLICT, false, 409, "이미 등록된 차량입니다."),
+    NO_EXIST_CAR(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 차량입니다.");
 
 
     private final HttpStatusCode httpStatusCode;

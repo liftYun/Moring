@@ -26,7 +26,7 @@ public class PartChangeLog {
     private Part part;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name="product_id")
+    @JoinColumn(name = "car_vin", referencedColumnName = "vin", nullable = false)
     private Car car;
 
     @Column(updatable = false)

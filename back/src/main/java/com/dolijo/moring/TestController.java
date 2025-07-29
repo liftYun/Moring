@@ -22,9 +22,7 @@ public class TestController {
             @Parameter(name = "value", description = "전달할 값", required = true)
     })
     @GetMapping
-    public BaseResponse<String> healthCheck(
-            @RequestParam("name") String name,
-            @RequestParam("value") String value) {
-        return BaseResponse.of("name: " + name + ", value: " + value);
+    public BaseResponse<Void> healthCheck() {
+        return BaseResponse.ok();
     }
 }
