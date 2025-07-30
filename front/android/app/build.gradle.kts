@@ -1,40 +1,36 @@
+// android/app/build.gradle.kts (이 파일을 집중적으로 수정합니다)
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.moring"
-    compileSdk = flutter.compileSdkVersion
-//    ndkVersion = flutter.ndkVersion
-    ndkVersion = "27.0.12077973"
+    namespace = "com.example.moring" // 실제 앱 패키지 이름과 일치하는지 다시 확인
+    compileSdk = 33 // 명시적으로 33으로 설정
+//    ndkVersion = flutter.ndkVersion // 이 부분 주석 해제하거나 필요하면 삭제
+    ndkVersion = "27.0.12077973" // 명시적으로 버전 지정
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8 // Java 8로 설정
+        targetCompatibility = JavaVersion.VERSION_1_8 // Java 8로 설정
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "1.8" // Kotlin 1.8로 설정
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.moring"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        applicationId = "com.example.moring" // 실제 앱 ID와 일치하는지 다시 확인
+        minSdk = 21 // <<< 이 부분을 21로 명시적으로 설정
+        targetSdk = 33 // 명시적으로 33으로 설정
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -43,3 +39,9 @@ android {
 flutter {
     source = "../.."
 }
+
+// 만약 build.gradle 파일에 있던 dependencies 섹션이 .kts 파일에 없다면 추가해야 합니다.
+// 보통 .kts 파일에서는 dependencies 블록이 이렇게 생깁니다.
+// dependencies {
+//     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version") // 필요하다면 추가
+// }

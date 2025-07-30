@@ -1,8 +1,27 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.moring"> <!-- <<< 당신의 실제 앱 패키지 이름으로 정확히 설정되었습니다! -->
+
+    <!-- Mapbox 내비게이션 및 위치 서비스에 필요한 권한 추가 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:label="moring"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        tools:replace="android:label"> <!-- android:label 충돌 방지 -->
+
+        <!-- Mapbox Access Token은 res/values/mapbox_access_token.xml에 있으므로 여기에 직접 넣지 않습니다. -->
+        <!-- 만약 mapbox_access_token.xml 파일을 사용하지 않고 여기에 직접 넣으려면 아래 주석을 풀고 토큰을 입력하세요.
+        <meta-data
+            android:name="com.mapbox.mapboxsdk.accessToken"
+            android:value="YOUR_MAPBOX_PUBLIC_ACCESS_TOKEN" />
+        -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,7 +50,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- 1) 카카오 로그인 커스텀 URL 스킴 -->
+        <!-- 카카오 로그인 커스텀 URL 스킴 (기존 코드 그대로 유지) -->
         <activity
             android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
             android:exported="true">

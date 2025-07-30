@@ -3,12 +3,12 @@ import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스 임포트
 import 'package:moring/utils/bottom_nav_bar.dart'; // CustomBottomNavBar 위젯 임포트
 import 'package:moring/utils/app_theme.dart'; // CustomBottomNavBar 위젯 임포트
 import 'package:moring/utils/custom_app_bar.dart'; // CustomBottomNavBar 위젯 임포트
-import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트 (수정: utils/ -> models/ 로 경로 변경)
+import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트
 import 'package:moring/widgets/car_360_viewer.dart'; // Car360Viewer 위젯 임포트
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 
 import 'screens/login.dart';
-import 'screens/map.dart';
+import 'screens/map.dart'; // <<< Mapbox 내비게이션 화면 임포트 추가
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +31,14 @@ class MyApp extends StatelessWidget {
       title: 'Moring App',
       // 다크 모드 테마 설정
       theme: AppTheme,
-      home: const HomePage(),
+      // home: const HomePage(), // home 속성은 initialRoute와 함께 사용되지 않음
 
       // ↓ 로그인 화면을 첫 화면으로 지정
       initialRoute: '/login',
       routes: {
         '/login': (c) => const LoginPage(),
-        '/home':  (c) => const HomePage(), // 또는 MapScreen()
+        '/home': (c) => const HomePage(),
+        '/navigation': (c) => const SampleNavigationApp(), // <<< Mapbox 내비게이션 화면 라우트 추가
       },
     );
   }
@@ -136,23 +137,34 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
     });
-    // 공통 컴포넌트 위젯 클릭 시 페이지 전환 로직 구현
-    // Navigator를 사용하여 다른 화면으로 이동합니다.
-    // 현재는 인덱스만 변경하지만, 실제 앱에서는 아래와 같이 Navigator.push 또는 Navigator.pushReplacement를 사용합니다.
-    // 예:
-    // if (index == 0) {
-    //   // Home 화면 (현재 화면이므로 특별한 동작 없음)
-    // } else if (index == 1) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NavigationPage()));
-    // } else if (index == 2) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DrivingLogPage()));
-    // } else if (index == 3) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MorePage()));
-    // }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomePage()),
-    );
+    // 하단 네비게이션 바 아이템 클릭 시 페이지 전환 로직
+    if (index == 0) {
+      // Home 화면
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else if (index == 1) {
+      // 'Navi' 버튼 (두 번째 아이템) 클릭 시 Mapbox 내비게이션 화면으로 이동
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SampleNavigationApp()), // <<< 여기를 수정했습니다.
+      );
+    } else if (index == 2) {
+      // TODO: 주행 기록 화면으로 이동
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DrivingLogPage()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()), // 임시로 홈으로 이동
+      );
+    } else if (index == 3) {
+      // TODO: 더보기 화면으로 이동
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MorePage()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()), // 임시로 홈으로 이동
+      );
+    }
   }
 
   @override
@@ -309,15 +321,18 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(
               width: 100, // 프로그레스 바 너비 고정
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey[700],
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  // 퍼센티지에 따른 색상 변경 (0.7 이상: 초록, 0.3~0.7: 주황, 0.3 미만: 빨강)
-                  progress > 0.7 ? Colors.greenAccent : (progress > 0.3 ? Colors.amberAccent : Colors.redAccent),
+              child: ClipRRect( // <--- 이 부분이 추가 및 수정되었습니다.
+                borderRadius: BorderRadius.circular(5), // <--- 여기로 borderRadius가 이동했습니다.
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey[700],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    // 퍼센티지에 따른 색상 변경 (0.7 이상: 초록, 0.3~0.7: 주황, 0.3 미만: 빨강)
+                    progress > 0.7 ? Colors.greenAccent : (progress > 0.3 ? Colors.amberAccent : Colors.redAccent),
+                  ),
+                  minHeight: 5,
+                  // borderRadius: BorderRadius.circular(5), // <--- 이 부분은 삭제되었습니다.
                 ),
-                minHeight: 5,
-                borderRadius: BorderRadius.circular(5),
               ),
             ),
           ],
