@@ -34,6 +34,8 @@ dependencies:
   kakao_flutter_sdk: ^1.9.5          # ⬅︎ Flutter Kakao SDK 메타 패키지
   dio: ^5.2.2                        # ⬅︎ 백엔드 호출용
   flutter_secure_storage: ^8.0.0    # ⬅︎ 세션 쿠키 영속화용
+  flutter_riverpod: ^2.3.6       # Riverpod 런타임
+  riverpod_annotation: ^2.0.3    # @riverpod 어노테이션
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -49,6 +51,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

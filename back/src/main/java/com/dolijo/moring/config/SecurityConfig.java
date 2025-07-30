@@ -92,7 +92,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/login/oauth2/code/kakao").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/kakao/redirect").permitAll()
                 // 기존 로그인(username/password) 엔드포인트
-                .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/login", "/logout/rToken").permitAll()
                 // Swagger, 공용 API
                 .requestMatchers("/", "/api/v1/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // 토큰 보유자

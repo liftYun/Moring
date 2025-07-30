@@ -72,8 +72,8 @@ public class JWTController {
     ) {
         Claims claims = jwtUtil.parseClaims(refreshToken);
         System.out.println("logout to Refresh Token : " + claims);
-        String uuid = claims.get("uuid", String.class);
-        socialMemberService.deleteToken(uuid);
+        Long id = claims.get("id", Long.class);
+        socialMemberService.deleteToken(id);
 
         // 쿠키 만료 처리
         Cookie cookie = new Cookie("refreshToken", null);

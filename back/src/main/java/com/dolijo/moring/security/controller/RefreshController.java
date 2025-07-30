@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/v1")
 @Log4j2
@@ -46,29 +48,30 @@ public class RefreshController {
 
         // 1) 서명 + 만료 검사
         Claims claims = jwtUtil.parseClaims(refreshToken);
-        String uuid = claims.get("uuid", String.class);
+        Long id = claims.get("id", Long.class);
         SocialType type = SocialType.valueOf(claims.get("type", String.class));
 
         // 2) DB 저장 토큰 검증
-        if (!socialMemberService.isValid(uuid, refreshToken, type)) {
-            socialMemberService.deleteToken(uuid);
+        if (!socialMemberService.isValid(id, refreshToken, type)) {
+            socialMemberService.deleteToken(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // 3) UserDetails 재조회
-        CustomMemberDetails userDetails = customUserDetailsService.loadUserByUuid(uuid);
+        CustomMemberDetails userDetails = customUserDetailsService.loadMemberId(id);
 
         // 4) 새 토큰 생성
-        String newRefreshToken = jwtUtil.createRefreshToken(uuid);
+        String newRefreshToken = jwtUtil.createRefreshToken(id);
         String newAccessToken = jwtUtil.createAccessToken(
-                uuid,
+                id,
 //                userDetails.getUserEmail(),
                 userDetails.getUserNickname()
         );
+        LocalDateTime expiresAt = LocalDateTime.now().plusDays(30);
 
 
         // 5) DB에 새 리프레시 토큰 저장
-        socialMemberService.saveToken(uuid, type, newRefreshToken);
+        socialMemberService.saveToken(id, type, newRefreshToken, expiresAt);
 
         // 6) HTTP-only 쿠키로 새 리프레시 토큰 설정
         Cookie cookie = new Cookie("refreshToken", newRefreshToken);
