@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CarRepository extends JpaRepository<Car,Long> {
@@ -14,4 +15,8 @@ public interface CarRepository extends JpaRepository<Car,Long> {
     @Modifying
     @Query("DELETE FROM Car c WHERE c.vin = :vin")
     int deleteByVin(@Param("vin") String vin);
+
+    Optional<Car> findByVin(String vin);
+
+
 }

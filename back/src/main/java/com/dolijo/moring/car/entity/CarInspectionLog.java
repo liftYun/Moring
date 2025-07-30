@@ -23,6 +23,7 @@ public class CarInspectionLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Car car;
 
     @Column(name = "last_inspection_date", nullable = false, updatable = false)

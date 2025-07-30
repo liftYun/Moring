@@ -22,6 +22,7 @@ public class CarMileageLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Car car;
 
     @Column(name = "recorded_date", nullable = false, updatable = false)

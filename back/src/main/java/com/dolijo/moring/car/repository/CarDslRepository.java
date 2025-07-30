@@ -17,16 +17,13 @@ import static com.dolijo.moring.car.entity.QCar.car;
 public class CarDslRepository {
     private final JPAQueryFactory queryFactory;
 
-
-    public List<CarResponseDto> findCarsByMemberUuid(String memberUuid) {
+    public List<CarResponseDto> findCarsResponseDtoByMemberId(Long memberId) {
         return queryFactory
                 .select(new QCarResponseDto(
-                        car.vin,
-                        car.modelName,
-                        car.nickname
+                        car.vin, car.modelName, car.nickname
                 ))
                 .from(car)
-                .where(car.member.uuid.eq(memberUuid))
+                .where(car.member.id.eq(memberId))
                 .fetch();
     }
 

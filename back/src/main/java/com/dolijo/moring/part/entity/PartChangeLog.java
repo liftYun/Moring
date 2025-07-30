@@ -12,9 +12,13 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "part_change_log")
+@Table(
+        name = "part_change_log",
+        indexes = {
+                @Index(name = "idx_car_id_created_at_desc", columnList = "car_id, createdAt DESC")
+        }
+)
 public class PartChangeLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,12 +30,17 @@ public class PartChangeLog {
     private Part part;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "car_vin", referencedColumnName = "vin", nullable = false)
+    @JoinColumn(name = "car_id")
     private Car car;
 
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     @Comment("최초생성일")
     private LocalDateTime createdAt;
 
-
+    @Builder
+    public PartChangeLog(Part part, Car car, LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+        this.part = part;
+        this.car = car;
+    }
 }

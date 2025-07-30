@@ -10,7 +10,6 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "part")
 public class Part {
@@ -19,9 +18,13 @@ public class Part {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", length = 30, nullable = false)
-    @Comment("부품명")
-    private String name;
+    @Column(name = "name_ko", length = 30, nullable = false)
+    @Comment("한글 부품명")
+    private String nameKo;
+
+    @Column(name = "name_en", length = 40, nullable = false)
+    @Comment("영어 부품명")
+    private String nameEn;
 
     @Column(name = "recommended_cycle_months", nullable = false)
     @Comment("권장교체주기 (월단위)")
@@ -41,8 +44,10 @@ public class Part {
     private String description;
 
     @Builder
-    public Part(String name, int recommendedCycleMonths, int recommendedCycleKm, PartType type, String description) {
-        this.name = name;
+    public Part(String nameKo, String nameEn, int recommendedCycleMonths, int recommendedCycleKm,
+                PartType type, String description) {
+        this.nameKo = nameKo;
+        this.nameEn = nameEn;
         this.recommendedCycleMonths = recommendedCycleMonths;
         this.recommendedCycleKm = recommendedCycleKm;
         this.type = type;
