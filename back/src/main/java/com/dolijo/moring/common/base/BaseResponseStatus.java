@@ -63,7 +63,14 @@ public enum BaseResponseStatus {
      * Car
      */
     ALREADY_REGISTERED_CAR(HttpStatus.CONFLICT, false, 409, "이미 등록된 차량입니다."),
-    NO_EXIST_CAR(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 차량입니다.");
+    NO_EXIST_CAR(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 차량입니다."),
+
+
+    /**
+     * Car
+     */
+    NO_EXIST_PART(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 부품 정보입니다.");
+
 
 
     private final HttpStatusCode httpStatusCode;

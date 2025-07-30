@@ -3,11 +3,11 @@ package com.dolijo.moring.car.service;
 
 import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Transactional(readOnly = true)
 public interface CarService {
 
     // 장바구니 아이템 추가 [상품디테일 페이지의 장바구니 추가버튼]
@@ -18,4 +18,6 @@ public interface CarService {
 
     @Transactional
     public void deleteCarByVin(String vin);
+
+
 }

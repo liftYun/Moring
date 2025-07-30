@@ -22,7 +22,6 @@ public class RegisterCarRequestVo {
     private String nickname;
 
     @Schema(description = "자동차등록일", example = "2024-01-01", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate registeredAt;  // 등록일
 
     public RegisterCarRequestDto toDto(){

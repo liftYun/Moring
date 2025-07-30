@@ -13,18 +13,22 @@ import com.dolijo.moring.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CarServiceImpl implements CarService{
     private final CarRepository carRepository;
     private final CarDslRepository  carDslRepository;
     private final MemberRepository memberRepository;
 
     @Override
+    @Transactional
     public Long registerCar(RegisterCarRequestDto dto, String memberUuid) {
         // 1.존재하는 회원인지 확인
         Member member = memberRepository.findByUuid(memberUuid)
@@ -40,13 +44,14 @@ public class CarServiceImpl implements CarService{
     @Override
     public List<CarResponseDto> getCarsByMemberUuid(String memberUuid) {
         // 1.회원 존재 여부 확인
-        Member member = memberRepository.findByUuid(memberUuid)
+        Long memberId = memberRepository.findIdByMemberUuid(memberUuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER));
-
-        return carDslRepository.findCarsByMemberUuid(memberUuid);
+        // 조회
+        return carDslRepository.findCarsResponseDtoByMemberId(memberId);
     }
 
     @Override
+    @Transactional
     public void deleteCarByVin(String vin) {
         int deletedCount = carRepository.deleteByVin(vin);
         log.info("차량 삭제 레코드 수 : "+deletedCount);
