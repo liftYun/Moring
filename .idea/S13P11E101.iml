@@ -6,6 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/front/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/front/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/front/build" />
+      <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/build" />
       <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/front/flutter_mapbox_navigation/example/build" />
