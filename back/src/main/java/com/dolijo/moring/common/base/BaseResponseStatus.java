@@ -53,7 +53,7 @@ public enum BaseResponseStatus {
     DUPLICATED_NICKNAME(HttpStatus.CONFLICT, false, 409, "이미 사용중인 닉네임입니다."),
     SAME_NICKNAME(HttpStatus.CONFLICT, false, 409, "현재 사용중인 닉네임입니다."),
     INVALID_EMAIL_ADDRESS(HttpStatus.BAD_REQUEST, false, 400, "이메일을 다시 확인해주세요."),
-
+    UPDATE_NICKNAME_FAIL(HttpStatus.BAD_REQUEST, false, 400, "닉네임 업데이트를 실패했습니다."),
 
     /**
      * Notification

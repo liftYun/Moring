@@ -29,10 +29,18 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     /**
      * UUID로 사용자 조회
      */
-    Long findIdByUuid(String uuid);
+//    Long findIdByUuid(String uuid);
+    @Query("select m.id from Member m where m.uuid = :uuid")
+    Long findIdByUuid(@Param("uuid") String uuid);
 
     /**
      * 이메일로 사용자 조회
      */
     Optional<Member> findByEmail(String email);
+
+    @Query("UPDATE Member m SET m.nickName = :nickName WHERE m.id = :id")
+    int updateNickNameById(
+            @Param("id") Long id,
+            @Param("nickName") String nickName
+    );
 }
