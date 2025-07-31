@@ -11,7 +11,9 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member,Long> {
 
-    Optional<Member> findByUuid(String memberUuid);
+    Optional<Member> findByUuid(String uuid);
+
+    Optional<Member> findById(Long id);
     /**
      * 이메일(로그인 ID) 존재 여부 확인
      */
@@ -27,7 +29,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     /**
      * UUID로 사용자 조회
      */
-//    Optional<Member> findByUuid(String uuid);
+    Long findIdByUuid(String uuid);
 
     /**
      * 이메일로 사용자 조회

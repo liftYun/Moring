@@ -101,7 +101,7 @@ public class SocialMemberService {
     /**
      * 전달받은 리프레시 토큰이 유효한지 검사합니다.
      */
-    public boolean isValid(String uuid, String refreshToken, SocialType type) {
+    public boolean isValid(Long id, String refreshToken, SocialType type) {
         // 1) 토큰 서명 및 만료 검증
         try {
             jwtUtil.parseClaims(refreshToken);
@@ -110,7 +110,7 @@ public class SocialMemberService {
         }
         // 2) DB에 저장된 토큰과 일치하고, 아직 만료되지 않았는지 확인
         return socialMemberRepository
-                .findByMemberUuidAndType(uuid, type)
+                .findByMemberUuidAndType(id, type)
                 .filter(ent ->
                         ent.getTokenId().equals(refreshToken) &&
                                 ent.getExpiresAt().isAfter(LocalDateTime.now()))
@@ -120,22 +120,26 @@ public class SocialMemberService {
     /**
      * 지정된 사용자(UUID)의 모든 리프레시 토큰을 삭제합니다.
      */
-    public void deleteToken(String uuid) {
-        socialMemberRepository.deleteByMemberUuid(uuid);
+    public void deleteToken(Long id) {
+//        Long id = memberRepository.findIdByUuid(uuid);
+        System.out.println("claims id = " + id);
+
+        socialMemberRepository.deleteByMemberid(id);
     }
 
     /**
      * 지정된 사용자(UUID)에 대해 새로운 리프레시 토큰을 저장합니다.
      * 기존 토큰은 먼저 삭제됩니다.
      */
-    public void saveToken(String uuid, SocialType type, String refreshToken) {
+    public void saveToken(Long id, SocialType type, String refreshToken, LocalDateTime expiresAt) {
+//        Long id = memberRepository.findIdByUuid(uuid);
         // 1) 기존 토큰 삭제
-        socialMemberRepository.deleteByMemberUuid(uuid);
+        socialMemberRepository.deleteByMemberid(id);
 
         // 2) UserEntity 조회 (member 필수)
-        Member findMember = memberRepository.findByUuid(uuid)
+        Member findMember = memberRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid user UUID: " + uuid));
+                        new IllegalArgumentException("Invalid user ID: " + id));
 
         // 3) 새로운 RefreshTokenEntity 생성 및 저장
         SocialMember entity = SocialMember.builder()
@@ -143,8 +147,9 @@ public class SocialMemberService {
                 .type(type)
                 .tokenId(refreshToken)
                 .expiresAt(
-                        LocalDateTime.now()
-                                .plus(Duration.ofMillis(jwtUtil.getRefreshExpiredMs()))
+//                        LocalDateTime.now()
+//                                .plus(Duration.ofMillis(jwtUtil.getRefreshExpiredMs()))
+                        expiresAt
                 )
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -154,8 +159,8 @@ public class SocialMemberService {
     /**
      * OAuth2 핸들러 등에서 alias로 호출할 수 있도록 createOrReplace 제공
      */
-    public void createOrReplace(String uuid, SocialType type, String refreshToken) {
-        saveToken(uuid, type, refreshToken);
+    public void createOrReplace(Long id, SocialType type, String refreshToken, LocalDateTime expiresAt) {
+        saveToken(id, type, refreshToken, expiresAt);
     }
 
 }

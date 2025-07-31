@@ -39,6 +39,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="moring" android:host="oauth2redirect"/>
                 <!-- “kakao{앱키}://oauth” -->
                 <data android:scheme="kakaob0c6ed29bed9644abb543aac61d3e0d6" android:host="oauth"/>
             </intent-filter>

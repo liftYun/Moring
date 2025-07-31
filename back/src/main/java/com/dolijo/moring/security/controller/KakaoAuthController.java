@@ -105,6 +105,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @RestController
@@ -134,6 +138,8 @@ public class KakaoAuthController {
     @GetMapping("/redirect")
     public void loginViaKakao(
             @RequestHeader("Authorization") String kakaoAuth,
+            @RequestHeader("Kakao-Refresh-Token") String kakaoRefreshToken,
+            @RequestHeader("Kakao-Refresh-Token-ExpiresAt") String kakaoRefreshTokenExpiresAt,
             HttpServletResponse response
     ) throws IOException {
         // 1) "Bearer <kakaoAccessToken>" 검증 및 분리
@@ -141,7 +147,7 @@ public class KakaoAuthController {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Authorization header");
             return;
         }
-        String kakaoToken = kakaoAuth.substring(7);
+        String kakaoToken = kakaoAuth.substring(7).trim();
 
         // 2) 카카오 API로 프로필 조회 (헤더에 Bearer 토큰으로 전달)
         HttpHeaders headers = new HttpHeaders();
@@ -151,7 +157,7 @@ public class KakaoAuthController {
         ResponseEntity<Map> kakaoResp = restTemplate.exchange(
                 "https://kapi.kakao.com/v2/user/me",
                 HttpMethod.GET,
-                entity,
+                new HttpEntity<>(headers),
                 Map.class
         );
         Map<String, Object> kakaoProfile = kakaoResp.getBody();
@@ -178,11 +184,26 @@ public class KakaoAuthController {
 
         // 4) 회원 가입 또는 조회
         Member member = joinService.registerKakaoUserIfNotExist(email, nickname);
+        // 4) 헤더로 넘어온 만료 시각 (RFC-1123 형식) 파싱
+        OffsetDateTime odt = OffsetDateTime.parse(
+                kakaoRefreshTokenExpiresAt,
+                DateTimeFormatter.RFC_1123_DATE_TIME
+        );
+        // 서버 로컬 시간대 기준 LocalDateTime 으로 변환
+        LocalDateTime kakaoRefreshExpiresAt = odt
+                .atZoneSameInstant(ZoneId.systemDefault())
+                .toLocalDateTime();
+
+        socialMemberService.saveToken(
+                member.getId(),
+                SocialType.KAKAO,
+                kakaoRefreshToken,
+                kakaoRefreshExpiresAt
+        );
 
         // 5) 자체 JWT 토큰 발급
         String ourAccess  = jwtUtil.generateAccessToken(member);
         String ourRefresh = jwtUtil.generateRefreshToken(member);
-        socialMemberService.saveToken(member.getUuid(), SocialType.KAKAO, ourRefresh);
 
         // 6) 응답 헤더에 Access Token, Set-Cookie, JSON body
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + ourAccess);

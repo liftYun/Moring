@@ -18,6 +18,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -87,7 +89,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         Map<String,Object> kakaoToken = tokenResponse.getBody();
         String kakaoAccessToken  = (String) kakaoToken.get("access_token");
         String kakaoRefreshToken = (String) kakaoToken.get("refresh_token");
-        // 필요하다면 expires_in, refresh_token_expires_in 도 꺼내서 저장
+        Number refreshExpiresInSec = (Number) kakaoToken.get("refresh_token_expires_in");
+
+        LocalDateTime kakaoRefreshExpiresAt = LocalDateTime.now()
+                .plusSeconds(refreshExpiresInSec.longValue());
+
 
         // 3) 카카오 프로필 조회 (Optional)
         HttpHeaders profileHeaders = new HttpHeaders();
@@ -108,9 +114,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // 5) 카카오 리프레시 토큰 저장
         socialMemberService.saveToken(
-                member.getUuid(),
+                member.getId(),
                 SocialType.KAKAO,
-                kakaoRefreshToken
+                kakaoRefreshToken,
+                kakaoRefreshExpiresAt
         );
 
         // 6) 자체 JWT 발급
