@@ -96,6 +96,8 @@ import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.JoinService;
 import com.dolijo.moring.security.service.SocialMemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -113,6 +115,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/kakao")
+@Tag(name = "회원", description = "회원 관련 API")
 public class KakaoAuthController {
 
     private final RestTemplate restTemplate;
@@ -136,6 +139,14 @@ public class KakaoAuthController {
     }
 
     @GetMapping("/redirect")
+    @Operation(summary = "OAuth Redirect",   description = """
+        OAuth로 로그인을 진행한 유저를 등록합니다
+
+        - OAuth로 로그인 한 유저가 기존 유저인지 신규 유저인지 확인합니다.
+        - 신규일 시 로그인 정보를 이용하여 등록을 진행합니다.
+        - 기존 회원이거나 등록이 완료된 회원의 경우 카카오 토큰을 저장합니다.
+        - 클라이언트에게는 자체 발행한 JWT를 전달합니다.
+        """)
     public void loginViaKakao(
             @RequestHeader("Authorization") String kakaoAuth,
             @RequestHeader("Kakao-Refresh-Token") String kakaoRefreshToken,
@@ -195,7 +206,7 @@ public class KakaoAuthController {
                 .toLocalDateTime();
 
         socialMemberService.saveToken(
-                member.getId(),
+                member.getUuid(),
                 SocialType.KAKAO,
                 kakaoRefreshToken,
                 kakaoRefreshExpiresAt

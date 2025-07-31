@@ -114,7 +114,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // 5) 카카오 리프레시 토큰 저장
         socialMemberService.saveToken(
-                member.getId(),
+                member.getUuid(),
                 SocialType.KAKAO,
                 kakaoRefreshToken,
                 kakaoRefreshExpiresAt

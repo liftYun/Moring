@@ -101,7 +101,12 @@ public class SocialMemberService {
     /**
      * 전달받은 리프레시 토큰이 유효한지 검사합니다.
      */
-    public boolean isValid(Long id, String refreshToken, SocialType type) {
+    public boolean isValid(String uuid, String refreshToken, SocialType type) {
+
+        // uuid 로 멤버 조회
+        Long id = memberRepository.findIdByUuid(uuid);
+
+
         // 1) 토큰 서명 및 만료 검증
         try {
             jwtUtil.parseClaims(refreshToken);
@@ -120,9 +125,9 @@ public class SocialMemberService {
     /**
      * 지정된 사용자(UUID)의 모든 리프레시 토큰을 삭제합니다.
      */
-    public void deleteToken(Long id) {
-//        Long id = memberRepository.findIdByUuid(uuid);
-        System.out.println("claims id = " + id);
+    public void deleteToken(String memberUuid) {
+        Long id = memberRepository.findIdByUuid(memberUuid);
+        System.out.println("claims uuid = " + memberUuid);
 
         socialMemberRepository.deleteByMemberid(id);
     }
@@ -131,15 +136,15 @@ public class SocialMemberService {
      * 지정된 사용자(UUID)에 대해 새로운 리프레시 토큰을 저장합니다.
      * 기존 토큰은 먼저 삭제됩니다.
      */
-    public void saveToken(Long id, SocialType type, String refreshToken, LocalDateTime expiresAt) {
-//        Long id = memberRepository.findIdByUuid(uuid);
+    public void saveToken(String uuid, SocialType type, String refreshToken, LocalDateTime expiresAt) {
+        Long id = memberRepository.findIdByUuid(uuid);
         // 1) 기존 토큰 삭제
         socialMemberRepository.deleteByMemberid(id);
 
         // 2) UserEntity 조회 (member 필수)
-        Member findMember = memberRepository.findById(id)
+        Member findMember = memberRepository.findByUuid(uuid)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid user ID: " + id));
+                        new IllegalArgumentException("Invalid user ID: " + uuid));
 
         // 3) 새로운 RefreshTokenEntity 생성 및 저장
         SocialMember entity = SocialMember.builder()
@@ -159,8 +164,8 @@ public class SocialMemberService {
     /**
      * OAuth2 핸들러 등에서 alias로 호출할 수 있도록 createOrReplace 제공
      */
-    public void createOrReplace(Long id, SocialType type, String refreshToken, LocalDateTime expiresAt) {
-        saveToken(id, type, refreshToken, expiresAt);
+    public void createOrReplace(String uuid, SocialType type, String refreshToken, LocalDateTime expiresAt) {
+        saveToken(uuid, type, refreshToken, expiresAt);
     }
 
 }
