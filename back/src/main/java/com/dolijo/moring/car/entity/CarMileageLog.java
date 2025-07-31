@@ -31,7 +31,6 @@ public class CarMileageLog {
 
     @Column(name = "mileage_km", columnDefinition = "DECIMAL(10,2)", nullable = false, updatable = false)
     @Comment("주행거리 (km)")
-    @ColumnDefault("0.00")
     private Float mileageKm;
 
     @Builder

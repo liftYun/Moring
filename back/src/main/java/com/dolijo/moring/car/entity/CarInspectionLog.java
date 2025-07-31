@@ -26,7 +26,7 @@ public class CarInspectionLog {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Car car;
 
-    @Column(name = "last_inspection_date", nullable = false, updatable = false)
+    @Column(name = "last_inspection_date", nullable = false, updatable = true)
     @Comment("최근 점검일")
     private LocalDate lastInspectionDate;
 
