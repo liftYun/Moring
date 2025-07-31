@@ -55,7 +55,7 @@ Dio authDio(AuthDioRef ref) {
             // 3) 리프레시 API 호출 (쿠키 방식이라면 쿠키 헤더로)
             final refreshDio = Dio(options);
             final refreshResp = await refreshDio.post(
-              '/auth/refresh',
+              'api/v1/auth/refresh',
               options: Options(
                 headers: {
                   'Cookie': 'refreshToken=$refreshToken',

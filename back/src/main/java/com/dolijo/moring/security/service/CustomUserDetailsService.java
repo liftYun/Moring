@@ -46,14 +46,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     /**
      * UUID로 UserEntity 조회 후 CustomUserDetails 반환
-     * @param id 리프레시 토큰 검증 후 추출된 사용자 UUID
+     * @param memberUuid 리프레시 토큰 검증 후 추출된 사용자 UUID
      * @return CustomUserDetails
      * @throws UsernameNotFoundException 사용자 미존재 시 예외 발생
      */
-    public CustomMemberDetails loadMemberId(Long id) throws UsernameNotFoundException {
-        Member member = memberRepository.findById(id)
+    public CustomMemberDetails loadMemberUuid(String memberUuid) throws UsernameNotFoundException {
+        Member member = memberRepository.findByUuid(memberUuid)
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with ID: " + id));
+                        "User not found with ID: " + memberUuid));
         return new CustomMemberDetails(member);
     }
 }
