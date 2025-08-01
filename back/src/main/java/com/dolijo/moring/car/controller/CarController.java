@@ -1,6 +1,7 @@
 package com.dolijo.moring.car.controller;
 
 import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
+import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.service.CarService;
 import com.dolijo.moring.car.vo.in.RegisterCarRequestVo;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -86,9 +89,26 @@ public class CarController {
 
 
 
-
-
-
+    @Operation(summary = "차량 이동거리 등록", description = "차량 VIN과 누적 km를 경로 변수로 받아 이동거리를 등록합니다.")
+    @PostMapping("/{vin}/{km}")
+    public BaseResponse<Void> registerCarMileage(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437") @PathVariable String vin,
+            @Parameter(description = "누적 km", required = true, example = "12.0") @PathVariable Float km
+    ) {
+       carService.registerCarMileage(vin, km);
+        return BaseResponse.ok();
+    }
+    
+    @Operation(summary = "차량 이동거리 조회", description = "내려서 더보기 하는 방식 (페이지네이션)")
+    @GetMapping("/{vin}/mileage-logs-paging")
+    public BaseResponse<Slice<CarMileageLogResponseDto>> getMileageLogs(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable String vin,
+            @ParameterObject Pageable pageable
+    ) {
+        Slice<CarMileageLogResponseDto> result = carService.getLogsByVin(vin, pageable);
+        return BaseResponse.of(result);
+    }
 
 
 }
