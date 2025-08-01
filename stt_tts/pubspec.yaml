@@ -1,0 +1,37 @@
+name: stt_tts_demo
+description: "A new Flutter project using Clova API."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # iOS 스타일 아이콘
+  cupertino_icons: ^1.0.8
+
+  # 네트워크 요청 (Clova API 호출용)
+  http: ^1.2.1
+
+  # TTS 음성파일 재생용
+  audioplayers: ^6.0.0
+
+  # 음성 녹음용
+  record: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # --- 이 부분을 추가해주세요 ---
+  assets:
+    - assets/audio/test_audio.wav
+  # ----------------------------
