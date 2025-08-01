@@ -36,26 +36,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title, style: Theme.of(context).textTheme.titleLarge),
       centerTitle: true,
       actions: [
-        // 차량 선택 드롭다운 메뉴 (showCarDropdown이 true일 때만 표시)
-        if (showCarDropdown && availableCars != null && selectedCar != null && onCarChanged != null)
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedCar,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
-                dropdownColor: Colors.grey[850], // 드롭다운 배경색
-                onChanged: onCarChanged, // 외부에서 전달받은 콜백 사용
-                items: availableCars!.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value.toUpperCase()), // 차량 이름을 대문자로 표시
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
         // 알림 버튼
         IconButton(
           icon: AppIcons.notifications,
