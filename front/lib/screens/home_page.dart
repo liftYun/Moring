@@ -4,15 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스 임포트
 import 'package:moring/utils/bottom_nav_bar.dart'; // CustomBottomNavBar 위젯 임포트
-import 'package:moring/utils/custom_app_bar.dart'; // CustomBottomNavBar 위젯 임포트
-import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트 (수정: utils/ -> models/ 로 경로 변경)
+import 'package:moring/utils/custom_app_bar.dart'; // CustomAppBar 위젯 임포트
+import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트
 import 'package:moring/widgets/car_360_viewer.dart';
+import 'package:moring/models/vehicle.dart'; // Vehicle 모델 임포트
 
-import '../providers/token_repository.dart'; // Car360Viewer 위젯 임포트
-
+import '../providers/token_repository.dart';
 
 class HomePage extends ConsumerStatefulWidget  {
-  const HomePage({super.key});
+  // 🔑 vehicle 필드를 optional하게 선언합니다.
+  final Vehicle? vehicle;
+
+  // 🔑 생성자도 vehicle을 optional로 받도록 수정합니다.
+  const HomePage({super.key, this.vehicle});
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
@@ -20,15 +24,10 @@ class HomePage extends ConsumerStatefulWidget  {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0; // 하단 네비게이션 바 선택 인덱스
-
-  // 예시 소모품 데이터 (실제로는 서버나 로컬 저장소에서 불러올 것입니다)
   late List<Consumable> consumables;
 
-  // 현재 선택된 차량의 360도 이미지 경로 리스트
   List<String> _currentCarImagePaths = [];
   String _selectedCar = 'xm3'; // 현재 선택된 차량 (초기값)
-
-  // 사용 가능한 차량 목록에 '재규어' 추가
   final List<String> _availableCars = ['xm3', '그렌저', '재규어'];
 
 
@@ -55,11 +54,15 @@ class _HomePageState extends ConsumerState<HomePage> {
         lastReplacedDate: DateTime(2025, 1, 10),
         replacementCycleMonths: 8,
       ),
-      // 필요한 다른 소모품들을 여기에 추가합니다.
     ];
 
-    // 초기 차량 이미지 경로 설정 (예시: xm3 이미지 사용)
-    _setCarImages(_selectedCar); // 초기에는 'xm3' 차량의 이미지를 로드
+    // 🔑 vehicle 인자가 존재하면 해당 차량의 이미지로 초기화합니다.
+    if (widget.vehicle != null) {
+      _setCarImages(widget.vehicle!.modelName);
+    } else {
+      // 인자가 없으면 기존처럼 'xm3'로 초기화
+      _setCarImages(_selectedCar);
+    }
   }
 
   // 차량 이미지를 동적으로 설정하는 함수
@@ -71,19 +74,19 @@ class _HomePageState extends ConsumerState<HomePage> {
 
       switch (carName) {
         case 'xm3':
-          numImages = 36; // XM3 36장으로 업데이트
-          basePath = 'assets/xm3/xm3_'; // 파일명 규칙: xm3_1.png 부터 시작
+          numImages = 36;
+          basePath = 'assets/xm3/xm3_';
           break;
         case '그렌저':
-          numImages = 36; // 그렌저 36장으로 업데이트
-          basePath = 'assets/그렌저/'; // 파일명 규칙: 1.png 부터 시작
+          numImages = 36;
+          basePath = 'assets/그렌저/';
           break;
         case '재규어':
-          numImages = 30; // 재규어 30장으로 설정
-          basePath = 'assets/재규어/'; // 파일명 규칙: 재규어_1.png 부터 시작한다고 가정 (실제 파일명 확인 필요)
+          numImages = 30;
+          basePath = 'assets/재규어/';
           break;
         default:
-          numImages = 0; // 알 수 없는 차량일 경우
+          numImages = 0;
           basePath = '';
           break;
       }
@@ -91,36 +94,24 @@ class _HomePageState extends ConsumerState<HomePage> {
       _currentCarImagePaths = List.generate(
         numImages,
             (index) {
-          // 파일명 규칙에 따라 index + 1 사용. 필요시 padLeft(2, '0') 추가 고려
-          // 예를 들어, '재규어_01.png' 형태라면 'basePath${(index + 1).toString().padLeft(2, '0')}.png' 로 변경
           return '$basePath${index + 1}.png';
         },
       );
     });
   }
 
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    // 공통 컴포넌트 위젯 클릭 시 페이지 전환 로직 구현
-    // Navigator를 사용하여 다른 화면으로 이동합니다.
-    // 현재는 인덱스만 변경하지만, 실제 앱에서는 아래와 같이 Navigator.push 또는 Navigator.pushReplacement를 사용합니다.
-    // 예:
+    // 🔑 하단바 탭 시 페이지 전환 로직은 여기에 구현합니다.
+    // 기존의 HomePage를 다시 호출하는 불필요한 로직은 제거했습니다.
+    // 예시:
     // if (index == 0) {
     //   // Home 화면 (현재 화면이므로 특별한 동작 없음)
     // } else if (index == 1) {
     //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NavigationPage()));
-    // } else if (index == 2) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DrivingLogPage()));
-    // } else if (index == 3) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MorePage()));
     // }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomePage()),
-    );
   }
 
   Future<void> _logout() async {
@@ -140,10 +131,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
 
     if (resp.statusCode == 200) {
-      // 2) Flutter SecureStorage 비우기
       await repo.deleteAllTokens();
-
-      // 4) 로그인 화면으로 이동
       Navigator.pushReplacementNamed(context, '/login');
     } else if(resp.statusCode == 302){
       print('로그아웃 302');
@@ -156,7 +144,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       print('로그아웃 실패');
-      // 실패했다면 사용자에게 안내
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
       );
@@ -166,80 +153,62 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 여기를 CustomAppBar로 교체해야 합니다.
       appBar: CustomAppBar(
-        title: 'Moring',
+        // 🔑 vehicle 인자가 있으면 닉네임, 없으면 'Moring'으로 표시
+        title: widget.vehicle?.nickname ?? 'Moring',
         onBackButtonPressed: () {
-          // 메인 페이지의 뒤로가기 버튼 동작 (예시: 앱 종료 또는 이전 화면이 없다면 null)
           Navigator.pop(context);
         },
-        showCarDropdown: true, // 메인 페이지에서는 차량 드롭다운 표시
+        showCarDropdown: true,
         availableCars: _availableCars,
         selectedCar: _selectedCar,
         onCarChanged: (newValue) {
           if (newValue != null) {
-            _setCarImages(newValue); // HomePage의 차량 변경 로직 호출
+            _setCarImages(newValue);
           }
         },
         onNotificationPressed: () async{
-          // 로그아웃 test를 위함
-          //------------------------------------------------------------------
-          // 1) 프로바이더에서 토큰 리포지토리 가져오기
           final repo = ref.read(tokenRepositoryProvider);
-          // 2) 저장된 refreshToken 읽기
           final accessToken = await repo.getAccessToken();
           final refreshToken = await repo.getRefreshToken();
-          // 3) 로그에 찍기
           debugPrint('▶︎ accessToken = $accessToken');
           debugPrint('▶︎ refreshToken = $refreshToken');
-
           await _logout();
-
-          // 알림 버튼 액션
           print('알림 버튼 클릭!');
-
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
         },
       ),
-      body: SingleChildScrollView( // 내용이 화면을 넘어갈 경우 스크roll 가능하도록
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. 자동차 이미지 및 정보 섹션 (Car360Viewer 사용)
               Container(
-                height: 250, // Car360Viewer의 높이 설정
+                height: 250,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
-                  color: Colors.grey[900], // 배경색을 Dark Theme에 맞게
+                  color: Colors.grey[900],
                 ),
-                child: ClipRRect( // 테두리 둥글게 자르기
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Car360Viewer(
                     imagePaths: _currentCarImagePaths,
-                    sensitivity: 10.0, // 이 값을 조절하여 드래그 민감도를 변경할 수 있습니다.
+                    sensitivity: 10.0,
                     width: double.infinity,
                     height: 250,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-
-
-              // 2. 소모품 현황 섹션
               Text(
                 '소모품 현황',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith( // 텍스트 테마 적용
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-
-              // 소모품 현황 카드 (동적 생성)
               ...consumables.map((consumable) {
-                // 날짜 포맷팅 (예: 2025-07-28)
                 final nextReplacementDate = consumable.getNextReplacementDate();
                 final formattedDate = '${nextReplacementDate.year}-${nextReplacementDate.month.toString().padLeft(2, '0')}-${nextReplacementDate.day.toString().padLeft(2, '0')}';
 
@@ -249,18 +218,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                       context: context,
                       icon: consumable.icon,
                       title: consumable.title,
-                      date: '다음 교체: $formattedDate', // 다음 교체일 정보 표시
-                      progress: consumable.getRemainingPercentage(), // 계산된 퍼센티지 전달
+                      date: '다음 교체: $formattedDate',
+                      progress: consumable.getRemainingPercentage(),
                     ),
                     const SizedBox(height: 10),
                   ],
                 );
               }).toList(),
-
-
               const SizedBox(height: 20),
-
-              // 3. 주행 기록 섹션 (Today, Yesterday 등)
               _buildDrivingLogSection(
                 context: context,
                 title: 'Today',
@@ -278,25 +243,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ],
               ),
               const SizedBox(height: 20),
-              // 더 많은 날짜별 기록 섹션 추가 가능
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar( // 분리된 CustomBottomNavBar 위젯 사용
+      bottomNavigationBar: CustomBottomNavBar(
         selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped, // 페이지 전환 로직과 연결
+        onItemTapped: _onItemTapped,
       ),
     );
   }
 
-  // 소모품 현황 카드를 생성하는 위젯
   Widget _buildConsumableStatusCard({
     required BuildContext context,
     required Icon icon,
     required String title,
     required String date,
-    required double progress, // 0.0 ~ 1.0
+    required double progress,
   }) {
     return Card(
       elevation: 0,
@@ -330,12 +293,11 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             SizedBox(
-              width: 100, // 프로그레스 바 너비 고정
+              width: 100,
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.grey[700],
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  // 퍼센티지에 따른 색상 변경 (0.7 이상: 초록, 0.3~0.7: 주황, 0.3 미만: 빨강)
                   progress > 0.7 ? Colors.greenAccent : (progress > 0.3 ? Colors.amberAccent : Colors.redAccent),
                 ),
                 minHeight: 5,
@@ -348,7 +310,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  // 주행 기록 섹션을 생성하는 위젯 (Today, Yesterday 등)
   Widget _buildDrivingLogSection({
     required BuildContext context,
     required String title,
@@ -374,7 +335,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: ListTile(
-                  leading: AppIcons.loccation, // 위치 아이콘
+                  leading: AppIcons.loccation,
                   title: Text(
                     log['distance']!,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
@@ -384,8 +345,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                   ),
                   onTap: () {
-                    // TODO: 기록 항목 클릭 시 상세 보기 등 액션 구현
-                    // 예를 들어, Navigator.push(context, MaterialPageRoute(builder: (context) => LogDetailPage(logData: log)));
                   },
                 ),
               );
