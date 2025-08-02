@@ -21,22 +21,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final tokenRepo = ref.read(tokenRepositoryProvider);
     final dio = ref.read(noAuthDioProvider);
     try {
-      final canTalk = await isKakaoTalkInstalled();
-      final oauth = canTalk
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
+      // final canTalk = await isKakaoTalkInstalled();
+      // final oauth = canTalk
+      //     ? await UserApi.instance.loginWithKakaoTalk()
+      //     : await UserApi.instance.loginWithKakaoAccount();
 
-      debugPrint('▶︎ kakao accessToken  = ${oauth.accessToken}');
-      debugPrint('▶︎ kakao refreshToken = ${oauth.refreshToken}');
+      // debugPrint('▶︎ kakao accessToken  = ${oauth.accessToken}');
+      // debugPrint('▶︎ kakao refreshToken = ${oauth.refreshToken}');
+
+      // final resp = await dio.get(
+      //   '/api/kakao/redirect',
+      //   // '/login/oauth2/code/kakao',
+      //   options: Options(
+      //     headers: {
+      //       'Authorization': 'Bearer ${oauth.accessToken}',
+      //       'Kakao-Refresh-Token': oauth.refreshToken,
+      //       'Kakao-Refresh-Token-ExpiresAt': oauth.refreshTokenExpiresAt,
+      //     },
+      //     followRedirects: false,
+      //     validateStatus: (s) => s != null && s < 500,
+      //   ),
+      // );
+
+      const redirectUri = 'kakaob0c6ed29bed9644abb543aac61d3e0d6://oauth';
+      // const redirectUri = 'http://localhost:8080/login/oauth2/code/kakao';
+      final authCode = await AuthCodeClient.instance.authorize(
+        redirectUri: redirectUri,
+      );
+      debugPrint('▶︎ kakao authCode = $authCode');
 
       final resp = await dio.get(
         '/api/kakao/redirect',
+        queryParameters: {'code': authCode},
         options: Options(
-          headers: {
-            'Authorization': 'Bearer ${oauth.accessToken}',
-            'Kakao-Refresh-Token': oauth.refreshToken,
-            'Kakao-Refresh-Token-ExpiresAt': oauth.refreshTokenExpiresAt,
-          },
           followRedirects: false,
           validateStatus: (s) => s != null && s < 500,
         ),
@@ -51,6 +68,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           if (header.trim().startsWith('refreshToken=')) {
             final cookie = Cookie.fromSetCookieValue(header);
             final tokenValue = cookie.value;
+            debugPrint('▶︎ RefreshToken = $tokenValue');
             await tokenRepo.saveRefreshToken(tokenValue);
             break;
           }
@@ -60,6 +78,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final data = resp.data;
       final access = data['accessToken'] as String?;
       if (access != null) {
+        debugPrint('▶︎ AccessToken = $access');
         await tokenRepo.saveAccessToken(access);
       }
 
