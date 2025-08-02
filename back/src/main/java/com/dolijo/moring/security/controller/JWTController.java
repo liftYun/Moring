@@ -104,7 +104,7 @@ public class JWTController {
         return BaseResponse.ok();
     }
 
-    @GetMapping("/login")
+    @GetMapping("/login/test")
     @Operation(summary = "Login for Test",   description = """
         테스트 계정으로의 로그인을 위한 API입니다 
 
