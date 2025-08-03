@@ -39,6 +39,7 @@ public class PartController {
     public BaseResponse<Long> registerPart(
             @ParameterObject RegisterPartRequestVo requestVo
     ) {
+        log.info("받은 VO: {}", requestVo);
         return BaseResponse.of(partService.registerPart(requestVo.toDto()));
     }
 
@@ -85,7 +86,7 @@ public class PartController {
     @GetMapping("/status/{vin}")
     public BaseResponse<List<PartStatusListResponseDto>> getPartStatusList(
             @Parameter(example = "KNMK5C2HMLP000437", description = "차대번호")
-            @PathVariable String vin)
+            @PathVariable("vin") String vin)
     {
         return BaseResponse.of(partService.getPartStatusList(vin));
     }

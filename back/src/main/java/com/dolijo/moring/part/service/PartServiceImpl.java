@@ -41,12 +41,13 @@ public class PartServiceImpl implements PartService {
     @Transactional
     @Override
     public Long registerPart(RegisterPartRequestDto requestDto) {
+        log.info(requestDto);
         // 중복 등록 정책이 필요하다면 여기에 existsByNameKoAndNameEn 등 체크 추가
         Part part = Part.builder()
                 .nameKo(requestDto.getNameKo())
                 .nameEn(requestDto.getNameEn())
                 .recommendedCycleMonths(requestDto.getRecommendedCycleMonths())
-                .recommendedCycleKm(requestDto.getRecommendedCycleKm())
+                .recommendedCycleKm(requestDto.getRecommendedCycleKm() == null ? 0 : requestDto.getRecommendedCycleKm())
                 .type(requestDto.getType())
                 .description(requestDto.getDescription())
                 .build();
@@ -80,7 +81,7 @@ public class PartServiceImpl implements PartService {
     public List<PartStatusListResponseDto> getPartStatusList(String vin) {
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-
+        log.info(car.getId()+ " 조회됨");
         List<PartStatusListDto> dtos = partDslRepository.findPartStatusListByCarId(car.getId());
 
         LocalDate today = LocalDate.now();
