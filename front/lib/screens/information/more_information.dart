@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
+// lib/screens/information/more_information.dart
 
-class MorePage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moring/providers/user_provider.dart'; // userInfoProvider
+import 'package:moring/models/user_info.dart';
+
+class MorePage extends ConsumerWidget {
   const MorePage({super.key});
 
   Widget _buildSectionHeader(BuildContext context, String title) {
@@ -54,42 +59,63 @@ class MorePage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<UserInfo> userAsync = ref.watch(userInfoProvider);
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
           children: [
-            // --- AppBar 영역만 빌드 위젯 쪽에서 컨트롤하므로 생략 ---
-            // 섹션: Profile
+            // --- Profile 섹션 ---
             _buildSectionHeader(context, 'Profile'),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: CircleAvatar(
-                radius: 28,
-                backgroundImage: NetworkImage('https://placehold.co/56x56'),
+            // 실제 유저 정보를 불러와서 렌더링
+            userAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
               ),
-              title: const Text(
-                'Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              error: (err, _) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: Text(
+                    '프로필 로드 실패: $err',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                 ),
               ),
-              subtitle: const Text(
-                'Edit your profile',
-                style: TextStyle(
-                  color: Color(0xFF9BAABA),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
+              data: (user) => ListTile(
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: CircleAvatar(
+                  radius: 28,
+                  backgroundImage: user.profileUrl.isNotEmpty
+                      ? NetworkImage(user.profileUrl)
+                      : null,
+                  child: user.profileUrl.isEmpty
+                      ? const Icon(Icons.person, size: 28)
+                      : null,
                 ),
+                title: Text(
+                  user.nickname,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  user.email,
+                  style: const TextStyle(
+                      color: Color(0xFF9BAABA),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400),
+                ),
+                onTap: () {
+                  // 프로필 편집 페이지로 이동
+                },
               ),
-              onTap: () {
-                // 프로필 편집 페이지로 이동
-              },
             ),
 
-            // 섹션: App Settings
+            // --- App Settings 섹션 ---
             _buildSectionHeader(context, 'App Settings'),
             _buildTile(
               icon: Icons.settings_outlined,
@@ -116,7 +142,7 @@ class MorePage extends StatelessWidget {
               },
             ),
 
-            // 섹션: Support
+            // --- Support 섹션 ---
             _buildSectionHeader(context, 'Support'),
             _buildTile(
               icon: Icons.help_outline,
