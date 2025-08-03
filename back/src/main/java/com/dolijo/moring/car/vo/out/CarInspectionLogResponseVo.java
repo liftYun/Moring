@@ -9,5 +9,5 @@ import java.time.LocalDate;
 @Builder
 public class CarInspectionLogResponseVo {
     private final LocalDate inspectionDate;
-    private final String inspectionStatus;
+    private final String inspectionStatus; // enum의 description을 String으로 반환
 }

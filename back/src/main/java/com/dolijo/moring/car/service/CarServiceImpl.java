@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -34,10 +33,10 @@ public class CarServiceImpl implements CarService{
     private final CarDslRepository  carDslRepository;
     private final MemberRepository memberRepository;
     private final CarMileageLogRepository carMileageLogRepository;
+    private final CarInspectionLogQueryDslRepository carInspectionLogQueryDslRepository;
     private final CarMileageLogDslRepository carMileageLogDslRepository;
     private final CarInspectionLogRepository carInspectionLogRepository;
     private final CarInspectionLogDslRepository carInspectionLogDslRepository;
-    private final CarInspectionLogQueryDslRepository carInspectionLogQueryDslRepository;
 
     @Override
     @Transactional
@@ -140,13 +139,12 @@ public class CarServiceImpl implements CarService{
                 .build();
         
         carInspectionLogRepository.save(nextInspectionLog);
-        
+
         log.info("차량 점검 완료 처리 - VIN: {}, 점검일: {}, 다음 점검일: {}", vin, today, nextInspectionDate);
     }
 
     @Override
     public Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable) {
-        // QueryDSL을 사용하여 차량 정기점검 목록을 직접 DTO로 조회 (createdAt 기준 내림차순)
         return carInspectionLogQueryDslRepository.findInspectionLogsResponseDtoByVin(vin, pageable);
     }
 }
