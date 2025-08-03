@@ -5,6 +5,8 @@ import com.dolijo.moring.part.entity.valueobject.PartType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +33,7 @@ public class PartChangeLog {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "car_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Car car;
 
     @Column(updatable = false, nullable = false)

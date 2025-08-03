@@ -109,6 +109,19 @@ public class CarController {
         Slice<CarMileageLogResponseDto> result = carService.getLogsByVin(vin, pageable);
         return BaseResponse.of(result);
     }
+    
+    // 차량 정기점검 등록  
+    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일을 받아 정기점검을 등록합니다. 상태는 서버에서 PENDING으로 고정됩니다.")
+    @PostMapping("/{vin}/inspection")
+    public BaseResponse<Void> registerCarInspection(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437") @PathVariable String vin,
+            @Parameter(description = "점검일 (YYYY-MM-DD)", required = true, example = "2025-01-01") @RequestParam String inspectionDate
+    ) {
+        carService.registerCarInspection(vin, inspectionDate);
+        return BaseResponse.ok();
+    }
+
+
 
 
 }

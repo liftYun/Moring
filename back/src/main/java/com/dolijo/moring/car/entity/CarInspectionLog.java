@@ -1,43 +1,48 @@
 package com.dolijo.moring.car.entity;
 
+import com.dolijo.moring.car.valueobject.InspectionStatus;
+import com.dolijo.moring.car.entity.Car;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "car_inspection_log")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class CarInspectionLog {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_id")
+    @JoinColumn(name = "car_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Car car;
 
-    @Column(name = "last_inspection_date", nullable = false, updatable = true)
-    @Comment("최근 점검일")
-    private LocalDate lastInspectionDate;
+    @Column(name = "inspection_date", nullable = false)
+    @Comment("점검일 또는 예정일")
+    private LocalDate inspectionDate;
 
-    @Column(name = "inspection_expiry_date", nullable = false, updatable = false)
-    @Comment("점검 만료일")
-    private LocalDate inspectionExpiryDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "inspection_status", nullable = false)
+    @Comment("점검 상태")
+    private InspectionStatus inspectionStatus;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = java.time.LocalDateTime.now();
 
     @Builder
-    public CarInspectionLog(Car car, LocalDate lastInspectionDate, LocalDate inspectionExpiryDate) {
+    public CarInspectionLog(Car car, LocalDate inspectionDate, InspectionStatus inspectionStatus) {
         this.car = car;
-        this.lastInspectionDate = lastInspectionDate;
-        this.inspectionExpiryDate = inspectionExpiryDate;
+        this.inspectionDate = inspectionDate;
+        this.inspectionStatus = inspectionStatus;
+        this.createdAt = LocalDateTime.now();
     }
 }

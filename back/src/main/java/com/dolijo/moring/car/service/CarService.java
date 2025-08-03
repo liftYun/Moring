@@ -26,4 +26,5 @@ public interface CarService {
 
     public Slice<CarMileageLogResponseDto> getLogsByVin(String vin, Pageable pageable);
 
+    void registerCarInspection(String vin, String inspectionDate);
 }
