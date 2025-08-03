@@ -122,7 +122,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final cookieHeader = 'refreshToken=$refreshToken';
     final dio = ref.read(noAuthDioProvider);
     final resp = await dio.post(
-      '/api/v1/logout/rToken',
+      '/api/v1/auth/logout/rToken',
       options: Options(headers: {
         'Cookie': cookieHeader,
       },

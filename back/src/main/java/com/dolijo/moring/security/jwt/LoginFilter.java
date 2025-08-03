@@ -55,8 +55,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String userEmail = customMemberDetails.getUserEmail();
         String nickname = customMemberDetails.getUserNickname();
-//        String uuid = customMemberDetails.getUserUuid();
-        Long id = customMemberDetails.getMemberId();
+        String uuid = customMemberDetails.getUserUuid();
+//        Long id = customMemberDetails.getMemberId();
         SocialType type = refreshTokenResponseDto.getType();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -65,12 +65,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createAccessToken(id, nickname);
-        String refreshToken = jwtUtil.createRefreshToken(id);
+        String accessToken = jwtUtil.createAccessToken(uuid, nickname);
+        String refreshToken = jwtUtil.createRefreshToken(uuid);
         LocalDateTime expiresAt = LocalDateTime.now().plusDays(30);
 
         // Refresh Token 을 DB 혹은 Redis 등에 저장 (토큰 회수/무효화 위해)
-        socialMemberService.saveToken(id, type, refreshToken, expiresAt);
+        socialMemberService.saveToken(uuid, type, refreshToken, expiresAt);
 
         response.addHeader("Authorization", "Bearer " + accessToken);
 

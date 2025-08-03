@@ -65,9 +65,9 @@ public class JWTUtil {
     }
 
     /** AccessToken 생성 (직접 호출용) */
-    public String createAccessToken(Long id, String nickname) {
+    public String createAccessToken(String memberUuid, String nickname) {
         return Jwts.builder()
-                .claim("id", id)
+                .claim("uuid", memberUuid)
 //                .claim("userEmail", userEmail)
                 .claim("nickname", nickname)
                 .issuedAt(new Date())
@@ -77,9 +77,9 @@ public class JWTUtil {
     }
 
     /** RefreshToken 생성 (직접 호출용) */
-    public String createRefreshToken(Long id) {
+    public String createRefreshToken(String memberUuid) {
         return Jwts.builder()
-                .claim("id", id)
+                .claim("uuid", memberUuid)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshExpiredMs))
                 .signWith(secretKey)
@@ -89,14 +89,14 @@ public class JWTUtil {
     /** OAuth2 흐름 편의를 위한 오버로드 */
     public String generateAccessToken(Member member) {
         return createAccessToken(
-                member.getId(),
+                member.getUuid(),
 //                member.getEmail(),
                 member.getNickName()
         );
     }
 
     public String generateRefreshToken(Member member) {
-        return createRefreshToken(member.getId());
+        return createRefreshToken(member.getUuid());
     }
 
     /** 서명 검증 후 Claims 반환 */

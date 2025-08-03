@@ -18,6 +18,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -30,6 +32,7 @@ import java.util.Collections;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+    private final ClientRegistrationRepository clientRegistrationRepository;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final SocialMemberService socialMemberService;
@@ -37,12 +40,13 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     public SecurityConfig(
-            AuthenticationConfiguration authenticationConfiguration,
+            ClientRegistrationRepository clientRegistrationRepository, AuthenticationConfiguration authenticationConfiguration,
             JWTUtil jwtUtil,
             SocialMemberService socialMemberService,
             CustomOAuth2UserService customOAuth2UserService,
             OAuth2SuccessHandler oAuth2SuccessHandler
     ) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.socialMemberService = socialMemberService;
@@ -91,6 +95,7 @@ public class SecurityConfig {
                 // OAuth2 로그인 콜백 URI 허용
                 .requestMatchers(HttpMethod.GET, "/login/oauth2/code/kakao").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/kakao/redirect").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/kakao/login").permitAll()
                 // 기존 로그인(username/password) 엔드포인트
                 .requestMatchers(HttpMethod.POST, "/login", "/logout/rToken").permitAll()
                 // Swagger, 공용 API
@@ -114,6 +119,17 @@ public class SecurityConfig {
 
         // 6) OAuth2 로그인 설정 (Spring Security Client 사용 시)
         http.oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint ->
+                        endpoint.authorizationRequestResolver(
+                                new DefaultOAuth2AuthorizationRequestResolver(
+                                        clientRegistrationRepository,
+                                        "/oauth2/authorization"
+                                )
+                        )
+                )
+                .redirectionEndpoint(redir ->
+                        redir.baseUri("/login/oauth2/code/*")
+                )
                 // 회원정보(UserInfo)를 가져올 커스텀 서비스
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 // 인증 성공 시 자체 JWT 발급

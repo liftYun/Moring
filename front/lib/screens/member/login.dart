@@ -1,11 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:moring/providers/token_repository.dart';
-import 'package:moring/providers/api_client.dart';
-
-import 'dart:io';
+import 'package:moring/services/SocialAuthService.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -16,60 +11,27 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   bool _loading = false;
 
-  Future<void> _login() async {
+  Future<void> _kakaoLogin() async {
     setState(() => _loading = true);
-    final tokenRepo = ref.read(tokenRepositoryProvider);
-    final dio = ref.read(noAuthDioProvider);
     try {
-      final canTalk = await isKakaoTalkInstalled();
-      final oauth = canTalk
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
-
-      debugPrint('▶︎ kakao accessToken  = ${oauth.accessToken}');
-      debugPrint('▶︎ kakao refreshToken = ${oauth.refreshToken}');
-
-      final resp = await dio.get(
-        '/api/kakao/redirect',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer ${oauth.accessToken}',
-            'Kakao-Refresh-Token': oauth.refreshToken,
-            'Kakao-Refresh-Token-ExpiresAt': oauth.refreshTokenExpiresAt,
-          },
-          followRedirects: false,
-          validateStatus: (s) => s != null && s < 500,
-        ),
-      );
-
-      // Set-Cookie 에서 refreshToken 꺼내기
-      // Set-Cookie 헤더 중 'refreshToken' 쿠키만 골라서 순수 값만 저장
-      final setCookieHeaders = resp.headers['set-cookie'];
-      if (setCookieHeaders != null) {
-        for (final header in setCookieHeaders) {
-          // 'refreshToken=' 으로 시작하는 쿠키만 골라 파싱
-          if (header.trim().startsWith('refreshToken=')) {
-            final cookie = Cookie.fromSetCookieValue(header);
-            final tokenValue = cookie.value;
-            await tokenRepo.saveRefreshToken(tokenValue);
-            break;
-          }
-        }
-      }
-
-      final data = resp.data;
-      final access = data['accessToken'] as String?;
-      if (access != null) {
-        await tokenRepo.saveAccessToken(access);
-      }
-
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      await ref.read(socialAuthServiceProvider).loginWithKakao();
+      if (mounted) Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인에 실패했습니다.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('로그인에 실패했습니다.')));
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _testLogin() async {
+    setState(() => _loading = true);
+    try {
+      await ref.read(socialAuthServiceProvider).loginWithTest();
+      if (mounted) Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('로그인에 실패했습니다.')));
     } finally {
       setState(() => _loading = false);
     }
@@ -168,7 +130,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   iconPath: 'assets/kakao_logo.jpg',
                   backgroundColor: const Color(0xFFFFE812),
                   foregroundColor: Colors.black,
-                  onPressed: _loading ? null : _login,
+                  onPressed: _loading ? null : _kakaoLogin,
                 ),
 
                 const SizedBox(height: 14),
@@ -182,7 +144,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   iconPath: 'assets/google_logo.png',
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black87,
-                  onPressed: _loading ? null : () { /* 구글 로그인 로직 */ },
+                  onPressed: _loading ? null : _testLogin,
                 ),
               ],
             ),
