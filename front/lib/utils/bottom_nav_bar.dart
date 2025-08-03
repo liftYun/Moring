@@ -3,7 +3,7 @@ import 'package:moring/utils/app_icon.dart'; // AppIcons를 사용하기 위해 
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
-  final Function(int) onItemTapped;
+  final ValueChanged<int> onItemTapped;
 
   const CustomBottomNavBar({
     super.key,
