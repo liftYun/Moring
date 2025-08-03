@@ -48,7 +48,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
-import 'package:moring/screens/car/temp.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/home_page.dart';

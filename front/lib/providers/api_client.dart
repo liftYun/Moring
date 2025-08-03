@@ -17,9 +17,12 @@ Dio authDio(AuthDioRef ref) {
   final repo = ref.read(tokenRepositoryProvider);
 
   final options = BaseOptions(
+    // 로컬 테스트시 사용
     baseUrl: Platform.isAndroid
         ? 'http://10.0.2.2:8080'
         : 'http://localhost:8080',
+    // // 서버 배포 주소로 요청
+    // baseUrl: 'http://i13e101.p.ssafy.io:8080',
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 5),
   );
@@ -113,9 +116,12 @@ Dio authDio(AuthDioRef ref) {
 @riverpod
 Dio noAuthDio(NoAuthDioRef ref) {
   final options = BaseOptions(
+    // 로컬 테스트시 사용
     baseUrl: Platform.isAndroid
         ? 'http://10.0.2.2:8080'
         : 'http://localhost:8080',
+    // // 서버 배포 주소로 요청,
+    // baseUrl: 'http://i13e101.p.ssafy.io:8080',
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 5),
   );
