@@ -51,6 +51,7 @@ import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/car/car_selection_page.dart';
+import 'package:moring/screens/car/no_car.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'package:moring/screens/root.dart';
@@ -86,7 +87,7 @@ class MyApp extends ConsumerWidget {
       routes: {
         '/login': (context) => const LoginPage(),
         '/carSelection': (context) => const CarSelectionPage(),
-        // '/noCar': (context) => const CarNotRegisteredPage(),
+        '/noCar': (context) => const CarNotRegisteredPage(),
       },
     );
   }
