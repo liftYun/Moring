@@ -1,4 +1,3 @@
-
 // import 'package:flutter/material.dart';
 // import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스 임포트
@@ -8,7 +7,7 @@
 // import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트 (수정: utils/ -> models/ 로 경로 변경)
 // import 'package:moring/widgets/car_360_viewer.dart'; // Car360Viewer 위젯 임포트
 // import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
-//
+// import 'screens/home_page.dart';
 // import 'screens/member/login.dart';
 // import 'screens/map/map.dart';
 //
@@ -52,8 +51,10 @@ import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/car/car_selection_page.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KakaoSdk.init(
@@ -83,6 +84,7 @@ class MyApp extends ConsumerWidget {
       routes: {
         '/login': (context) => const LoginPage(),
         '/home':  (context) => const HomePage(),
+        '/carSelection': (context) => const CarSelectionPage(),
       },
     );
   }

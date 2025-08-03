@@ -7,16 +7,16 @@ import 'package:moring/utils/bottom_nav_bar.dart'; // CustomBottomNavBar 위젯 
 import 'package:moring/utils/custom_app_bar.dart'; // CustomAppBar 위젯 임포트
 import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트
 import 'package:moring/widgets/car_360_viewer.dart';
-import 'package:moring/models/vehicle.dart'; // Vehicle 모델 임포트
+import 'package:moring/models/car.dart'; // Vehicle 모델 임포트
 
 import '../providers/token_repository.dart';
 
 class HomePage extends ConsumerStatefulWidget  {
   // 🔑 vehicle 필드를 optional하게 선언합니다.
-  final Vehicle? vehicle;
+  final Car? car;
 
   // 🔑 생성자도 vehicle을 optional로 받도록 수정합니다.
-  const HomePage({super.key, this.vehicle});
+  const HomePage({super.key, this.car});
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
@@ -57,8 +57,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     ];
 
     // 🔑 vehicle 인자가 존재하면 해당 차량의 이미지로 초기화합니다.
-    if (widget.vehicle != null) {
-      _setCarImages(widget.vehicle!.modelName);
+    if (widget.car != null) {
+      _setCarImages(widget.car!.modelName);
     } else {
       // 인자가 없으면 기존처럼 'xm3'로 초기화
       _setCarImages(_selectedCar);
@@ -136,7 +136,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     } else if(resp.statusCode == 302){
       print('로그아웃 302');
       await repo.deleteAllTokens();
-
       final refreshToken = await repo.getRefreshToken();
 
       debugPrint('▶︎ refreshToken = $refreshToken');
@@ -155,7 +154,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       appBar: CustomAppBar(
         // 🔑 vehicle 인자가 있으면 닉네임, 없으면 'Moring'으로 표시
-        title: widget.vehicle?.nickname ?? 'Moring',
+        title: widget.car?.nickname ?? 'Moring',
         onBackButtonPressed: () {
           Navigator.pop(context);
         },
