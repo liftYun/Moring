@@ -80,23 +80,24 @@ public class PartServiceImpl implements PartService {
     public List<PartStatusListResponseDto> getPartStatusList(String vin) {
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-        Long carId = car.getId();
 
-        List<PartStatusListDto> dtos = partDslRepository.findPartStatusListByCarId(carId);
-        for (PartStatusListDto partStatusListDto : dtos) {
-            log.info(partStatusListDto);
-        }
+        List<PartStatusListDto> dtos = partDslRepository.findPartStatusListByCarId(car.getId());
 
         LocalDate today = LocalDate.now();
         List<PartStatusListResponseDto> result = new ArrayList<>();
 
+        /**
+            PartStatusListDto 부품리스트로 사용자가 차량 부품 교체 등록내역이 없다면
+            dto의 lastChange은 null 이다.
+         */
         for (PartStatusListDto dto : dtos) {
             String nameEn = dto.getNameEn();
+            // 차량의 각 부품 교체일
             LocalDateTime lastChange = dto.getLastChange();
+            // 각 부품의 권장 교체주기
             Integer cycleMonths = dto.getRecommendedCycleMonths();
-
+            // 교체 이력이 없거나, 권장 주기가 잘못된 경우: 사용률 0%, 마감일 없음
             if (lastChange == null || cycleMonths == null || cycleMonths <= 0) {
-                // 교체 이력이 없거나, 권장 주기가 잘못된 경우: 사용률 0%, 마감일 없음
                 result.add(
                         PartStatusListResponseDto.builder()
                                 .nameEn(nameEn)
@@ -119,12 +120,11 @@ public class PartServiceImpl implements PartService {
 
             // 사용률(%) = (경과일/총주기일) × 100, 0~100 사이로 클램핑
             int percent = (int) Math.min(100, Math.max(0, (passedDays * 100 / totalDays)));
-
             result.add(
                     PartStatusListResponseDto.builder()
                             .nameEn(nameEn)
                             .percentUsed(percent)
-                            .dueDate(dueDate.toString()) // yyyy-MM-dd
+                            .dueDate(dueDate)
                             .build()
             );
         }

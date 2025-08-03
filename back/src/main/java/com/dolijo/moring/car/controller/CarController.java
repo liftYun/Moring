@@ -1,20 +1,23 @@
 package com.dolijo.moring.car.controller;
 
-import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
+import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
+import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.service.CarService;
 import com.dolijo.moring.car.vo.in.RegisterCarRequestVo;
+import com.dolijo.moring.car.vo.out.CarInspectionLogResponseVo;
 import com.dolijo.moring.car.vo.out.CarResponseVo;
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +28,31 @@ import java.util.List;
 @Tag(name = "차량", description = "차량 관련 API")
 @Log4j2
 public class CarController {
+
     private final CarService carService;
+
+    // 차량 정기점검 목록 조회
+    @Operation(summary = "차량 정기점검 목록 조회", description = "특정 차량의 정기점검 목록을 createdAt 기준 내림차순으로 조회합니다.")
+    @GetMapping("/{vin}/inspections")
+    public BaseResponse<Slice<CarInspectionLogResponseVo>> getCarInspectionLogs(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437") @PathVariable String vin,
+            @ParameterObject Pageable pageable
+    ) {
+        Slice<CarInspectionLogResponseDto> result = carService.getCarInspectionLogs(vin, pageable);
+        Slice<CarInspectionLogResponseVo> voResult = result.map(CarInspectionLogResponseDto::toVo);
+        return BaseResponse.of(voResult);
+    }
+
+    // 차량 정기점검 등록
+    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일을 받아 정기점검을 등록합니다. 상태는 서버에서 자동으로 PENDING으로 설정됩니다.")
+    @PostMapping("/{vin}/inspection")
+    public BaseResponse<Void> registerCarInspection(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437") @PathVariable String vin,
+            @Parameter(description = "점검일 (YYYY-MM-DD)", required = true, example = "2023-10-01") @RequestParam String inspectionDate
+    ) {
+        carService.registerCarInspection(vin, inspectionDate);
+        return BaseResponse.ok();
+    }
 
     @Operation(summary = "회원의 차량 등록",   description = """
         회원이 직접 차량 정보를 수동으로 등록합니다.
@@ -86,9 +113,27 @@ public class CarController {
 
 
 
-
-
-
+    @Operation(summary = "차량 이동거리 등록", description = "차량 VIN과 누적 km를 경로 변수로 받아 이동거리를 등록합니다.")
+    @PostMapping("/{vin}/{km}")
+    public BaseResponse<Void> registerCarMileage(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437") @PathVariable String vin,
+            @Parameter(description = "누적 km", required = true, example = "12.0") @PathVariable Float km
+    ) {
+       carService.registerCarMileage(vin, km);
+        return BaseResponse.ok();
+    }
+    
+    @Operation(summary = "차량 이동거리 조회", description = "내려서 더보기 하는 방식 (페이지네이션)")
+    @GetMapping("/{vin}/mileage-logs-paging")
+    public BaseResponse<Slice<CarMileageLogResponseDto>> getMileageLogs(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable String vin,
+            @ParameterObject Pageable pageable
+    ) {
+        Slice<CarMileageLogResponseDto> result = carService.getLogsByVin(vin, pageable);
+        return BaseResponse.of(result);
+    }
+    
 
 
 }

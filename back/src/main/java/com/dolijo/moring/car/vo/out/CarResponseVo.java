@@ -8,9 +8,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class CarResponseVo {
-    private String vin;
-    private String modelName;
-    private String nickname;
+    private final String vin;
+    private final String modelName;
+    private final String nickname;
 
     // DTO -> VO 변환 메서드
     public static CarResponseVo from(CarResponseDto dto) {
@@ -21,4 +21,3 @@ public class CarResponseVo {
                 .build();
     }
 }
-

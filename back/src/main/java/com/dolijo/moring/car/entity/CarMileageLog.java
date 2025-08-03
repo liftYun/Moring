@@ -1,18 +1,28 @@
 package com.dolijo.moring.car.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "car_mileage_log")
+@Table(
+        name = "car_mileage_log",
+        indexes = {
+                @Index(
+                        name = "idx_car_id_recorded_date_desc",
+                        columnList = "car_id, recorded_date DESC"
+                )
+        }
+)
+@Getter
+@DynamicUpdate
+@ToString
 public class CarMileageLog {
 
     @Id
@@ -29,9 +39,8 @@ public class CarMileageLog {
     @Comment("주행일")
     private LocalDate recordedDate;
 
-    @Column(name = "mileage_km", columnDefinition = "DECIMAL(10,2)", nullable = false, updatable = false)
+    @Column(name = "mileage_km", columnDefinition = "DECIMAL(10,2)", nullable = false)
     @Comment("주행거리 (km)")
-    @ColumnDefault("0.00")
     private Float mileageKm;
 
     @Builder
@@ -40,4 +49,10 @@ public class CarMileageLog {
         this.recordedDate = recordedDate;
         this.mileageKm = mileageKm;
     }
+
+    public void addMileage(float addKm) {
+        this.mileageKm += addKm;
+    }
+
+
 }
