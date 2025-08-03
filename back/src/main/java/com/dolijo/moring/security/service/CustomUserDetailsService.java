@@ -1,5 +1,7 @@
 package com.dolijo.moring.security.service;
 
+import com.dolijo.moring.common.base.BaseResponseStatus;
+import com.dolijo.moring.common.exception.BaseException;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.repository.MemberRepository;
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
@@ -55,5 +57,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with ID: " + memberUuid));
         return new CustomMemberDetails(member);
+    }
+
+    public int updateNickName(String uuid, String nickName) throws UsernameNotFoundException {
+        Member member = memberRepository.findByUuid(uuid)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER ));
+
+        return memberRepository.updateNickNameById(member.getId(), nickName);
     }
 }
