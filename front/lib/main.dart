@@ -52,6 +52,7 @@ import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/car/car_selection_page.dart';
+import 'package:moring/screens/car/no_car.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 
@@ -85,6 +86,7 @@ class MyApp extends ConsumerWidget {
         '/login': (context) => const LoginPage(),
         '/home':  (context) => const HomePage(),
         '/carSelection': (context) => const CarSelectionPage(),
+        '/noCar': (context) => const CarNotRegisteredPage(),
       },
     );
   }
