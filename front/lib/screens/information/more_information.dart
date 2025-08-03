@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/user_provider.dart'; // userInfoProvider
 import 'package:moring/models/user_info.dart';
 
+import '../member/user_info_edit.dart';
+
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
 
@@ -111,6 +113,10 @@ class MorePage extends ConsumerWidget {
                 ),
                 onTap: () {
                   // 프로필 편집 페이지로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileEditPage()),
+                  );
                 },
               ),
             ),
