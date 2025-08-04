@@ -104,7 +104,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
   }
 
   void _navigateToCarDetail(Car car) {
-    Navigator.pushNamed(context, '/home', arguments: {'car': car});
+    Navigator.pushNamed(context, '/root', arguments: {'car': car});
   }
 
   Widget buildCarCard(Car car) {

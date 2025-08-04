@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:moring/main.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:moring/providers/token_repository.dart';
-
 part 'api_client.g.dart';
 
 class _QueuedRequest {
@@ -90,15 +90,16 @@ Dio authDio(AuthDioRef ref) {
                     .catchError((e) => qr.completer.completeError(e));
               }
             } else {
-              // 리프레시 실패시 큐에 있는 요청 모두 에러 처리
-              for (var qr in queue) {
-                qr.completer.completeError(Exception('Refresh failed'));
-              }
+              throw Exception('Refresh failed');
             }
           } catch (e) {
-            // 토큰 갱신 중 에러 발생 시 큐 모두 에러
+            // 토큰 갱신 실패 시
+            await repo.deleteAllTokens();          // 로컬에 저장된 토큰 삭제
+            navigatorKey.currentState              // 로그인 화면으로
+                ?.pushNamedAndRemoveUntil('/login', (r) => false);
+            // 큐에 있는 요청들 전부 에러 처리
             for (var qr in queue) {
-              qr.completer.completeError(e);
+              qr.completer.completeError(Exception('Refresh failed'));
             }
           } finally {
             queue.clear();
@@ -106,12 +107,12 @@ Dio authDio(AuthDioRef ref) {
           }
         }
 
-        // 이 요청의 결과를 큐에 달린 Future로 리턴
+        // 이 요청을 큐에 달린 Future 로 기다림
         return handler.resolve(await queued.completer.future);
       }
-      // 401 이외 에러는 그대로 흘려보냄
+
       handler.next(err);
-    }
+    },
   ));
 
   return dio;

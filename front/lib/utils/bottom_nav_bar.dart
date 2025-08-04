@@ -13,69 +13,6 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.selectedIndex,
     required this.onItemTapped,
   });
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   // BottomNavigationBarThemeData는 MyApp에서 설정했으므로 여기서 다시 설정할 필요는 없습니다.
-  //   // 하지만 필요하다면 여기서 오버라이드할 수 있습니다.
-  //   return BottomNavigationBar(
-  //     items: <BottomNavigationBarItem>[
-  //       BottomNavigationBarItem(
-  //         icon: AppIcons.home,
-  //         label: 'Home',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: AppIcons.navigation,
-  //         label: 'Navigation',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: AppIcons.drivingLog,
-  //         label: 'Driving Log',
-  //       ),
-  //       BottomNavigationBarItem(
-  //         icon: PopupMenuButton<int>(
-  //           icon: AppIcons.more,
-  //           onSelected: (value) {
-  //             switch (value) {
-  //               case 3:
-  //               // Profile 페이지로 네비게이트
-  //                 Navigator.of(context).push(
-  //                   MaterialPageRoute(builder: (_) => const ProfileEditPage()),
-  //                 );
-  //                 break;
-  //               case 4:
-  //               // App Settings 페이지로 네비게이트
-  //                 Navigator.of(context).push(
-  //                   MaterialPageRoute(builder: (_) => const ProfileEditPage()),
-  //                 );
-  //                 break;
-  //               case 5:
-  //               // Support 페이지로 네비게이트
-  //                 Navigator.of(context).push(
-  //                   MaterialPageRoute(builder: (_) => const ProfileEditPage()),
-  //                 );
-  //                 break;
-  //               case 6:
-  //               // “More” 탭 (기존 스위치 방식) 유지
-  //                 onItemTapped(3);
-  //                 break;
-  //             }
-  //           },
-  //           itemBuilder: (_) => [
-  //             const PopupMenuItem(value: 3, child: Text('Profile')),
-  //             const PopupMenuItem(value: 4, child: Text('App Settings')),
-  //             const PopupMenuItem(value: 5, child: Text('Support')),
-  //             const PopupMenuItem(value: 6, child: Text('More')),
-  //           ],
-  //         ),
-  //         label: 'More',
-  //       ),
-  //     ],
-  //     currentIndex: selectedIndex,
-  //     onTap: onItemTapped,
-  //     type: BottomNavigationBarType.fixed, // 아이템이 4개 이상일 때도 고정
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(

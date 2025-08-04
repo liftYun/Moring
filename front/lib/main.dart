@@ -11,6 +11,8 @@ import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KakaoSdk.init(
@@ -28,7 +30,9 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authAsync = ref.watch(isLoggedInProvider);
+
     return MaterialApp(
+      navigatorKey: navigatorKey,   // ← 여기에 추가
       title: 'Moring App',
       theme: AppTheme, // utils/app_theme.dart 에 정의
       debugShowCheckedModeBanner: false,
@@ -39,9 +43,9 @@ class MyApp extends ConsumerWidget {
       ),
       routes: {
         '/login': (context) => const LoginPage(),
-        '/home':  (context) => const HomePage(),
         '/carselection': (context) => CarSelectionContainer(),
         '/nocar': (context) => const CarNotRegisteredPage(),
+        '/root': (context) => const RootPage()
       },
     );
   }

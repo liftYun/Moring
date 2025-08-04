@@ -1,22 +1,15 @@
-
-import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:moring/models/car.dart';
-import 'package:moring/screens/information/more_information.dart';
-import 'package:moring/screens/home_page.dart';
+import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/utils/bottom_nav_bar.dart';
+import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/information/more_information.dart';
+import 'package:moring/providers/token_repository.dart';
+import 'package:moring/providers/api_client.dart';
+import 'package:dio/dio.dart';
 
-import '../providers/api_client.dart';
-import '../providers/token_repository.dart';
-import '../utils/custom_app_bar.dart';
-
-/// 로그인 후 진입하는 메인 탭 컨테이너
 class RootPage extends ConsumerStatefulWidget {
-  // final Car?car;
-  const RootPage({super.key});
-  // const RootPage({Key? key, this.car}) : super(key: key);
+  const RootPage({Key? key}) : super(key: key);
 
   @override
   ConsumerState<RootPage> createState() => _RootPageState();
@@ -24,13 +17,13 @@ class RootPage extends ConsumerStatefulWidget {
 
 class _RootPageState extends ConsumerState<RootPage> {
   int _currentIndex = 0;
-  // 탭별 화면 리스트
-  static const List<Widget> _pages = <Widget>[
-    HomePage(),           // HomeContent 만 보여주도록 HomePage 수정 필요
-    HomePage(),          // MapScreen: 네비게이션 탭
-    HomePage(),     // DrivingLogPage: 주행 기록 탭
-    MorePage(),           // MorePage: 마이페이지 탭
+  static const _titles = ['Moring', 'Navigation', 'Driving Log', 'More'];
 
+  static const _pages = <Widget>[
+    HomePage(),
+    HomePage(),      // 네비게이션 화면,
+    HomePage(),      // 주행 기록 화면
+    MorePage(),      // 더보기 화면
   ];
 
   Future<void> _logout() async {
@@ -44,7 +37,6 @@ class _RootPageState extends ConsumerState<RootPage> {
         validateStatus: (s) => s != null && s < 400,
       ),
     );
-
     if (resp.statusCode == 200 || resp.statusCode == 302) {
       await repo.deleteAllTokens();
       Navigator.pushReplacementNamed(context, '/login');
@@ -55,43 +47,17 @@ class _RootPageState extends ConsumerState<RootPage> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  void _onItemTapped(int index) => setState(() => _currentIndex = index);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Moring',
-        onBackButtonPressed: () {
-          Navigator.pop(context); // 이전 화면(HomePage)으로 돌아가기
-        },
-        // showCarDropdown: true,
-        // availableCars: _availableCars,
-        // selectedCar: _selectedCar,
-        // onCarChanged: (v) {
-        //   if (v != null) _setCarImages(v);
-        // },
-        onNotificationPressed: _logout,
-      ),
-      // AppBar(title: const Text('Navigation')),
-      // AppBar(title: const Text('Driving Log')),
-      // AppBar(title: const Text('My Page')),
-
-      // 탭 스위칭
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-
-      // 한 번만 배치하는 BottomNavBar
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: _currentIndex,
-        onItemTapped: _onItemTapped,
-      ),
+    return BaseScaffold(
+      title: _titles[_currentIndex],
+      body: _pages[_currentIndex],
+      withBottomNav: true,                 // 바텀바를 쓰겠다
+      selectedIndex: _currentIndex,        // 현재 탭
+      onItemTapped: _onItemTapped,         // 탭 누르면 이 콜백이 불린다
+      onNotificationPressed: _logout,      // 오른쪽 아이콘 콜백
     );
   }
 }
