@@ -53,6 +53,7 @@ import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/car/car_selection_page.dart';
 import 'package:moring/screens/car/no_car.dart';
+import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 
@@ -80,13 +81,14 @@ class MyApp extends ConsumerWidget {
       home: authAsync.when(
         loading: () => const SplashScreen(),
         error: (_, __) => const LoginPage(),
-        data: (loggedIn) => loggedIn ? const HomePage() : const LoginPage(),
+        data: (loggedIn) => loggedIn ? const CarSelectionPage() : const LoginPage(),
       ),
       routes: {
         '/login': (context) => const LoginPage(),
         '/home':  (context) => const HomePage(),
-        '/carSelection': (context) => const CarSelectionPage(),
-        '/noCar': (context) => const CarNotRegisteredPage(),
+        '/carselection': (context) => const CarSelectionPage(),
+        '/nocar': (context) => const CarNotRegisteredPage(),
+        '/registration': (context) => const CarRegistrationPage(),
       },
     );
   }
