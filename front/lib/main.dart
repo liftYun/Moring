@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
+import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
 import 'package:moring/screens/car/car_selection_page.dart';
 import 'package:moring/screens/car/no_car.dart';
+import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 
@@ -33,12 +35,13 @@ class MyApp extends ConsumerWidget {
       home: authAsync.when(
         loading: () => const SplashScreen(),
         error: (_, __) => const LoginPage(),
-        data: (loggedIn) => loggedIn ? const RootPage() : const LoginPage(),
+        data: (loggedIn) => loggedIn ? CarSelectionContainer() : const LoginPage(),
       ),
       routes: {
         '/login': (context) => const LoginPage(),
-        '/carSelection': (context) => const CarSelectionPage(),
-        '/noCar': (context) => const CarNotRegisteredPage(),
+        '/home':  (context) => const HomePage(),
+        '/carselection': (context) => CarSelectionContainer(),
+        '/nocar': (context) => const CarNotRegisteredPage(),
       },
     );
   }

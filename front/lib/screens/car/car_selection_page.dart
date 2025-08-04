@@ -1,42 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:moring/models/car.dart';
+import 'package:dio/dio.dart';
+import 'package:moring/models/car.dart'; // Car 모델 임포트
 import 'package:moring/utils/custom_app_bar.dart';
 import 'package:moring/utils/bottom_nav_bar.dart';
+import 'package:moring/providers/api_client.dart';
+import 'package:moring/providers/user_provider.dart';
+
+class CarSelectionContainer extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userInfoAsync = ref.watch(userInfoProvider);
+
+    return userInfoAsync.when(
+      data: (userInfo) => CarSelectionPage(memberUuid: userInfo.uuid),
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(body: Center(child: Text('사용자 정보를 가져오지 못했습니다.\n$e'))),
+    );
+  }
+}
+
 
 class CarSelectionPage extends ConsumerStatefulWidget {
-  const CarSelectionPage({Key? key}) : super(key: key);
+  final String memberUuid;
+
+  const CarSelectionPage({Key? key, required this.memberUuid}) : super(key: key);
 
   @override
   ConsumerState<CarSelectionPage> createState() => _CarSelectionPageState();
 }
 
 class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
+  List<Car> _cars = [];
+  bool _loading = true;
+  String? _error;
   int _selectedIndex = 0;
-
-  final List<Car> _cars = [
-    Car(
-      vin: '1',
-      nickname: '내 첫차',
-      modelName: 'Hyundai Kona',
-      imgUrl: 'assets/xm3/xm3_4.png',
-    ),
-    Car(
-      vin: '2',
-      nickname: '두번째 차',
-      modelName: 'Kia Sorento',
-      imgUrl: 'assets/그렌저/4.png',
-    ),
-  ];
-
   Car? _selectedCarForDropdown;
 
   @override
   void initState() {
     super.initState();
-    if (_cars.isNotEmpty) {
-      _selectedCarForDropdown = _cars[0];
+    _loadCarList();
+  }
+
+  Future<List<Car>> fetchCarList(Dio dio, String memberUuid) async {
+    final response = await dio.get(
+      '/api/v1/cars/$memberUuid/list',
+      options: Options(headers: {'memberUuid': memberUuid}),
+    );
+
+    if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+      final List list = response.data['result'] as List;
+      return list
+          .map((e) => Car(
+        vin: e['vin'] ?? '',
+        nickname: e['nickname'] ?? '',
+        modelName: e['modelName'] ?? '',
+        imgUrl: '', // 이미지 사용 X
+      ))
+          .toList();
+    }
+    throw Exception('차량 리스트 불러오기 실패');
+  }
+
+  Future<void> _loadCarList() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    final dio = ref.read(noAuthDioProvider); // Dio provider
+
+    try {
+      final carList = await fetchCarList(dio, widget.memberUuid);
+      setState(() {
+        _cars = carList;
+      });
+
+      if (_cars.isEmpty) {
+        Future.microtask(() {
+          Navigator.pushReplacementNamed(context, '/nocar');
+        });
+        return;
+      }
+      if (_cars.isNotEmpty) {
+        _selectedCarForDropdown = _cars[0];
+      }
+    } catch (e) {
+      setState(() {
+        _error = '차량 정보를 불러오는 데 실패했습니다.';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -47,26 +104,24 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
   }
 
   void _navigateToCarDetail(Car car) {
-    Navigator.pushNamed(
-      context,
-      '/carDetail',
-      arguments: {'car': car},
-    );
+    Navigator.pushNamed(context, '/home', arguments: {'car': car});
   }
 
   Widget buildCarCard(Car car) {
+    const String demoCarImage = 'assets/그렌저/4.png'; // 에셋(로컬) 이미지 경로 예시
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+      decoration: BoxDecoration(
+        color: const Color(0xFF23262B),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      height: 160,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF23262B),
-              borderRadius: BorderRadius.circular(18),
-            ),
+          Padding(
             padding: const EdgeInsets.all(20),
-            height: 160,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -81,8 +136,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
                 const SizedBox(height: 12),
                 Text(
                   car.modelName,
-                  style:
-                  const TextStyle(color: Colors.white70, fontSize: 15),
+                  style: const TextStyle(color: Colors.white70, fontSize: 15),
                 ),
                 const Spacer(),
                 Center(
@@ -90,7 +144,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
                     width: 120,
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/home');
+                        _navigateToCarDetail(car);
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -98,8 +152,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: const Text('선택하기'),
                     ),
@@ -108,20 +161,18 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
               ],
             ),
           ),
-          if (car.imgUrl.isNotEmpty)
-            Positioned(
-              top: -70,
-              right: -60,
-              child: Image.asset(
-                car.imgUrl,
-                width: 300,
-                height: 200,
+          Positioned(
+            top: -80,
+            right: -60,
+            child: SizedBox(
+              width: 300,
+              height: 180,
+              child: Image.asset( // 만약 네트워크 이미지라면 Image.network로 변경
+                demoCarImage,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.image_not_supported,
-                    color: Colors.grey, size: 100),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -145,18 +196,17 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
           }
         },
       ),
-      body: _cars.isEmpty
-          ? const Center(
-          child: Text(
-            '등록된 차량이 없습니다.',
-            style: TextStyle(color: Colors.white),
-          ))
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : (_error != null
+          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
           : ListView.builder(
-          itemCount: _cars.length,
-          itemBuilder: (context, index) {
-            final car = _cars[index];
-            return buildCarCard(car);
-          }),
+        itemCount: _cars.length,
+        itemBuilder: (context, index) {
+          final car = _cars[index];
+          return buildCarCard(car);
+        },
+      )),
       bottomNavigationBar: CustomBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
@@ -164,3 +214,4 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
     );
   }
 }
+

@@ -71,6 +71,7 @@ flutter:
     - assets/재규어/ #assets 폴도 내의 재규어 폴더 등록
     - assets/xm3/xm3_4.png
     - assets/그렌저/4.png
+    - assets/그렌저/11.png
     - assets/kakao_logo.jpg
     - assets/google_logo.png
 

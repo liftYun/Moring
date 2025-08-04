@@ -92,7 +92,7 @@ class CarNotRegisteredPage extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pushNamed(context, '/carRegistration');
+                        Navigator.pushNamed(context, '/registration');
                       },
                       child: Text(
                         '차량 등록하러 가기',
