@@ -1,0 +1,179 @@
+package com.dolijo.moring.notifycation.service;
+
+import com.dolijo.moring.car.entity.Car;
+import com.dolijo.moring.car.repository.CarRepository;
+import com.dolijo.moring.common.base.BaseResponseStatus;
+import com.dolijo.moring.common.exception.BaseException;
+import com.dolijo.moring.member.valueobject.GeneralNotificationType;
+import com.dolijo.moring.notifycation.entity.Notification;
+import com.dolijo.moring.notifycation.repository.NotificationRepository;
+import com.dolijo.moring.notifycation.valueobject.NotificationType;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class SseService {
+
+    // 차량별 SSE 연결 관리 (차량 VIN을 키로 사용)
+    private final Map<String, SseEmitter> carConnections = new ConcurrentHashMap<>();
+
+    private final CarRepository carRepository;
+    private final NotificationRepository notificationRepository;
+
+    private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30분
+
+    /**
+     * 차량 SSE 연결 생성
+     * @param carVin 차량 VIN
+     * @return SseEmitter
+     */
+    public SseEmitter createCarConnection(String carVin) {
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+
+        // 기존 연결이 있다면 종료
+        SseEmitter existingEmitter = carConnections.get(carVin);
+        if (existingEmitter != null) {
+            existingEmitter.complete();
+        }
+
+        carConnections.put(carVin, emitter);
+
+        // 연결 완료 시 정리
+        emitter.onCompletion(() -> {
+            carConnections.remove(carVin);
+            log.info("차량 SSE 연결 완료: {}", carVin);
+        });
+
+        // 타임아웃 시 정리
+        emitter.onTimeout(() -> {
+            carConnections.remove(carVin);
+            log.info("차량 SSE 연결 타임아웃: {}", carVin);
+        });
+
+        // 에러 시 정리
+        emitter.onError((e) -> {
+            carConnections.remove(carVin);
+            log.error("차량 SSE 연결 에러: {}", carVin, e);
+        });
+
+        // 초기 연결 확인 메시지 전송
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connect")
+                    .data("차량 SSE 연결이 성공적으로 설정되었습니다."));
+        } catch (IOException e) {
+            log.error("초기 SSE 메시지 전송 실패: {}", carVin, e);
+            carConnections.remove(carVin);
+            emitter.completeWithError(e);
+        }
+
+        log.info("차량 SSE 연결 생성: {}", carVin);
+        return emitter;
+    }
+
+    /**
+     * 차량에게 일반 알림 전송 (운행 중 발생하는 알림)
+     * @param carVin 차량 VIN
+     * @param generalNotificationType 일반 알림 유형
+     */
+    @Transactional
+    public void sendGeneralNotification(String carVin, GeneralNotificationType generalNotificationType) {
+        // 1. 차량 조회
+        Car car = carRepository.findByVin(carVin)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
+
+        // 2. SSE 연결 확인 및 알림 전송
+        SseEmitter emitter = carConnections.get(carVin);
+        if (emitter != null) {
+            try {
+                // SSE를 통해 실시간 알림 전송
+                emitter.send(SseEmitter.event()
+                        .name(generalNotificationType.name())
+                        .data(generalNotificationType.getDescription()));
+                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", carVin, generalNotificationType.name());
+                // 3. SSE 전송 성공 시에만 알림 엔티티 저장
+                saveNotification(car, NotificationType.GENERAL, generalNotificationType);
+
+            } catch (IOException e) {
+                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, generalNotificationType.name(), e);
+                // 전송 실패 시 연결 정리
+                carConnections.remove(carVin);
+                emitter.completeWithError(e);
+            }
+        } else {
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
+        }
+    }
+
+    /**
+     * 알림 엔티티 저장
+     * @param car 차량 엔티티
+     * @param notificationType 알림 유형
+     * @param generalNotificationType 일반 알림 유형
+     */
+    private void saveNotification(Car car, NotificationType notificationType, GeneralNotificationType generalNotificationType) {
+        Notification notification = Notification.builder()
+                .car(car)
+                .notificationType(notificationType)
+                .generalNotificationType(generalNotificationType)
+                .message(generalNotificationType.getDescription())
+                .readFlag(false)
+                .build();
+
+        notificationRepository.save(notification);
+        log.info("알림 저장 완료 - 차량: {}, 유형: {}, 내용: {}",
+                car.getVin(), notificationType, generalNotificationType.getDescription());
+    }
+
+    /**
+     * 차량에게 푸시 알림 전송 (차량 점검 등의 알림)
+     * Firebase를 통한 푸시 알림 전송 예정
+     * @param carVin 차량 VIN
+     * @param eventName 이벤트 이름
+     * @param data 전송할 데이터
+     */
+    public void sendPushNotification(String carVin, String eventName, Object data) {
+        // TODO: Firebase를 통한 푸시 알림 전송 구현 예정
+        log.info("푸시 알림 전송 요청 - 차량: {}, 이벤트: {}, 데이터: {}", carVin, eventName, data);
+        log.warn("Firebase 푸시 알림 기능 구현 예정");
+    }
+
+    /**
+     * 차량 연결 해제
+     * @param carVin 차량 VIN
+     */
+    public void disconnectCar(String carVin) {
+        SseEmitter emitter = carConnections.remove(carVin);
+        if (emitter != null) {
+            emitter.complete();
+            log.info("차량 SSE 연결 해제: {}", carVin);
+        }
+    }
+
+    /**
+     * 현재 연결된 차량 수 조회
+     * @return 연결된 차량 수
+     */
+    public int getCarConnectionCount() {
+        return carConnections.size();
+    }
+
+    /**
+     * 특정 차량의 연결 상태 확인
+     * @param carVin 차량 VIN
+     * @return 연결 여부
+     */
+    public boolean isCarConnected(String carVin) {
+        return carConnections.containsKey(carVin);
+    }
+}

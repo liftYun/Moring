@@ -13,10 +13,10 @@ public interface CarRepository extends JpaRepository<Car,Long> {
     boolean existsByVin(String vin);
 
     @Modifying
-    @Query("DELETE FROM Car c WHERE c.vin = :vin")
-    int deleteByVin(@Param("vin") String vin);
+    @Query("DELETE FROM Car c WHERE c.vin = :carVin")
+    int deleteByVin(@Param("vin") String carVin);
 
-    Optional<Car> findByVin(String vin);
+    Optional<Car> findByVin(String carVin);
 
 
 }

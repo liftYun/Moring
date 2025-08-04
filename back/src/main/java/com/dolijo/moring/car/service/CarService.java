@@ -21,7 +21,7 @@ public interface CarService {
     public List<CarResponseDto> getCarsByMemberUuid(String memberUuid);
 
 
-    public void deleteCarByVin(String vin);
+    public void deleteCarByVin(String carVin);
 
     public Long registerCarMileage(String vin, Float mileageKm);
 

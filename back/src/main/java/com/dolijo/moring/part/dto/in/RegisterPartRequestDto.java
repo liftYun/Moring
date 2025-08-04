@@ -4,11 +4,12 @@ import com.dolijo.moring.part.entity.valueobject.PartType;
 import lombok.*;
 
 @Getter
-@NoArgsConstructor
+@Builder
+@ToString
 public class RegisterPartRequestDto {
     private String nameKo;
     private String nameEn;
-    private int recommendedCycleMonths;
+    private Integer recommendedCycleMonths;
     private Integer recommendedCycleKm;
     private PartType type;
     private String description;
