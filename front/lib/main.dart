@@ -35,14 +35,13 @@ class MyApp extends ConsumerWidget {
       home: authAsync.when(
         loading: () => const SplashScreen(),
         error: (_, __) => const LoginPage(),
-        data: (loggedIn) => loggedIn ? const CarSelectionPage() : const LoginPage(),
+        data: (loggedIn) => loggedIn ? CarSelectionContainer() : const LoginPage(),
       ),
       routes: {
         '/login': (context) => const LoginPage(),
         '/home':  (context) => const HomePage(),
-        '/carselection': (context) => const CarSelectionPage(),
+        '/carselection': (context) => CarSelectionContainer(),
         '/nocar': (context) => const CarNotRegisteredPage(),
-        '/registration': (context) => const CarRegistrationPage(),
       },
     );
   }
