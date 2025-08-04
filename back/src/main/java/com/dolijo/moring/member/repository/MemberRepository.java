@@ -2,6 +2,7 @@ package com.dolijo.moring.member.repository;
 
 import com.dolijo.moring.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -38,6 +39,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
      */
     Optional<Member> findByEmail(String email);
 
+    @Modifying
     @Query("UPDATE Member m SET m.nickName = :nickName WHERE m.id = :id")
     int updateNickNameById(
             @Param("id") Long id,

@@ -59,6 +59,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomMemberDetails(member);
     }
 
+    @Transactional(readOnly = false)
     public int updateNickName(String uuid, String nickName) throws UsernameNotFoundException {
         Member member = memberRepository.findByUuid(uuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER ));

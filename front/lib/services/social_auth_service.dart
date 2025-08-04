@@ -4,8 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/api_client.dart';
+import 'package:moring/providers/api_client.dart';
 
 final socialAuthServiceProvider = Provider<SocialAuthService>((ref) {
   final dio = ref.read(noAuthDioProvider);
