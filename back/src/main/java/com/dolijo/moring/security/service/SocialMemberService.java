@@ -76,8 +76,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * 리프레시 토큰 검증 및 저장/삭제 서비스 (JPA 기반)
@@ -101,25 +103,21 @@ public class SocialMemberService {
     /**
      * 전달받은 리프레시 토큰이 유효한지 검사합니다.
      */
-    public boolean isValid(String uuid, String refreshToken, SocialType type) {
+    public boolean isValidWhitSocialToken(String uuid, SocialType type) {
 
         // uuid 로 멤버 조회
         Long id = memberRepository.findIdByUuid(uuid);
 
+        Optional<SocialMember> socialMember = socialMemberRepository.findByMemberIdAndType(id, type);
+        System.out.println("socialMember: " + socialMember);
 
-        // 1) 토큰 서명 및 만료 검증
-        try {
-            jwtUtil.parseClaims(refreshToken);
-        } catch (Exception e) {
-            return false;
-        }
-        // 2) DB에 저장된 토큰과 일치하고, 아직 만료되지 않았는지 확인
-        return socialMemberRepository
-                .findByMemberUuidAndType(id, type)
-                .filter(ent ->
-                        ent.getTokenId().equals(refreshToken) &&
-                                ent.getExpiresAt().isAfter(LocalDateTime.now()))
-                .isPresent();
+        // 2) 아직 만료되지 않았는지 확인
+        if(socialMember.isPresent()) {
+            SocialMember sm = socialMember.get();
+            String token = sm.getTokenId();
+            LocalDateTime expiresAt = sm.getExpiresAt();
+            return token != null && expiresAt.isAfter(LocalDateTime.now());
+        } else return false;
     }
 
     /**

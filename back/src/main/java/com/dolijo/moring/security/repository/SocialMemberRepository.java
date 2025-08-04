@@ -21,8 +21,14 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
 
     // 소셜 타입까지 같이 조회
 //    Optional<SocialMember> findByMember_UuidAndType(String memberUuid, SocialType type);
-    @Query("SELECT sm FROM SocialMember sm WHERE sm.member.uuid = :member AND sm.type = :type")
-    Optional<SocialMember> findByMemberUuidAndType(
+//    @Query("SELECT sm FROM SocialMember sm WHERE sm.member.id = :id AND sm.type = :type")
+//    Optional<SocialMember> findByMemberUuidAndType(
+//            @Param("memberId") Long id,
+//            @Param("type") SocialType type
+//    );
+
+    @Query("SELECT sm FROM SocialMember sm WHERE sm.member.id = :memberId AND sm.type = :type")
+    Optional<SocialMember> findByMemberIdAndType(
             @Param("memberId") Long id,
             @Param("type") SocialType type
     );
@@ -45,4 +51,6 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
                                    @Param("type") SocialType type);
 
     void deleteByMember(Member member);
+
+
 }

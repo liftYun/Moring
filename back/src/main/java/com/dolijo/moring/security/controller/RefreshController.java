@@ -56,7 +56,6 @@ public class RefreshController {
             @CookieValue(name = "refreshToken") String refreshToken,
             HttpServletResponse response
     ) {
-        log.info("Refresh token request received");
 
         // 1) 서명 + 만료 검사
         Claims claims = jwtUtil.parseClaims(refreshToken);
@@ -66,14 +65,13 @@ public class RefreshController {
         SocialType type = KAKAO;
 
         // 2) DB 저장 토큰 검증
-        if (!socialMemberService.isValid(memberUuid, refreshToken, type)) {
+        if (!socialMemberService.isValidWhitSocialToken(memberUuid, type)) {
             socialMemberService.deleteToken(memberUuid);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // 3) UserDetails 재조회
         CustomMemberDetails userDetails = customUserDetailsService.loadMemberUuid(memberUuid);
-
         // 4) 새 토큰 생성
         String newRefreshToken = jwtUtil.createRefreshToken(memberUuid);
         String newAccessToken = jwtUtil.createAccessToken(
@@ -81,11 +79,10 @@ public class RefreshController {
 //                userDetails.getUserEmail(),
                 userDetails.getUserNickname()
         );
-        LocalDateTime expiresAt = LocalDateTime.now().plusDays(30);
-
+//        LocalDateTime expiresAt = LocalDateTime.now().plusDays(30);
 
         // 5) DB에 새 리프레시 토큰 저장
-        socialMemberService.saveToken(memberUuid, type, newRefreshToken, expiresAt);
+//        socialMemberService.saveToken(memberUuid, type, newRefreshToken, expiresAt);
 
         // 6) HTTP-only 쿠키로 새 리프레시 토큰 설정
         Cookie cookie = new Cookie("refreshToken", newRefreshToken);

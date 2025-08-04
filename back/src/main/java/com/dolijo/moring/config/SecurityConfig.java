@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -21,6 +22,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -96,6 +99,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/login/oauth2/code/kakao").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/kakao/redirect").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/kakao/login").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/v1/auth/refresh").permitAll()
                 // 기존 로그인(username/password) 엔드포인트
                 .requestMatchers(HttpMethod.POST, "/login", "/logout/rToken").permitAll()
                 // Swagger, 공용 API
@@ -103,19 +107,24 @@ public class SecurityConfig {
                 // 토큰 보유자
                 .requestMatchers("/api/v1/cache/**").authenticated()
                 // 역할별 접근 제어
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/user/**").hasRole("USER")
+//                .requestMatchers("/admin/**").hasRole("ADMIN")
+//                .requestMatchers("/user/**").hasRole("USER")
                 .anyRequest().authenticated()
         );
+        // 인증 실패 시 리다이렉트 대신 401 응답만
+        http.exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                );
 
         // 4) JWT 필터 등록 (모든 요청 앞에서 검사)
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+//        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
 //        // 5) 기존 username/password 로그인 필터
-//        http.addFilterAt(
-//                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService),
-//                UsernamePasswordAuthenticationFilter.class
-//        );
+        http.addFilterAt(
+                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, socialMemberService),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         // 6) OAuth2 로그인 설정 (Spring Security Client 사용 시)
         http.oauth2Login(oauth2 -> oauth2

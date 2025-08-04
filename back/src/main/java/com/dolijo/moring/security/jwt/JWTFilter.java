@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -24,11 +25,17 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
+    // JWT 검사를 하지 않을 URL 목록
+    private static final List<String> EXCLUDE_URLS = List.of(
+            "/api/kakao/redirect",
+            "/api/v1/auth/refresh"   // ← 여길 추가!
+    );
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         // 인가 코드 콜백 URL을 JWT 검사에서 제외
         String path = request.getServletPath();
-        return "/api/kakao/redirect".equals(path);
+        return EXCLUDE_URLS.contains(path);
     }
 
     @Override
