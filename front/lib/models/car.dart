@@ -17,7 +17,7 @@ class Car {
       vin: json['vin'],
       nickname: json['nickname'],
       modelName: json['modelName'],
-      imgUrl: json['imgUrl'],
+      imgUrl: json['imgUrl'] as String? ?? '',
     );
   }
 }

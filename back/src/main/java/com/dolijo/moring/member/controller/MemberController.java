@@ -4,8 +4,10 @@ import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
+import com.dolijo.moring.security.dto.out.MemberDetailResponseDto;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.CustomUserDetailsService;
+import com.dolijo.moring.security.vo.out.MemberDetailResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,14 +18,37 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.dolijo.moring.security.jwt.JWTUtil;
 
+import java.sql.SQLException;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/member")
+@RequestMapping("/api/v1/members")
 @Tag(name = "회원", description = "회원 관련 API")
 @Log4j2
 public class MemberController {
     private final CustomUserDetailsService customUserDetailsService;
     private final JWTUtil jwtUtil;
+
+    @Operation(summary = "mypage 조회", description = "mypage 조회", tags = {"마이페이지"})
+    @GetMapping("/mypage")
+    public BaseResponse<MemberDetailResponseVo> list(
+            @Parameter(description = "memberUuid", example = "63f912c8-2b04-11f0-a5b7-0242ac110002")
+//            @PathVariable(name = "memberUuid")String memberuuid,
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails
+    ) throws SQLException {
+        String memberuuid = customMemberDetails.getUserUuid();
+        CustomMemberDetails memberDetails = customUserDetailsService.loadMemberUuid(memberuuid);
+//        System.out.println("member?? : "+member);
+
+        MemberDetailResponseVo member = new MemberDetailResponseVo(
+                memberuuid,
+                memberDetails.getUserEmail(),
+                memberDetails.getUserNickname()
+        );
+        
+        return BaseResponse.of(member);
+    }
+
 
     @Operation(summary = "회원의 닉네임 수정",   description = """
         회원의 닉네임을 수정합니다
@@ -39,18 +64,13 @@ public class MemberController {
                     required = false,
                     example = "0w6oYoZ-a9GOxnv3xXrOxtG9NrWJ24QBAAAAAQoNGZAAAAGYX4VHuVv0-avl6D9k"
             )
-//            @RequestHeader(name = "Authorization", required = false) String authHeader,
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
             @PathVariable String nickName
     ) {
-//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//            throw new IllegalArgumentException("잘못된 인증 헤더입니다.");
-//        }
-        // "Bearer eyJ..." 에서 순수 토큰만 추출
-//        String accessToken = authHeader.substring(7);
+        String uuid = customMemberDetails.getUserUuid();
 
         // 예: jwtUtil 로 uuid 꺼내기
-        String uuid = jwtUtil.getUserUuid(nickName);
+//        String uuid = jwtUtil.getUserUuid(nickName);
 
         int result = customUserDetailsService.updateNickName(uuid, nickName);
         if(result == 1)  return BaseResponse.ok();
@@ -58,15 +78,4 @@ public class MemberController {
         else return BaseResponse.error(BaseResponseStatus.UPDATE_NICKNAME_FAIL);
     }
 
-//    @PatchMapping("/update/{nickName}")
-//    public BaseResponse<String> updateNickName(
-//            @AuthenticationPrincipal CustomMemberDetails userDetails,
-//            @PathVariable String nickName
-//    ) {
-//        // JwtAuthenticationFilter가 미리 토큰을 파싱해서 SecurityContext에 넣어두면
-//        // userDetails.getUuid() 로 바로 uuid 획득 가능
-//        String uuid = userDetails.getUuid();
-//        String result = customUserDetailsService.updateNickName(uuid, nickName);
-//        return BaseResponse.of(result);
-//    }
 }
