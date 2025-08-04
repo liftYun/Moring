@@ -8,8 +8,7 @@ import lombok.*;
 @ToString
 @Builder
 public class MemberDetailResponseVo {
-    private Long id;
-    private String username;
-    private String password;
-    private String role;
+    private String uuid;
+    private String email;
+    private String nickName;
 }

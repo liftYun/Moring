@@ -7,6 +7,7 @@ import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import com.dolijo.moring.security.dto.out.MemberDetailResponseDto;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.CustomUserDetailsService;
+import com.dolijo.moring.security.vo.out.MemberDetailResponseVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +31,7 @@ public class MemberController {
 
     @Operation(summary = "mypage 조회", description = "mypage 조회", tags = {"마이페이지"})
     @GetMapping("/mypage")
-    public BaseResponse<Member> list(
+    public BaseResponse<MemberDetailResponseVo> list(
             @Parameter(description = "memberUuid", example = "63f912c8-2b04-11f0-a5b7-0242ac110002")
 //            @PathVariable(name = "memberUuid")String memberuuid,
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails
@@ -38,14 +39,13 @@ public class MemberController {
         String memberuuid = customMemberDetails.getUserUuid();
         CustomMemberDetails memberDetails = customUserDetailsService.loadMemberUuid(memberuuid);
 //        System.out.println("member?? : "+member);
-        
-        Member member = new Member(
+
+        MemberDetailResponseVo member = new MemberDetailResponseVo(
                 memberuuid,
                 memberDetails.getUserEmail(),
                 memberDetails.getUserNickname()
         );
         
-//        return BaseResponse.of(customUserDetailsService.loadMemberUuid(memberuuid));
         return BaseResponse.of(member);
     }
 

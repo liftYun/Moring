@@ -40,9 +40,9 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     Optional<Member> findByEmail(String email);
 
     @Modifying
-    @Query("UPDATE Member m SET m.nickName = :nickName WHERE m.id = :id")
+    @Query("UPDATE Member m SET m.nickName = :nickName WHERE m.uuid = :uuid")
     int updateNickNameById(
-            @Param("id") Long id,
+            @Param("uuid") String uuid,
             @Param("nickName") String nickName
     );
 }

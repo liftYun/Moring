@@ -64,6 +64,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         Member member = memberRepository.findByUuid(uuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER ));
 
-        return memberRepository.updateNickNameById(member.getId(), nickName);
+        return memberRepository.updateNickNameById(member.getUuid(), nickName);
     }
 }
