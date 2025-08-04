@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +38,7 @@ class SocialAuthService {
 
     // 3) Set-Cookie -> refreshToken
     final setCookie = resp.headers['set-cookie'] ?? [];
+    debugPrint('setCookie : $setCookie');
     for (final header in setCookie) {
       if (header.trim().startsWith('refreshToken=')) {
         final cookie = Cookie.fromSetCookieValue(header);
@@ -47,6 +49,7 @@ class SocialAuthService {
 
     // 4) body -> accessToken
     final access = resp.data['accessToken'] as String?;
+    debugPrint('access : $access');
     if (access != null) {
       await _tokenRepo.saveAccessToken(access);
     }

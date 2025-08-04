@@ -17,6 +17,7 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
 
     // 이제 users.uuid 칼럼(memberUuid) 기준으로 조회
     Optional<SocialMember> findByMemberUuid(String memberUuid);
+    Optional<SocialMember> findByMemberUuidAndType(String memberUuid, SocialType type);
 
     // 소셜 타입까지 같이 조회
 //    Optional<SocialMember> findByMember_UuidAndType(String memberUuid, SocialType type);

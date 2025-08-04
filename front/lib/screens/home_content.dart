@@ -143,55 +143,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     });
   }
 
-  Future<void> _logout() async {
-    final repo = ref.read(tokenRepositoryProvider);
-    final refreshToken = await repo.getRefreshToken();
-    final dio = ref.read(noAuthDioProvider);
-    final resp = await dio.post(
-      '/api/v1/auth/logout/rToken',
-      options: Options(
-        headers: {'Cookie': 'refreshToken=$refreshToken'},
-        validateStatus: (s) => s != null && s < 400,
-      ),
-    );
-
-    if (resp.statusCode == 200 || resp.statusCode == 302) {
-      await repo.deleteAllTokens();
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: widget.car?.nickname ?? 'Moring',
-        showCarDropdown: true,
-        availableCars: _availableCars,
-        selectedCar: _selectedCar,
-        onCarChanged: (v) {
-          if (v != null) _setCarImages(v);
-        },
-        onNotificationPressed: _logout,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CarViewerSection(imagePaths: _currentCarImagePaths),
-            const SizedBox(height: 20),
-            ConsumablesSection(consumables: consumables),
-            const SizedBox(height: 20),
-            DrivingLogSection(title: 'Today', logs: todayLogs),
-            const SizedBox(height: 20),
-            DrivingLogSection(title: 'Yesterday', logs: yesterdayLogs),
-          ],
-        ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CarViewerSection(imagePaths: _currentCarImagePaths),
+          const SizedBox(height: 20),
+          ConsumablesSection(consumables: consumables),
+          const SizedBox(height: 20),
+          DrivingLogSection(title: 'Today', logs: todayLogs),
+          const SizedBox(height: 20),
+          DrivingLogSection(title: 'Yesterday', logs: yesterdayLogs),
+        ],
       ),
     );
   }

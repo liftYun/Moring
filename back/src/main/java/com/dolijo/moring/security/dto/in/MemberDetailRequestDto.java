@@ -9,7 +9,6 @@ import lombok.*;
 @ToString
 @Builder
 public class MemberDetailRequestDto {
-    private Long id;
     private String uuid;
     private String nickName;
     private String email;
@@ -18,6 +17,8 @@ public class MemberDetailRequestDto {
         return Member.builder()
                 .uuid(dto.uuid)
                 .email(dto.email)
+                .nickName(dto.nickName)
                 .build();
     }
+
 }

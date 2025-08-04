@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+import static com.dolijo.moring.member.valueobject.SocialType.KAKAO;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @Log4j2
@@ -60,7 +62,8 @@ public class RefreshController {
         Claims claims = jwtUtil.parseClaims(refreshToken);
         String memberUuid = claims.get("uuid", String.class);
 //        Long id = claims.get("id", Long.class);
-        SocialType type = SocialType.valueOf(claims.get("type", String.class));
+//        SocialType type = SocialType.valueOf(claims.get("type", String.class));
+        SocialType type = KAKAO;
 
         // 2) DB 저장 토큰 검증
         if (!socialMemberService.isValid(memberUuid, refreshToken, type)) {

@@ -19,11 +19,11 @@ Dio authDio(AuthDioRef ref) {
 
   final options = BaseOptions(
     // 로컬 테스트시 사용
-    // baseUrl: Platform.isAndroid
-    //     ? 'http://10.0.2.2:8080'
-    //     : 'http://localhost:8080',
+    baseUrl: Platform.isAndroid
+        ? 'http://10.0.2.2:8080'
+        : 'http://localhost:8080',
     // 서버 배포 주소로 요청
-    baseUrl: 'http://i13e101.p.ssafy.io:8080',
+    // baseUrl: 'http://i13e101.p.ssafy.io:8080',
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 5),
   );
@@ -56,7 +56,7 @@ Dio authDio(AuthDioRef ref) {
           try {
             final refreshToken = await repo.getRefreshToken();
             if (refreshToken == null) throw Exception('No refresh token');
-
+            debugPrint('리프레시 시도!!!');
             // 3) 리프레시 API 호출 (쿠키 방식이라면 쿠키 헤더로)
             final refreshDio = Dio(BaseOptions(baseUrl: options.baseUrl));
             final refreshResp = await refreshDio.post(
@@ -74,6 +74,10 @@ Dio authDio(AuthDioRef ref) {
               final newAccess = refreshResp.data['accessToken'] as String?;
               if (newAccess != null) {
                 await repo.saveAccessToken(newAccess);
+              }
+              final newRefresh = refreshResp.data['refreshToken'] as String?;
+              if (newRefresh != null) {
+                await repo.saveRefreshToken(newRefresh);
               }
 
               // 큐에 모인 모든 요청 재시도
@@ -119,11 +123,11 @@ Dio authDio(AuthDioRef ref) {
 Dio noAuthDio(NoAuthDioRef ref) {
   final options = BaseOptions(
     // 로컬 테스트시 사용
-    // baseUrl: Platform.isAndroid
-    //     ? 'http://10.0.2.2:8080'
-    //     : 'http://localhost:8080',
+    baseUrl: Platform.isAndroid
+        ? 'http://10.0.2.2:8080'
+        : 'http://localhost:8080',
     // 서버 배포 주소로 요청,
-    baseUrl: 'http://i13e101.p.ssafy.io:8080',
+    // baseUrl: 'http://i13e101.p.ssafy.io:8080',
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 5),
   );
