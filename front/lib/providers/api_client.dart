@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:moring/providers/token_repository.dart';
 
@@ -40,6 +41,7 @@ Dio authDio(AuthDioRef ref) {
       handler.next(options);
     },
     onError: (err, handler) async {
+      debugPrint('🔴 Dio onError: ${err.requestOptions.path} → ${err.response?.statusCode}');
       // 1) 401 Unauthorized 감지 (AT 만료)
       if (err.response?.statusCode == 401) {
         // 2) 리프레시 중복 호출 방지
@@ -56,7 +58,7 @@ Dio authDio(AuthDioRef ref) {
             if (refreshToken == null) throw Exception('No refresh token');
 
             // 3) 리프레시 API 호출 (쿠키 방식이라면 쿠키 헤더로)
-            final refreshDio = Dio(options);
+            final refreshDio = Dio(BaseOptions(baseUrl: options.baseUrl));
             final refreshResp = await refreshDio.post(
               '/api/v1/auth/refresh',
               options: Options(

@@ -1,5 +1,3 @@
-// Path: front/lib/screens/member/home_content.dart
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,15 +5,11 @@ import 'package:moring/models/car.dart';
 import 'package:moring/models/consumable.dart'; // Consumable 모델 임포트
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/token_repository.dart';
-import 'package:moring/utils/bottom_nav_bar.dart';
 import 'package:moring/utils/custom_app_bar.dart';
 import 'package:moring/utils/app_icon.dart'; // AppIcons 임포트
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart'; // <-- 수정된 ConsumablesSection 임포트
 import 'package:moring/widgets/driving_log_section.dart';
-import 'package:moring/screens/information/more_information.dart';
-// ConsumablePartsScreen은 ConsumablesSection에서 직접 호출되므로 여기서는 임포트할 필요 없습니다.
-// import 'package:moring/screens/consumable/consumable_parts.dart';
 
 
 class HomeContent extends ConsumerStatefulWidget {
@@ -27,7 +21,6 @@ class HomeContent extends ConsumerStatefulWidget {
 }
 
 class _HomeContentState extends ConsumerState<HomeContent> {
-  int _selectedIndex = 0;
   late List<Consumable> consumables; // ConsumablesSection에 전달할 리스트
   List<String> _currentCarImagePaths = [];
   String _selectedCar = 'xm3';
@@ -150,21 +143,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     });
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    // 하단바 탭 시 페이지 전환 로직
-    if (index == 0) { // Home 탭 (인덱스 0)
-      // 현재 HomeContent 화면이므로 특별한 Navigator 동작 없이 상태만 업데이트.
-    } else if (index == 3) { // More 탭 (인덱스 3)
-      // _selectedIndex가 3일 때 bodyContent가 MorePage로 변경되므로 Navigator.push 불필요.
-    }
-    // 다른 탭 (Navigation, Driving Log 등)에 대한 이동 로직은 필요에 따라 여기에 추가.
-    // 예: else if (index == 1) { Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NavigationScreen())); }
-  }
-
   Future<void> _logout() async {
     final repo = ref.read(tokenRepositoryProvider);
     final refreshToken = await repo.getRefreshToken();
@@ -189,34 +167,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    Widget bodyContent;
-    if (_selectedIndex == 3) {
-      // More 탭이 선택되면 MorePage를 body로 설정
-      bodyContent = const MorePage();
-    } else {
-      // Home 탭 또는 다른 탭이 선택되면 기본 홈 화면 내용을 보여줍니다.
-      bodyContent = SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CarViewerSection(imagePaths: _currentCarImagePaths),
-            const SizedBox(height: 20),
-            // === 이 부분이 ConsumablesSection 위젯을 사용하는 부분입니다. ===
-            ConsumablesSection(consumables: consumables), // consumables 리스트를 전달
-            const SizedBox(height: 20),
-            DrivingLogSection(title: 'Today', logs: todayLogs),
-            const SizedBox(height: 20),
-            DrivingLogSection(title: 'Yesterday', logs: yesterdayLogs),
-          ],
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: CustomAppBar(
         title: widget.car?.nickname ?? 'Moring',
-        onBackButtonPressed: () => Navigator.pop(context),
         showCarDropdown: true,
         availableCars: _availableCars,
         selectedCar: _selectedCar,
@@ -225,10 +178,20 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         },
         onNotificationPressed: _logout,
       ),
-      body: bodyContent,
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CarViewerSection(imagePaths: _currentCarImagePaths),
+            const SizedBox(height: 20),
+            ConsumablesSection(consumables: consumables),
+            const SizedBox(height: 20),
+            DrivingLogSection(title: 'Today', logs: todayLogs),
+            const SizedBox(height: 20),
+            DrivingLogSection(title: 'Yesterday', logs: yesterdayLogs),
+          ],
+        ),
       ),
     );
   }
