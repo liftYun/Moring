@@ -1,5 +1,6 @@
 package com.dolijo.moring.notifycation.entity;
 
+import com.dolijo.moring.car.entity.Car;
 import com.dolijo.moring.common.base.BaseEntity;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.valueobject.GeneralNotificationType;
@@ -10,6 +11,8 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,8 +24,9 @@ public class Notification extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_uuid", referencedColumnName = "member_uuid", nullable = false)
-    private Member member;
+    @JoinColumn(name = "car_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Car car;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
@@ -39,11 +43,16 @@ public class Notification extends BaseEntity {
     @ColumnDefault("false")
     private Boolean readFlag;
 
+    @Column(name = "message", nullable = false)
+    @Comment("알림 메시지")
+    private String message;
+
     @Builder
-    public Notification(Member member, NotificationType notificationType, GeneralNotificationType generalNotificationType, Boolean readFlag) {
-        this.member = member;
+    public Notification(Car car, NotificationType notificationType, GeneralNotificationType generalNotificationType, String message, Boolean readFlag) {
+        this.car = car;
         this.notificationType = notificationType;
         this.generalNotificationType = generalNotificationType;
+        this.message = message;
         this.readFlag = readFlag;
     }
 }

@@ -30,7 +30,7 @@ public class Part {
     @Comment("권장교체주기 (월단위)")
     private int recommendedCycleMonths;
 
-    @Column(name = "recommended_cycle_km")
+    @Column(name = "recommended_cycle_km", nullable = true)
     @Comment("권장교체주기 (km단위)")
     private int recommendedCycleKm;
 

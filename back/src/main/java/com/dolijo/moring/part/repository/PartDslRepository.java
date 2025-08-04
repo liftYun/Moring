@@ -23,6 +23,8 @@ public class PartDslRepository {
     private static final long LIMIT_VALUE = 20L;
 
     public List<PartStatusListDto> findPartStatusListByCarId(Long carId) {
+        // 1. 먼저 해당 차량의 각 부품별 최신 교체 이력을 찾는 서브쿼리
+        QPartChangeLog subChangeLog = new QPartChangeLog("subChangeLog");
 
         return queryFactory
                 .select(new QPartStatusListDto(
@@ -35,15 +37,14 @@ public class PartDslRepository {
                 .on(partChangeLog.part.id.eq(part.id)
                         .and(partChangeLog.car.id.eq(carId))
                         .and(partChangeLog.createdAt.eq(
-                                // 가장 최근 부품 교환 이력 날짜만을 조회하는 서브쿼리
-                                JPAExpressions.select(partChangeLog.createdAt.max())
-                                        .from(partChangeLog)
-                                        .where(
-                                                partChangeLog.part.id.eq(part.id),
-                                                partChangeLog.car.id.eq(carId)
-                                        )
+                                // 각 부품별 최신 교체 이력 찾기
+                                JPAExpressions.select(subChangeLog.createdAt.max())
+                                        .from(subChangeLog)
+                                        .where(subChangeLog.part.id.eq(part.id)
+                                                .and(subChangeLog.car.id.eq(carId)))
                         ))
                 )
+                .orderBy(part.id.asc()) // 정렬 추가로 일관성 확보
                 .limit(LIMIT_VALUE) // 부품 테이블 데이터 많을 만약의 경우 부하 방지
                 .fetch();
     }

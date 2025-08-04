@@ -1,10 +1,12 @@
+// Path: front/lib/models/consumable.dart
+
 import 'package:flutter/material.dart';
 
 class Consumable {
-  final Icon icon; // 앱 아이콘
-  final String title; // 소모품 이름
+  final Icon icon;
+  final String title;
   final DateTime lastReplacedDate; // 마지막 교체일
-  final int replacementCycleMonths; // 교체 주기 (개월)
+  final int replacementCycleMonths; // 교체 주기 (월 단위)
 
   Consumable({
     required this.icon,
@@ -13,25 +15,33 @@ class Consumable {
     required this.replacementCycleMonths,
   });
 
-  // 교체 주기 대비 남은 퍼센티지 계산
-  double getRemainingPercentage() {
-    final now = DateTime.now();
-    final int monthsPassed = (now.year - lastReplacedDate.year) * 12 +
-        (now.month - lastReplacedDate.month);
-
-    if (monthsPassed >= replacementCycleMonths) {
-      return 0.0; // 교체 주기를 넘었으면 0%
-    } else {
-      return (replacementCycleMonths - monthsPassed) / replacementCycleMonths;
-    }
-  }
-
-  // 다음 교체일 계산 (선택 사항)
+  // 다음 교체일 계산
   DateTime getNextReplacementDate() {
     return DateTime(
-      lastReplacedDate.year + (lastReplacedDate.month + replacementCycleMonths - 1) ~/ 12,
-      (lastReplacedDate.month + replacementCycleMonths - 1) % 12 + 1,
+      lastReplacedDate.year,
+      lastReplacedDate.month + replacementCycleMonths,
       lastReplacedDate.day,
     );
+  }
+
+  // 남은 퍼센트 계산
+  double getRemainingPercentage() {
+    final DateTime now = DateTime.now();
+    final DateTime nextReplacementDate = getNextReplacementDate();
+
+    // 전체 주기 길이 (밀리초)
+    final int totalCycleMilliseconds = nextReplacementDate.difference(lastReplacedDate).inMilliseconds;
+
+    // 현재까지 사용된 주기 길이 (밀리초)
+    final int elapsedMilliseconds = now.difference(lastReplacedDate).inMilliseconds;
+
+    if (totalCycleMilliseconds <= 0) {
+      return 0.0; // 주기가 유효하지 않으면 0%
+    }
+
+    double progress = 1.0 - (elapsedMilliseconds / totalCycleMilliseconds);
+
+    // 0% ~ 100% 범위로 제한
+    return progress.clamp(0.0, 1.0);
   }
 }

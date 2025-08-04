@@ -6,6 +6,8 @@ import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.entity.Car;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import com.dolijo.moring.car.entity.CarInspectionLog;
 import com.dolijo.moring.car.entity.CarMileageLog;
 import com.dolijo.moring.car.repository.*;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -53,18 +56,16 @@ public class CarServiceImpl implements CarService{
 
         // 3. 차량 등록일 + 4 년으로 carInspectionLog 생성
         LocalDate inspectionDate = dto.getRegisteredAt().plusYears(4);
-        carInspectionLogRepository.save(
-                    CarInspectionLog.builder()
-                    .car(newCar)
-                    .inspectionDate(inspectionDate)
-                    .inspectionStatus(InspectionStatus.PENDING) // 초기 상태는 PENDING
-                    .build()
-        );
+        CarInspectionLog inspectionLog = CarInspectionLog.builder()
+                .car(newCar)
+                .inspectionDate(inspectionDate)
+                .inspectionStatus(InspectionStatus.PENDING) // 초기 상태는 PENDING
+                .build();
+        carInspectionLogRepository.save(inspectionLog); // 점검 로그 저장
         // 저장
         return newCar.getId();
     }
 
-    @Override
     public List<CarResponseDto> getCarsByMemberUuid(String memberUuid) {
         // 1.회원 존재 여부 확인
         Long memberId = memberRepository.findIdByMemberUuid(memberUuid)
@@ -75,9 +76,10 @@ public class CarServiceImpl implements CarService{
 
     @Override
     @Transactional
-    public void deleteCarByVin(String vin) {
-        int deletedCount = carRepository.deleteByVin(vin);
-        log.info("차량 삭제 레코드 수 : "+deletedCount);
+    public void deleteCarByVin(String carVin) {
+        // 차량 삭제 (삭제된 레코드 수 반환)
+        long deletedCount = carRepository.deleteByVin(carVin);
+        log.info("차량 삭제 레코드 수 : " + deletedCount);
         if (deletedCount == 0) {
             throw new BaseException(BaseResponseStatus.NO_EXIST_CAR);
         }
@@ -85,17 +87,18 @@ public class CarServiceImpl implements CarService{
 
     @Transactional
     @Override
-    public Long registerCarMileage(String vin, Float mileageKm) {
+    public Long registerCarMileage(String carVin, Float mileageKm) {
         // 1. VIN으로 차량 조회
-        Car car = carRepository.findByVin(vin)
+        Car car = carRepository.findByVin(carVin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         // 2. 오늘 날짜로 이미 log가 있으면 update, 없으면 새로 생성
-        // (로직은 상황에 따라 구현)
-        CarMileageLog carMileageLog = carMileageLogRepository
-                .findByCarIdAndRecordedDate(car.getId(), LocalDate.now())
-                .orElseGet(() -> new CarMileageLog(car, LocalDate.now(), 0.0f)); // 없으면 생성
-
+        CarMileageLog carMileageLog = carMileageLogRepository.findByCarIdAndRecordedDate(car.getId(), LocalDate.now())
+                .orElseGet(() -> CarMileageLog.builder()
+                        .car(car)
+                        .recordedDate(LocalDate.now())
+                        .mileageKm(0f)
+                        .build());
 
         carMileageLog.addMileage(mileageKm); // 누적
         log.info(carMileageLog);
