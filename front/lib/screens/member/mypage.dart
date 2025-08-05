@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/models/user_info.dart';
 import 'package:moring/providers/user_provider.dart';
 
+import '../../utils/base_scaffold.dart';
+
 class MyPageScreen extends ConsumerWidget {
   const MyPageScreen({Key? key}) : super(key: key);
 
@@ -10,8 +12,10 @@ class MyPageScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userInfoProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Page')),
+    return BaseScaffold(
+      title: 'My Page',
+      onBackButtonPressed: () => Navigator.pop(context),
+      showBack: true,
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('에러: $err')),
