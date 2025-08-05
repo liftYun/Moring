@@ -1,10 +1,12 @@
 package com.dolijo.moring.car.controller;
 
+import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
 import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.service.CarService;
 import com.dolijo.moring.car.vo.in.RegisterCarRequestVo;
+import com.dolijo.moring.car.vo.out.CarInspectionLogResponseVo;
 import com.dolijo.moring.car.vo.out.CarResponseVo;
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.common.base.BaseResponseStatus;
@@ -120,6 +122,18 @@ public class CarController {
     ) {
         carService.registerCarInspection(vin, inspectionDate);
         return BaseResponse.ok();
+    }
+
+    @Operation(summary = "차량 정기점검 로그 조회", description = "차량 VIN으로 정기점검 로그를 페이징 조회.")
+    @GetMapping("/{vin}/inspection-logs-paging")
+    public BaseResponse<Slice<CarInspectionLogResponseVo>> getCarInspectionLogs(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin,
+            @ParameterObject Pageable pageable
+    ) {
+        Slice<CarInspectionLogResponseDto> dtoSlice = carService.getCarInspectionLogs(vin, pageable);
+        Slice<CarInspectionLogResponseVo> voSlice = dtoSlice.map(CarInspectionLogResponseDto::toVo);
+        return BaseResponse.of(voSlice);
     }
 
 

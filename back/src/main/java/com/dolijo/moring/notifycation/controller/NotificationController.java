@@ -2,8 +2,8 @@ package com.dolijo.moring.notifycation.controller;
 
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.notifycation.service.SseService;
+import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.vo.out.SseConnectionStatusVo;
-import com.dolijo.moring.member.valueobject.GeneralNotificationType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,9 +44,9 @@ public class NotificationController {
             @PathVariable("carVin") String carVin,
             @Schema(description = "일반 알림 유형 : FRONT_ALERT(전방주시 알림), OXYGEN_ALERT(산소 알림), DISTRACTION_ALERT(집중 알림)"
                     , required = true, example = "FRONT_ALERT")
-            @RequestParam("generalNotificationType") GeneralNotificationType generalNotificationType
+            @RequestParam("notificationDetailType") NotificationDetailType notificationDetailType
     ) {
-        sseService.sendGeneralNotification(carVin, generalNotificationType);
+        sseService.sendGeneralNotification(carVin, notificationDetailType);
         return BaseResponse.ok();
     }
 
