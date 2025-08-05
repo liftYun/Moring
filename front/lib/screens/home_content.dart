@@ -24,7 +24,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   late List<Consumable> consumables; // ConsumablesSection에 전달할 리스트
   List<String> _currentCarImagePaths = [];
   String _selectedCar = 'xm3';
-  final List<String> _availableCars = ['xm3', '그렌저', '재규어'];
+  final List<String> _availableCars = ['xm3', '그랜저', '재규어'];
 
   final List<Map<String, String>> todayLogs = [
     {'distance': '15.2 mi', 'time': '12:30 PM - 1:00 PM'},
@@ -124,11 +124,11 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       switch (carName) {
         case 'xm3':
           numImages = 36;
-          basePath = 'assets/xm3/xm3_';
+          basePath = 'assets/xm3/';
           break;
-        case '그렌저':
+        case '그랜저':
           numImages = 36;
-          basePath = 'assets/그렌저/';
+          basePath = 'assets/그랜저/';
           break;
         case '재규어':
           numImages = 30;

@@ -68,11 +68,11 @@ flutter:
 
   assets:
     - assets/xm3/ #assets 폴더 내의 xm3폴더 등록
-    - assets/그렌저/ #assets 폴도 내의 그렌저 폴더 등록
+    - assets/그랜저/ #assets 폴도 내의 그렌저 폴더 등록
     - assets/재규어/ #assets 폴도 내의 재규어 폴더 등록
-    - assets/xm3/xm3_4.png
-    - assets/그렌저/4.png
-    - assets/그렌저/11.png
+    - assets/xm3/4.png
+    - assets/그랜저/4.png
+    - assets/그랜저/11.png
     - assets/kakao_logo.jpg
     - assets/google_logo.png
 
