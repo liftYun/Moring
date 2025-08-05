@@ -1,12 +1,16 @@
 // lib/screens/information/profile_edit_page.dart
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/models/user_info.dart';
 import 'package:moring/models/car.dart';
 import 'package:moring/providers/user_provider.dart';
 import 'package:moring/providers/car_provider.dart';
+import 'package:moring/utils/base_scaffold.dart';
 
+import '../../providers/api_client.dart';
+import '../../providers/token_repository.dart';
 import '../../services/user_service.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
@@ -37,6 +41,27 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     _nicknameController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _logout() async {
+    final repo = ref.read(tokenRepositoryProvider);
+    final refreshToken = await repo.getRefreshToken();
+    final dio = ref.read(noAuthDioProvider);
+    final resp = await dio.post(
+      '/api/v1/auth/logout/rToken',
+      options: Options(
+        headers: {'Cookie': 'refreshToken=$refreshToken'},
+        validateStatus: (s) => s != null && s < 400,
+      ),
+    );
+    if (resp.statusCode == 200 || resp.statusCode == 302) {
+      await repo.deleteAllTokens();
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
+      );
+    }
   }
 
   Future<void> _saveChanges() async {
@@ -86,13 +111,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final userAsync = ref.watch(userInfoProvider);
     final carsAsync = ref.watch(carListProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF111416),
-      appBar: AppBar(
-        title: const Text('Edit Information'),
-        backgroundColor: const Color(0xFF111416),
-        elevation: 0,
-      ),
+    return BaseScaffold(
+      title: '회원 정보 수정',
+      withBottomNav: false,
       body: SafeArea(
         child: userAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -169,14 +190,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0A7FED),
+                        backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       onPressed: _saveChanges,
                       child: const Text(
-                        'Save Changes',
+                        '저장',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -187,6 +208,28 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   ),
 
                   const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white24,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      onPressed: _logout,
+                      child: const Text(
+                        '로그아웃',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

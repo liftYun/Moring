@@ -11,10 +11,6 @@ class BaseScaffold extends StatelessWidget {
   final bool withBottomNav;
   final int selectedIndex;
   final ValueChanged<int>? onItemTapped;
-  final bool showCarDropdown;
-  final List<String>? availableCars; // 차량 목록 (옵션)
-  final String? selectedCar; // 현재 선택된 차량 (옵션)
-  final ValueChanged<String?>? onCarChanged; // 차량 변경 콜백 (옵션)
   final VoidCallback? onNotificationPressed;
   final bool showBack;
   final VoidCallback? onBackButtonPressed;
@@ -26,10 +22,6 @@ class BaseScaffold extends StatelessWidget {
     this.withBottomNav = false,
     this.selectedIndex = 0,
     this.onItemTapped,
-    this.showCarDropdown = false, // 기본값은 false로 설정하여 숨김
-    this.availableCars,
-    this.selectedCar,
-    this.onCarChanged,
     this.onNotificationPressed,
     this.showBack = false,
     this.onBackButtonPressed,

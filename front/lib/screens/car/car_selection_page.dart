@@ -8,6 +8,9 @@ import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/user_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
+import '../home_page.dart';
+import '../root.dart';
+
 class CarSelectionContainer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,13 +108,22 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
     });
   }
 
+  // void _navigateToCarDetail(Car car) {
+  //   Navigator.pushNamed(context, '/root', arguments: {'car': car});
+  // }
   void _navigateToCarDetail(Car car) {
-    Navigator.pushNamed(context, '/root', arguments: {'car': car});
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RootPage(initialCar: car),
+      ),
+    );
   }
 
   Widget buildCarCard(Car car) {
     // 등록된 차량 모델 이름에 맞춰 동일한 사진을 띄움
     String carName = car.modelName.toLowerCase();
+    debugPrint('car_selection Name : $carName');
     final String demoCarImage = 'assets/$carName/4.png'; // 에셋(로컬) 이미지 경로 예시
 
     return Container(
@@ -182,41 +194,6 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: CustomAppBar(
-  //       title: '보유 차량',
-  //       onBackButtonPressed: () => Navigator.pop(context),
-  //       showCarDropdown: true,
-  //       availableCars: _cars.map((c) => c.modelName).toList(),
-  //       selectedCar: _selectedCarForDropdown?.modelName,
-  //       onCarChanged: (newValue) {
-  //         if (newValue != null) {
-  //           setState(() {
-  //             _selectedCarForDropdown =
-  //                 _cars.firstWhere((c) => c.modelName == newValue);
-  //           });
-  //         }
-  //       },
-  //     ),
-  //     body: _loading
-  //         ? const Center(child: CircularProgressIndicator())
-  //         : (_error != null
-  //         ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-  //         : ListView.builder(
-  //       itemCount: _cars.length,
-  //       itemBuilder: (context, index) {
-  //         final car = _cars[index];
-  //         return buildCarCard(car);
-  //       },
-  //     )),
-  //     bottomNavigationBar: CustomBottomNavBar(
-  //       selectedIndex: _selectedIndex,
-  //       onItemTapped: _onItemTapped,
-  //     ),
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(

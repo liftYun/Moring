@@ -23,7 +23,7 @@ class HomeContent extends ConsumerStatefulWidget {
 class _HomeContentState extends ConsumerState<HomeContent> {
   late List<Consumable> consumables; // ConsumablesSection에 전달할 리스트
   List<String> _currentCarImagePaths = [];
-  String _selectedCar = 'xm3';
+  String _selectedCar = '';
   final List<String> _availableCars = ['xm3', '그랜저', '재규어'];
 
   final List<Map<String, String>> todayLogs = [
@@ -110,7 +110,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     ];
 
     if (widget.car != null) {
-      _setCarImages(widget.car!.modelName);
+      _setCarImages(widget.car!.modelName.toLowerCase());
     } else {
       _setCarImages(_selectedCar);
     }
@@ -118,7 +118,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   void _setCarImages(String carName) {
     setState(() {
-      _selectedCar = carName;
+      debugPrint('homeContent Name : $carName');
+      _selectedCar = carName.toLowerCase();
       int numImages;
       String basePath;
       switch (carName) {
