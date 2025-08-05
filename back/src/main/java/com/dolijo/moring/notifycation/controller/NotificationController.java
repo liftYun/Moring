@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications")
-@Tag(name = "알림", description = "SSE 기반 실시간 알림 API")
+@Tag(name = "알림", description = "알림 API")
 @Log4j2
 public class NotificationController {
 
@@ -50,19 +50,6 @@ public class NotificationController {
         return BaseResponse.ok();
     }
 
-    @Operation(summary = "푸시 알림 전송", description = "차량 점검, 부품 교체 등의 푸시 알림을 전송합니다. (Firebase 구현 예정)")
-    @PostMapping("/send/push/{carVin}")
-    public BaseResponse<Void> sendPushNotification(
-            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin,
-            @Parameter(description = "이벤트 이름", required = true, example = "INSPECTION_ALERT")
-            @RequestParam("eventName") String eventName,
-            @Parameter(description = "전송할 메시지", required = true, example = "정기점검이 필요합니다.")
-            @RequestParam("message") String message
-    ) {
-        sseService.sendPushNotification(carVin, eventName, "Firebase 푸시 알림 구현 예정입니다.");
-        return BaseResponse.ok();
-    }
 
     @Operation(summary = "차량 SSE 연결 해제", description = "차량의 SSE 연결을 해제합니다.")
     @DeleteMapping("/disconnect/{carVin}")
