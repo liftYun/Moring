@@ -56,10 +56,9 @@ Dio authDio(AuthDioRef ref) {
           try {
             final refreshToken = await repo.getRefreshToken();
             if (refreshToken == null) throw Exception('No refresh token');
-
+            debugPrint('리프레시 시도!!!');
             // 3) 리프레시 API 호출 (쿠키 방식이라면 쿠키 헤더로)
-            final refreshDio = Dio(BaseOptions(baseUrl: options.baseUrl));
-            final refreshResp = await refreshDio.post(
+            final refreshResp = await dio.post(
               '/api/v1/auth/refresh',
               options: Options(
                 headers: {
@@ -74,6 +73,10 @@ Dio authDio(AuthDioRef ref) {
               final newAccess = refreshResp.data['accessToken'] as String?;
               if (newAccess != null) {
                 await repo.saveAccessToken(newAccess);
+              }
+              final newRefresh = refreshResp.data['refreshToken'] as String?;
+              if (newRefresh != null) {
+                await repo.saveRefreshToken(newRefresh);
               }
 
               // 큐에 모인 모든 요청 재시도
