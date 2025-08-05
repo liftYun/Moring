@@ -4,7 +4,7 @@ import com.dolijo.moring.car.entity.Car;
 import com.dolijo.moring.car.repository.CarRepository;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
-import com.dolijo.moring.member.valueobject.GeneralNotificationType;
+import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.entity.Notification;
 import com.dolijo.moring.notifycation.repository.NotificationRepository;
 import com.dolijo.moring.notifycation.valueobject.NotificationType;
@@ -83,10 +83,10 @@ public class SseService {
     /**
      * 차량에게 일반 알림 전송 (운행 중 발생하는 알림)
      * @param carVin 차량 VIN
-     * @param generalNotificationType 일반 알림 유형
+     * @param notificationDetailType 일반 알림 유형
      */
     @Transactional
-    public void sendGeneralNotification(String carVin, GeneralNotificationType generalNotificationType) {
+    public void sendGeneralNotification(String carVin, NotificationDetailType notificationDetailType) {
         // 1. 차량 조회
         Car car = carRepository.findByVin(carVin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
@@ -97,14 +97,14 @@ public class SseService {
             try {
                 // SSE를 통해 실시간 알림 전송
                 emitter.send(SseEmitter.event()
-                        .name(generalNotificationType.name())
-                        .data(generalNotificationType.getDescription()));
-                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", carVin, generalNotificationType.name());
+                        .name(notificationDetailType.name())
+                        .data(notificationDetailType.getDescription()));
+                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", carVin, notificationDetailType.name());
                 // 3. SSE 전송 성공 시에만 알림 엔티티 저장
-                saveNotification(car, NotificationType.GENERAL, generalNotificationType);
+                saveNotification(car, NotificationType.GENERAL, notificationDetailType);
 
             } catch (IOException e) {
-                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, generalNotificationType.name(), e);
+                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, notificationDetailType.name(), e);
                 // 전송 실패 시 연결 정리
                 carConnections.remove(carVin);
                 emitter.completeWithError(e);
@@ -119,20 +119,20 @@ public class SseService {
      * 알림 엔티티 저장
      * @param car 차량 엔티티
      * @param notificationType 알림 유형
-     * @param generalNotificationType 일반 알림 유형
+     * @param notificationDetailType 일반 알림 유형
      */
-    private void saveNotification(Car car, NotificationType notificationType, GeneralNotificationType generalNotificationType) {
+    private void saveNotification(Car car, NotificationType notificationType, NotificationDetailType notificationDetailType) {
         Notification notification = Notification.builder()
                 .car(car)
                 .notificationType(notificationType)
-                .generalNotificationType(generalNotificationType)
-                .message(generalNotificationType.getDescription())
+                .notificationDetail(notificationDetailType)
+                .message(notificationDetailType.getDescription())
                 .readFlag(false)
                 .build();
 
         notificationRepository.save(notification);
         log.info("알림 저장 완료 - 차량: {}, 유형: {}, 내용: {}",
-                car.getVin(), notificationType, generalNotificationType.getDescription());
+                car.getVin(), notificationType, notificationDetailType.getDescription());
     }
 
     /**
