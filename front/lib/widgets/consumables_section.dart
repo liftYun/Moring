@@ -34,10 +34,13 @@ class ConsumablesSection extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
+                  // ConsumablePartsScreen으로 이동하면서 전체 소모품 목록을 전달합니다.
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ConsumablePartsScreen(),
+                      builder: (context) => ConsumablePartsScreen(
+                        consumables: consumables,
+                      ),
                     ),
                   );
                 },
