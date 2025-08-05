@@ -56,6 +56,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     );
     if (resp.statusCode == 200 || resp.statusCode == 302) {
       await repo.deleteAllTokens();
+      // 2) 캐싱된 사용자/차량 정보를 무효화
+      ref.invalidate(userInfoProvider);
+      ref.invalidate(carListProvider);
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
