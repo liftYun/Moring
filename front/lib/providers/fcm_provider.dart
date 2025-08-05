@@ -44,7 +44,6 @@ class FCMNotifier extends _$FCMNotifier {
     try {
       // Firebase 초기화
       await Firebase.initializeApp();
-      print('Firebase 초기화 완료');
 
       // FCM 권한 요청 (iOS는 필수, Android는 선택)
       await _requestPermission();
@@ -55,7 +54,6 @@ class FCMNotifier extends _$FCMNotifier {
       // 메시지 리스너 설정
       _setupMessageHandlers();
 
-      print('FCM 초기화 완료');
     } catch (e) {
       print('FCM 초기화 실패: $e');
     }
@@ -70,13 +68,13 @@ class FCMNotifier extends _$FCMNotifier {
       provisional: false,
     );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('알림 권한 허용됨');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('임시 알림 권한 허용됨');
-    } else {
-      print('알림 권한 거부됨');
-    }
+    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    //   print('알림 권한 허용됨');
+    // } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    //   print('임시 알림 권한 허용됨');
+    // } else {
+    //   print('알림 권한 거부됨');
+    // }
   }
 
   /// FCM 토큰 생성 및 저장
@@ -90,7 +88,7 @@ class FCMNotifier extends _$FCMNotifier {
         // 기존 토큰이 있으면 사용
         _fcmToken = savedToken;
         state = savedToken;
-        print('기존 FCM 토큰 로드: ${savedToken.substring(0, 20)}...');
+        // print('기존 FCM 토큰 로드: ${savedToken.substring(0, 20)}...');
         print('기존 FCM 토큰(전체): $savedToken');
 
       } else {
@@ -102,7 +100,7 @@ class FCMNotifier extends _$FCMNotifier {
           // SecureStorage에 저장
           await _storage.write(key: 'fcm_token', value: _fcmToken!);
           state = _fcmToken;
-          print('새 FCM 토큰 생성 및 저장: ${_fcmToken!.substring(0, 20)}...');
+          // print('새 FCM 토큰 생성 및 저장: ${_fcmToken!.substring(0, 20)}...');
           print('새 FCM 토큰(전체): $_fcmToken');
 
         }
@@ -110,13 +108,12 @@ class FCMNotifier extends _$FCMNotifier {
 
       // 토큰 갱신 리스너 설정
       _firebaseMessaging.onTokenRefresh.listen((newToken) async {
-        print('FCM 토큰 갱신: ${newToken.substring(0, 20)}...');
+        print('FCM 토큰 갱신: ${newToken}...');
         _fcmToken = newToken;
         state = newToken; // 상태 업데이트
 
         // SecureStorage 업데이트
         await _storage.write(key: 'fcm_token', value: newToken);
-        print('FCM 토큰 갱신 후 저장 완료');
 
         // 로그인 상태라면 서버에 새 토큰 전송
         final accessToken = await _tokenRepository.getAccessToken();
@@ -134,7 +131,7 @@ class FCMNotifier extends _$FCMNotifier {
   Future<void> _sendTokenToServer(String token) async {
     try {
       // api 생성되면 주석 제거
-      print('FCM Token을 서버로 전달하는 함수');
+      // print('FCM Token을 서버로 전달하는 함수');
       // // TokenRepository를 통해 JWT Access Token 가져오기
       // final accessToken = await _tokenRepository.getAccessToken();
       // print('accessToken : ${accessToken}');
@@ -166,7 +163,6 @@ class FCMNotifier extends _$FCMNotifier {
       // }
     } catch (e) {
       print('FCM 토큰 서버 전송 실패: $e');
-      print('테스트로 인해 재시도는 안함');
       // 재시도 로직 추가 가능
       //await _retryTokenSend(token);
     }
@@ -176,13 +172,13 @@ class FCMNotifier extends _$FCMNotifier {
   void _handleLoginRequired() {
     // 로그인 화면으로 리다이렉트하거나
     // 나중에 전송하도록 스케줄링
-    print('로그인 후 FCM 토큰 전송이 필요합니다');
+    // print('로그인 후 FCM 토큰 전송이 필요합니다');
   }
 
   /// FCM 토큰 전송 재시도
   Future<void> _retryTokenSend(String token) async {
     await Future.delayed(const Duration(seconds: 5));
-    print('FCM 토큰 전송 재시도...');
+    // print('FCM 토큰 전송 재시도...');
     await _sendTokenToServer(token);
   }
 
@@ -190,7 +186,7 @@ class FCMNotifier extends _$FCMNotifier {
   Future<void> _subscribeToTopic() async {
     try {
       await _firebaseMessaging.subscribeToTopic('all_users');
-      print('all_users 토픽 구독 완료');
+      // print('all_users 토픽 구독 완료');
     } catch (e) {
       print('토픽 구독 실패: $e');
     }
@@ -200,8 +196,8 @@ class FCMNotifier extends _$FCMNotifier {
   void _setupMessageHandlers() {
     // 앱이 실행 중일 때 메시지 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('포그라운드 알림 수신: ${message.notification?.title}');
-      print('message :  ${message.toMap()}');
+      // print('포그라운드 알림 수신: ${message.notification?.title}');
+      // print('message :  ${message.toMap()}');
 
       _showNotification(message); // 로그
       _showCustomNotification(message); // 커스텀 ui
@@ -209,8 +205,8 @@ class FCMNotifier extends _$FCMNotifier {
 
     // 알림을 탭해서 앱이 열렸을 때
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('백그라운드에서 알림 탭: ${message.notification?.title}');
-      print('message :  ${message.toMap()}');
+      // print('백그라운드에서 알림 탭: ${message.notification?.title}');
+      // print('message :  ${message.toMap()}');
 
       _handleNotificationTap(message);
     });
@@ -224,7 +220,7 @@ class FCMNotifier extends _$FCMNotifier {
     try {
       RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
       if (initialMessage != null) {
-        print('앱 종료 상태에서 알림 탭으로 앱 열림: ${initialMessage.notification?.title}');
+        // print('앱 종료 상태에서 알림 탭으로 앱 열림: ${initialMessage.notification?.title}');
         _handleNotificationTap(initialMessage);
       }
     } catch (e) {
@@ -234,9 +230,9 @@ class FCMNotifier extends _$FCMNotifier {
 
   /// 앱 실행 중일 때 알림 표시
   void _showNotification(RemoteMessage message) {
-    print('알림 제목: ${message.notification?.title}');
-    print('알림 내용: ${message.notification?.body}');
-    print('추가 데이터: ${message.data}');
+    // print('알림 제목: ${message.notification?.title}');
+    // print('알림 내용: ${message.notification?.body}');
+    // print('추가 데이터: ${message.data}');
 
     // 여기서 로컬 알림을 표시하거나
     // 앱 내 알림 UI를 업데이트할 수 있습니다
@@ -246,19 +242,19 @@ class FCMNotifier extends _$FCMNotifier {
   void _handleNotificationTap(RemoteMessage message) {
     String? notificationType = message.data['type'];
 
-    print('noti type : ${notificationType}');
+    // print('noti type : ${notificationType}');
 
     switch (notificationType) {
       case 'car_inspection':
-        print('차량 점검 화면으로 이동');
+        // print('차량 점검 화면으로 이동');
         // UI 완성 시 추후 등록 예정
         break;
       case 'part_replacement':
-        print('부품 교체 화면으로 이동');
+        // print('부품 교체 화면으로 이동');
         // UI 완성 시 추후 등록 예정
         break;
       default:
-        print('메인 화면으로 이동');
+        // print('메인 화면으로 이동');
       // UI 완성 시 추후 등록 예정
     }
   }
@@ -287,20 +283,20 @@ class FCMNotifier extends _$FCMNotifier {
   Future<void> sendTokenAfterLogin() async {
 
     if (_fcmToken == null) {
-      print('토큰이 없어서 생성 중...');
+      // print('토큰이 없어서 생성 중...');
       await _generateToken();
 
     }
 
     if (_fcmToken != null) {
-      print('로그인 후 FCM 토큰 전송 시도...');
+      // print('로그인 후 FCM 토큰 전송 시도...');
 
       await _sendTokenToServer(_fcmToken!);
       await _subscribeToTopic();
 
-      print('로그인 후 FCM 완전 활성화 완료');
+      // print('로그인 후 FCM 완전 활성화 완료');
     } else {
-      print('FCM 토큰이 생성되지 않았습니다');
+      // print('FCM 토큰이 생성되지 않았습니다');
     }
   }
 
@@ -310,10 +306,10 @@ class FCMNotifier extends _$FCMNotifier {
       // 토픽 구독 해제
       if (_fcmToken != null) {
         await _firebaseMessaging.unsubscribeFromTopic('all_users');
-        print('토픽 구독 해제 완료');
+        // print('토픽 구독 해제 완료');
       }
 
-      print('로그아웃 - 토픽 구독 해제 (토큰 유지)');
+      // print('로그아웃 - 토픽 구독 해제 (토큰 유지)');
     } catch (e) {
       print('토픽 구독 해제 실패: $e');
     }
@@ -335,7 +331,7 @@ class FCMNotifier extends _$FCMNotifier {
       // 토픽 완전 삭제
       await FirebaseMessaging.instance.deleteToken();
 
-      print('🗑FCM 토큰 완전 삭제 완료');
+      // print('🗑FCM 토큰 완전 삭제 완료');
     } catch (e) {
       print('FCM 토큰 완전 삭제 실패: $e');
     }

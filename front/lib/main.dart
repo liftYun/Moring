@@ -22,8 +22,8 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print('message :  ${message.toMap()}');
-  print('백그라운드에서 알림 수신: ${message.notification?.title}');
+  // print('message :  ${message.toMap()}');
+  // print('백그라운드에서 알림 수신: ${message.notification?.title}');
 
   await LocalNotificationService.showNotification(message);
 }
@@ -63,7 +63,7 @@ class MyApp extends ConsumerWidget {
     // FCM Provider 감시 및 초기화 트리거
     ref.listen<String?>(fCMNotifierProvider, (previous, next) {
       if (next != null) {
-        print('FCM 토큰 상태 변경: ${next.substring(0, 20)}...');
+        // print('FCM 토큰 상태 변경: ${next.substring(0, 20)}...');
         print('FCM 토큰 상태 변경(전체 토큰): ${next}...');
         // FCM 토큰이 생성되거나 갱신될 때마다 호출됨
       }
@@ -75,10 +75,10 @@ class MyApp extends ConsumerWidget {
         final fcmNotifier = ref.read(fCMNotifierProvider.notifier);
 
         if (isLoggedIn) {
-          print('로그인 감지 - FCM 토큰 서버 전송');
+          // print('로그인 감지 - FCM 토큰 서버 전송');
           await fcmNotifier.sendTokenAfterLogin();
         } else {
-          print('로그아웃 감지 - FCM 알림 차단');
+          // print('로그아웃 감지 - FCM 알림 차단');
           await fcmNotifier.handleLogout();
         }
       });
