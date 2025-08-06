@@ -36,6 +36,7 @@ dependencies:
   flutter_secure_storage: ^8.0.0    # ⬅︎ 세션 쿠키 영속화용
   flutter_riverpod: ^2.3.6       # Riverpod 런타임
   riverpod_annotation: ^2.0.3    # @riverpod 어노테이션
+  camera: ^0.10.5+9
   # Firebase
   firebase_core: ^2.24.2         # Firebase 초기화
   firebase_messaging: ^14.7.10   # FCM 푸시 알림
