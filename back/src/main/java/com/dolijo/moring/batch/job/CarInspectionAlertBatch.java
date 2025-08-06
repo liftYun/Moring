@@ -133,7 +133,7 @@ public class CarInspectionAlertBatch {
             log.info("[정기점검 알림 배치] 대상 데이터: {}", dto);
             NotificationBatchDto notiDto = new NotificationBatchDto();
             notiDto.setCarId(dto.getCarId());
-            notiDto.setNotificationType(NotificationType.GENERAL.name());
+            notiDto.setNotificationType(NotificationType.PUSH.name());
             notiDto.setNotificationDetailType(NotificationDetailType.INSPECTION_ALERT.name());
             notiDto.setMessage(
                     "차량 정기점검일이 임박했습니다. 점검일: " + dto.getInspectionDate() +
