@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 public class PushService {
     public void sendPushNotification(FCMNotificationRequestDto requestDto) {
         String fcmToken = requestDto.getFcmToken();
-        System.out.println("푸시 실행 + fcmToken = " + fcmToken);
         if (fcmToken == null || fcmToken.trim().isEmpty()) {
             log.info("FCM 토큰이 없으므로 푸시 알림을 전송하지 않습니다. 요청: {}", requestDto);
             return;

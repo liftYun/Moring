@@ -117,7 +117,7 @@ public class PartUsageAlertBatch {
             log.info("[부품 소모율 알림 배치] 대상 데이터: {}", dto);
             NotificationBatchDto notiDto = new NotificationBatchDto();
             notiDto.setCarId(dto.getCarId());
-            notiDto.setNotificationType(NotificationType.GENERAL.name());
+            notiDto.setNotificationType(NotificationType.PUSH.name());
             notiDto.setNotificationDetailType(NotificationDetailType.PART_ALERT.name());
             notiDto.setMessage(
                     "차량 부품 소모율이 " + PART_USAGE_ALERT_THRESHOLD + "%를 초과했습니다. 부품: " + dto.getPartNameEn() +
