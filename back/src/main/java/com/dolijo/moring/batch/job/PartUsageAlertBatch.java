@@ -22,6 +22,8 @@ import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilde
 import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.batch.core.repository.JobRepository;
 
@@ -30,6 +32,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 
 @Configuration
+@EnableAsync
 @RequiredArgsConstructor
 @Log4j2
 public class PartUsageAlertBatch {
@@ -124,18 +127,20 @@ public class PartUsageAlertBatch {
                             ", 소모율: " + dto.getPercentUsed() + "%"
             );
             String fcmToken = dto.getFcmTokenId();
-            pushService.sendPushNotification(
-                    FCMNotificationRequestDto.builder()
-                            .fcmToken(fcmToken)
-                            .title("차량 부품 소모율 알림")
-//                            .body("차량 부품 소모율이 50%를 초과했습니다. 부품: %s, 소모율: %d%%".formatted(
-//                                    dto.getPartNameEn(), dto.getPercentUsed()
-//                            ))
-                            .body(notiDto.getMessage())
-                            .build()
-            );
+            sendPushAsync(fcmToken, notiDto.getMessage());
             return notiDto;
         };
+    }
+
+    @Async
+    public void sendPushAsync(String fcmToken, String message) {
+        pushService.sendPushNotification(
+                FCMNotificationRequestDto.builder()
+                        .fcmToken(fcmToken)
+                        .title("차량 부품 소모율 알림")
+                        .body(message)
+                        .build()
+        );
     }
 
     @Bean
