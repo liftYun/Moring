@@ -34,5 +34,16 @@ public class BatchSchedule {
         jobLauncher.run(jobRegistry.getJob("carInspectionAlertJob"), jobParameters);
     }
 
+    // 매일 03시 마다 실행(부품 소모율 알림)
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+    public void runPartUsageAlertJob() throws Exception {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String date = dateFormat.format(new Date());
 
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("date", date)
+                .toJobParameters();
+
+        jobLauncher.run(jobRegistry.getJob("partUsageAlertJob"), jobParameters);
+    }
 }

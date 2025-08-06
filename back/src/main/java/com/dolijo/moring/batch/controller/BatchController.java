@@ -32,5 +32,15 @@ public class BatchController {
         log.info("carInspectionAlertJob 실행 완료");
         return "ok";
     }
+    
+    @Operation(summary = "부품 소모율 알림 배치 수동 실행", description = "부품 소모율 알림 배치 잡을 수동으로 실행합니다.")
+    @GetMapping("/part-usage-alert")
+    public String runPartUsageAlertBatch(@RequestParam(value = "date", required = false) String date) throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("date", date == null ? String.valueOf(System.currentTimeMillis()) : date)
+                .toJobParameters();
+        jobLauncher.run(jobRegistry.getJob("partUsageAlertJob"), jobParameters);
+        log.info("partUsageAlertJob 실행 완료");
+        return "ok";
+    }
 }
-

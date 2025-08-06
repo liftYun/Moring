@@ -110,10 +110,6 @@ public class CarInspectionAlertBatch {
                                 "    DATEDIFF(cil.inspection_date, SYSDATE()) IN (60, 30, 15, 7, 3, 1, 0) " +
                                 "    AND cil.inspection_status = 'PENDING'"
                 )
-//                .whereClause(
-//                        "WHERE " +
-//                                "     cil.inspection_status  = 'PENDING'"
-//                )
                 .sortKeys(Map.of("cil.inspection_date", Order.ASCENDING))
                 .rowMapper((ResultSet rs, int rowNum) -> {
                     CarInspectionAlertBatchDto dto = new CarInspectionAlertBatchDto();
@@ -149,9 +145,10 @@ public class CarInspectionAlertBatch {
             FCMNotificationRequestDto requestDto = FCMNotificationRequestDto.builder()
                     .fcmToken(fcmToken)
                     .title("차량 정기점검 알림")
-                    .body("차량 정기점검일이 임박했습니다. 점검일: %s (%s 남음)".formatted(
-                            "2023-10-01", "3일"
-                    ))
+//                    .body("차량 정기점검일이 임박했습니다. 점검일: %s (%s 남음)".formatted(
+//                            "2023-10-01", "3일"
+//                    ))
+                    .body(notiDto.getMessage())
                     .build();
             // 푸시 알림 - FCM 토큰 없으면 전송하지 않음
             pushService.sendPushNotification(requestDto);
