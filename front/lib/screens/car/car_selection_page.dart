@@ -193,7 +193,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: '보유 차량',
-      withBottomNav: false,
+      withBottomNav: true,
       selectedIndex: _selectedIndex,
       onItemTapped: _onItemTapped,
       body: _loading
