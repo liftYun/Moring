@@ -50,7 +50,7 @@ public class CarController {
             )
 //            @RequestHeader(value = "memberUuid", required = true, defaultValue = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62") String memberUuid,
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
-            @ParameterObject RegisterCarRequestVo requestVo
+            @RequestBody RegisterCarRequestVo requestVo
     ) {
         return  BaseResponse.of(carService.registerCar(requestVo.toDto(),customMemberDetails.getUserUuid()));
     }
