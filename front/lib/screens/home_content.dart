@@ -144,7 +144,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           List.generate(numImages, (i) => '$basePath${i + 1}.png');
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -152,19 +151,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GestureDetector(
-            onTap: () {
-              if (widget.car != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CarInfoPage(car: widget.car!),
-                  ),
-                );
-              }
-            },
-            child: CarViewerSection(imagePaths: _currentCarImagePaths),
-          ),
+          CarViewerSection(imagePaths: _currentCarImagePaths),
           const SizedBox(height: 20),
           ConsumablesSection(consumables: consumables),
           const SizedBox(height: 20),
