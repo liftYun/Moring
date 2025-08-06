@@ -35,7 +35,7 @@ class UserService {
     if (result is! Map) {
       throw FormatException('`result` is not a Map: $result');
     }
-    final Map<String, dynamic> payload = (result as Map).cast<String, dynamic>();
+    final Map<String, dynamic> payload = (result).cast<String, dynamic>();
 
     // 3) UserInfo 모델로 변환
     return UserInfo.fromJson(payload);

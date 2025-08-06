@@ -49,13 +49,13 @@ class CarService {
     }
 
     // List<dynamic> → List<Car>
-    final List<Car> cars = (maybeList as List)
+    final List<Car> cars = (maybeList)
         .map((e) {
       if (e is! Map) {
         throw FormatException('Each car entry must be a Map, but was $e');
       }
       // Map<String, dynamic> 으로 캐스트
-      final map = (e as Map).cast<String, dynamic>();
+      final map = (e).cast<String, dynamic>();
       // 모델에 정의된 fromJson 으로 변환
       return Car.fromJson(map);
     })

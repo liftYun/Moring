@@ -7,10 +7,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBackButtonPressed; // 뒤로가기 버튼 콜백
   final VoidCallback? onNotificationPressed; // 알림 버튼 콜백
-  final bool showCarDropdown; // 차량 드롭다운 표시 여부 (옵션)
-  final List<String>? availableCars; // 차량 목록 (옵션)
-  final String? selectedCar; // 현재 선택된 차량 (옵션)
-  final ValueChanged<String?>? onCarChanged; // 차량 변경 콜백 (옵션)
 
 
   const CustomAppBar({
@@ -18,10 +14,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.onBackButtonPressed,
     this.onNotificationPressed,
-    this.showCarDropdown = false, // 기본값은 false로 설정하여 숨김
-    this.availableCars,
-    this.selectedCar,
-    this.onCarChanged,
   }) : super(key: key);
 
   @override
