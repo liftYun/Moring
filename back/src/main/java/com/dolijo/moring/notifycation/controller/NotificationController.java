@@ -2,8 +2,10 @@ package com.dolijo.moring.notifycation.controller;
 
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.notifycation.service.SseService;
+import com.dolijo.moring.notifycation.service.NotificationService;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.vo.out.SseConnectionStatusVo;
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -22,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
     private final SseService sseService;
+    private final NotificationService notificationService;
 
     // SSE 연결 API - 차량용
     @Operation(summary = "차량 SSE 연결", description = """
@@ -81,5 +85,12 @@ public class NotificationController {
                 .build();
 
         return BaseResponse.of(statusVo);
+    }
+
+    @Operation(summary = "읽지 않은 알림 개수 조회", description = "차량(VIN)별 읽지 않은 알림 총 개수를 조회합니다.")
+    @GetMapping("/{vin}/count")
+    public BaseResponse<Long> getUnreadNotificationCountByVin(@PathVariable("vin") String vin) {
+        long count = notificationService.countUnreadNotificationsByCarVin(vin);
+        return BaseResponse.of(count);
     }
 }
