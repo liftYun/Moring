@@ -82,18 +82,13 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
         _cars = carList;
       });
 
-      // if (_cars.isEmpty) {
-      //   Future.microtask(() {
-      //     Navigator.pushReplacementNamed(context, '/nocar');
-      //   });
-      //   return;
-      // }
-      if (_cars.length <= 7) {
+      if (_cars.isEmpty) {
         Future.microtask(() {
           Navigator.pushReplacementNamed(context, '/nocar');
         });
         return;
       }
+
       if (_cars.isNotEmpty) {
         _selectedCarForDropdown = _cars[0];
       }
