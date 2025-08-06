@@ -201,6 +201,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
       withBottomNav: true,
       selectedIndex: _selectedIndex,
       onItemTapped: _onItemTapped,
+      showNotificationButton: false,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : (_error != null

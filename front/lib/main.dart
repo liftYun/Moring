@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/information/notification_page.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
@@ -101,6 +102,7 @@ class MyApp extends ConsumerWidget {
           '/nocar': (context) => const CarNotRegisteredPage(),
 	        '/root': (context) => const RootPage(),
           '/registration': (context) => const CarRegistrationPage(),
+          // '/notification': (context) => const NotificationPage(),
         },
       ),
     );

@@ -347,9 +347,9 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         onBackButtonPressed: () {
           Navigator.pop(context);
         },
-        onNotificationPressed: () {
-          debugPrint('소모품 화면 알림 버튼 클릭!');
-        },
+        // onNotificationPressed: () {
+        //   debugPrint('소모품 화면 알림 버튼 클릭!');
+        // },
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
