@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/utils/app_icon.dart';
 
-import '../screens/information/notification_page.dart'; // AppIcons 클래스가 필요합니다.
 
 // AppBar를 재사용 가능한 위젯으로 분리 (차량 선택 기능 제거)
 
@@ -10,6 +9,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final int notificationCount;
   final VoidCallback? onBackButtonPressed; // 뒤로가기 버튼 콜백
+  final VoidCallback? onNotificationButtonPressed;
   final bool showNotificationButton;
 
 
@@ -17,6 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     Key? key,
     required this.title,
     this.onBackButtonPressed,
+    this.onNotificationButtonPressed,
     this.showNotificationButton = true,
     this.notificationCount = 0,
   }) : super(key: key);
@@ -49,13 +50,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 )
               ],
             ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const NotificationPage(),
-                ),
-              );
-            },
+            onPressed: onNotificationButtonPressed,
           ),
       ],
     );

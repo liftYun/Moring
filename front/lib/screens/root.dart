@@ -12,7 +12,9 @@ import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
 
 import '../models/car.dart';
+import '../providers/car_provider.dart';
 import '../providers/notification_api_provider.dart';
+import 'information/notification_panel.dart';
 
 class RootPage extends ConsumerStatefulWidget {
   final Car? initialCar;
@@ -34,11 +36,13 @@ class _RootPageState extends ConsumerState<RootPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // 즉시 로드
-    _loadCount();
+    // 화면 렌더링 후에 한 번만 호출
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCount();
+    });
 
-    // 30초마다 폴링
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+    // 1분마다 폴링
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
       _loadCount();
     });
 
@@ -47,14 +51,22 @@ class _RootPageState extends ConsumerState<RootPage>
   }
 
   Future<void> _loadCount() async {
+    final vin = ref.read(currentVinProvider);
+    // final vin = widget.initialCar?.vin ?? ref.read(currentVinProvider);
+    debugPrint('🏠[RootPage] _loadCount 호출 – 현재 VIN: $vin');
+    if (vin == null) return;
+
     final api = ref.read(notificationApiProvider);
     try {
-      // final cnt = await api.fetchUnreadCount(ref.read());
-      final count = await ref.read(notificationApiProvider).fetchUnreadCount(vin);
-      if (cnt != _unreadCount) {
-        setState(() => _unreadCount = cnt);
+      final count = await api.fetchUnreadCount(vin);
+      debugPrint('🏠[RootPage] fetchUnreadCount 응답: $count');
+      if (count != _unreadCount) {
+        setState(() => _unreadCount = count);
+        debugPrint('🏠[RootPage] _unreadCount 업데이트: $_unreadCount');
       }
-    } catch (_) { /* 에러 무시 혹은 로깅 */ }
+    } catch (e, st) {
+      debugPrint('🏠[RootPage] 뱃지 카운트 에러: $e\n$st');
+    }
   }
 
   @override
@@ -72,7 +84,8 @@ class _RootPageState extends ConsumerState<RootPage>
   }
 
   List<Widget> get _pages => <Widget>[
-    HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
+    // HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
+    const HomePage(),
     const HomePage(),
     const HomePage(),
     const MorePage(),
@@ -85,14 +98,7 @@ class _RootPageState extends ConsumerState<RootPage>
     return BaseScaffold(
       title: _titles[_currentIndex],
       showBack: true,
-      onBackButtonPressed: () {
-        final nav = Navigator.of(context);
-        if (Navigator.of(context).canPop()) {
-          nav.pop();
-        } else {
-          nav.pushNamedAndRemoveUntil('/carselection',(route) => false,);
-        }
-      },
+      onBackButtonPressed: _handleBack,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
@@ -101,7 +107,41 @@ class _RootPageState extends ConsumerState<RootPage>
       selectedIndex: _currentIndex,        // 현재 탭
       onItemTapped: _onItemTapped,         // 탭 누르면 이 콜백이 불린다
       showNotificationButton: true,
+      onNotificationButtonPressed: _openNotificationPanel,
       notificationCount: _unreadCount,
+    );
+  }
+  void _handleBack() {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) nav.pop();
+    else nav.pushNamedAndRemoveUntil('/carselection', (_) => false);
+  }
+
+  void _openNotificationPanel() {
+    final vin = ref.read(currentVinProvider);
+    if (vin == null) return;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Notifications',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (_, __, ___) {
+        return NotificationPanel();
+      },
+      transitionBuilder: (_, anim, __, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, -1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: anim,
+            curve: Curves.easeOut,
+          )),
+          child: child,
+        );
+      },
     );
   }
 }

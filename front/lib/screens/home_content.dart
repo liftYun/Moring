@@ -11,10 +11,11 @@ import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart'; // <-- 수정된 ConsumablesSection 임포트
 import 'package:moring/widgets/driving_log_section.dart';
 
+import '../providers/current_car_provider.dart';
+
 
 class HomeContent extends ConsumerStatefulWidget {
-  final Car? car;
-  const HomeContent({Key? key, this.car}) : super(key: key);
+  const HomeContent({Key? key}) : super(key: key);
 
   @override
   ConsumerState<HomeContent> createState() => _HomeContentState();
@@ -37,8 +38,13 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   @override
   void initState() {
     super.initState();
-    // ConsumablePartsScreen의 _initializeConsumables와 동일한 방식으로 초기화합니다.
-    // 이렇게 해야 두 화면에서 동일한 데이터를 공유하는 효과를 낼 수 있습니다.
+    // 처음 한 번만, 전역 상태에서 가져온 Car 로 세팅
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final car = ref.read(currentCarProvider);
+      if (car != null) {
+        _setCarImages(car.modelName.toLowerCase());
+      }
+    });
     final DateTime now = DateTime.now();
     consumables = [
       Consumable(
@@ -108,12 +114,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         replacementCycleMonths: 12, // DB 기준: 12개월
       ),
     ];
-
-    if (widget.car != null) {
-      _setCarImages(widget.car!.modelName.toLowerCase());
-    } else {
-      _setCarImages(_selectedCar);
-    }
   }
 
   void _setCarImages(String carName) {
@@ -146,12 +146,15 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    final car = ref.watch(currentCarProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CarViewerSection(imagePaths: _currentCarImagePaths),
+          // CarViewerSection(imagePaths: _currentCarImagePaths),
+          if (car != null)
+            CarViewerSection(imagePaths: _currentCarImagePaths),
           const SizedBox(height: 20),
           ConsumablesSection(consumables: consumables),
           const SizedBox(height: 20),

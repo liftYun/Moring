@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/user_provider.dart'; // userInfoProvider
 import 'package:moring/models/user_info.dart';
 
-import '../member/user_info_edit.dart';
+import 'package:moring/screens//member/user_info_edit.dart';
 
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
