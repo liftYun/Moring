@@ -144,7 +144,10 @@ class MorePage extends ConsumerWidget {
               title: 'Privacy',
               subtitle: 'Manage your privacy settings',
               onTap: () {
-                // Privacy 페이지
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(builder: (context) => InspectionHistoryPage()),
+              //   );
               },
             ),
 
