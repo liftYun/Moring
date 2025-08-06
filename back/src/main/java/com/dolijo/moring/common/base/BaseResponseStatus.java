@@ -60,6 +60,7 @@ public enum BaseResponseStatus {
      */
     SSE_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, false, 503, "알림 전송에 실패하였습니다."),
     NO_EXIST_SSE_CONNECTION(HttpStatus.NOT_FOUND, false, 404, "SSE 연결이 존재하지 않습니다."),
+    PUSH_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, false, 503, "푸시 알림 전송에 실패하였습니다."), // 추가
     /**
      * Car
      */

@@ -45,4 +45,5 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
             @Param("uuid") String uuid,
             @Param("nickName") String nickName
     );
+
 }
