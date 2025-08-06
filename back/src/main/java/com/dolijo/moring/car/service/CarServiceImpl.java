@@ -76,9 +76,9 @@ public class CarServiceImpl implements CarService{
 
     @Override
     @Transactional
-    public void deleteCarByVin(String carVin) {
+    public void deleteCarByVin(String vin) {
         // 차량 삭제 (삭제된 레코드 수 반환)
-        long deletedCount = carRepository.deleteByVin(carVin);
+        long deletedCount = carRepository.deleteByVin(vin);
         log.info("차량 삭제 레코드 수 : " + deletedCount);
         if (deletedCount == 0) {
             throw new BaseException(BaseResponseStatus.NO_EXIST_CAR);
