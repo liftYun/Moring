@@ -41,21 +41,25 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
       barrierColor: Colors.black.withOpacity(0.3),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isDismissible: true,
       builder: (_) {
-        return Stack(
-          children: [
-            // 1. 블러 처리 레이어
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-              child: Container(color: Colors.transparent),
-            ),
-            // 2. 실제 모달 내용
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
-                decoration: BoxDecoration(
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Stack(
+              children: [
+                // 블러 처리 모달 바닥에만 적용
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                  child: Container(
+                    color: Colors.transparent,
+                    // Modal의 높이 결정: 모달 내용의 높이에 맞게 (예: 200)
+                    height: 220, // 또는 필요시 mainAxisSize: MainAxisSize.min
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
+                  decoration: BoxDecoration(
                   color: const Color(0xFF23262B),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
@@ -149,8 +153,8 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                   ],
                 ),
               ),
-            )
-          ],
+            ],
+          ),
         );
       },
     );

@@ -10,6 +10,7 @@ import 'package:moring/screens/car/no_car.dart';
 import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/car/registration_complete.dart';
 import 'package:moring/screens/ocr.dart';
+import 'package:moring/models/car.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 // firebase
@@ -106,8 +107,8 @@ class MyApp extends ConsumerWidget {
           '/ocr': (context) => const OcrRegistrationPage(),
           '/registration_complete': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            final modelName = args?['modelName'] as String;
-            return RegistrationCompletePage(modelName: modelName);
+            final Car car = args?['car'];
+            return RegistrationCompletePage(car: args?['car']);
           }
         },
       ),

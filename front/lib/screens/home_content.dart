@@ -69,25 +69,30 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       Consumable(
         icon: AppIcons.sparkPlugs,
         title: 'Spark Plugs',
-        lastReplacedDate: DateTime(now.year, now.month - 1, now.day - 10), // 1개월 10일 전
+        lastReplacedDate: DateTime(now.year, now.month - 1, now.day - 10),
+        // 1개월 10일 전
         replacementCycleMonths: 24, // DB 기준: 24개월
       ),
       Consumable(
         icon: AppIcons.breakFluid,
         title: 'Brake Fluid',
-        lastReplacedDate: DateTime(now.year - 1, now.month - 10, now.day), // 1년 10개월 전 (낮은 진행률)
+        lastReplacedDate: DateTime(now.year - 1, now.month - 10, now.day),
+        // 1년 10개월 전 (낮은 진행률)
         replacementCycleMonths: 24, // DB 기준: 24개월
       ),
       Consumable(
         icon: AppIcons.coolant,
         title: 'Coolant',
-        lastReplacedDate: DateTime(now.year - 1, now.month - 11, now.day), // 1년 11개월 전 (매우 낮은 진행률)
+        lastReplacedDate: DateTime(now.year - 1, now.month - 11, now.day),
+        // 1년 11개월 전 (매우 낮은 진행률)
         replacementCycleMonths: 24, // DB 기준: 24개월
       ),
       Consumable(
-        icon: AppIcons.transmissionFluid, // Transmission Fluid 아이콘 (AppIcons에 없음, 임시로 설정)
+        icon: AppIcons.transmissionFluid,
+        // Transmission Fluid 아이콘 (AppIcons에 없음, 임시로 설정)
         title: 'Transmission Fluid',
-        lastReplacedDate: DateTime(now.year, now.month, now.day - 5), // 5일 전 (매우 높은 진행률)
+        lastReplacedDate: DateTime(now.year, now.month, now.day - 5),
+        // 5일 전 (매우 높은 진행률)
         replacementCycleMonths: 36, // DB에 없으므로 긴 주기 가정
       ),
       Consumable(
@@ -97,9 +102,11 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         replacementCycleMonths: 36, // DB 기준: 36개월
       ),
       Consumable(
-        icon: AppIcons.breakFluid, // 임시 브레이크 패드 아이콘 (AppIcons에 없음)
+        icon: AppIcons.breakFluid,
+        // 임시 브레이크 패드 아이콘 (AppIcons에 없음)
         title: 'Brake Pad',
-        lastReplacedDate: DateTime(now.year - 1, now.month - 5, now.day), // 1년 5개월 전
+        lastReplacedDate: DateTime(now.year - 1, now.month - 5, now.day),
+        // 1년 5개월 전
         replacementCycleMonths: 24, // DB 기준: 24개월
       ),
       Consumable(
