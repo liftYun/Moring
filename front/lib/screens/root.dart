@@ -8,8 +8,11 @@ import 'package:moring/providers/token_repository.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
 
+import '../models/car.dart';
+
 class RootPage extends ConsumerStatefulWidget {
-  const RootPage({Key? key}) : super(key: key);
+  final Car? initialCar;
+  const RootPage({Key? key, this.initialCar}) : super(key: key);
 
   @override
   ConsumerState<RootPage> createState() => _RootPageState();
@@ -19,33 +22,12 @@ class _RootPageState extends ConsumerState<RootPage> {
   int _currentIndex = 0;
   static const _titles = ['Moring', 'Navigation', 'Driving Log', 'More'];
 
-  static const _pages = <Widget>[
-    HomePage(),
-    HomePage(),      // 네비게이션 화면,
-    HomePage(),      // 주행 기록 화면
-    MorePage(),      // 더보기 화면
+  List<Widget> get _pages => <Widget>[
+    HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
+    const HomePage(),
+    const HomePage(),
+    const MorePage(),
   ];
-
-  Future<void> _logout() async {
-    final repo = ref.read(tokenRepositoryProvider);
-    final refreshToken = await repo.getRefreshToken();
-    final dio = ref.read(noAuthDioProvider);
-    final resp = await dio.post(
-      '/api/v1/auth/logout/rToken',
-      options: Options(
-        headers: {'Cookie': 'refreshToken=$refreshToken'},
-        validateStatus: (s) => s != null && s < 400,
-      ),
-    );
-    if (resp.statusCode == 200 || resp.statusCode == 302) {
-      await repo.deleteAllTokens();
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
-  }
 
   void _onItemTapped(int index) => setState(() => _currentIndex = index);
 
@@ -53,11 +35,23 @@ class _RootPageState extends ConsumerState<RootPage> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: _titles[_currentIndex],
-      body: _pages[_currentIndex],
+      showBack: true,
+      onBackButtonPressed: () {
+        final nav = Navigator.of(context);
+        if (Navigator.of(context).canPop()) {
+          nav.pop();
+        } else {
+          nav.pushNamedAndRemoveUntil('/carselection',(route) => false,);
+        }
+      },
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       withBottomNav: true,                 // 바텀바를 쓰겠다
       selectedIndex: _currentIndex,        // 현재 탭
       onItemTapped: _onItemTapped,         // 탭 누르면 이 콜백이 불린다
-      onNotificationPressed: _logout,      // 오른쪽 아이콘 콜백
+      onNotificationPressed: null,      // 오른쪽 아이콘 콜백
     );
   }
 }

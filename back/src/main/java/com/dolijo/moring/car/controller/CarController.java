@@ -11,6 +11,7 @@ import com.dolijo.moring.car.vo.out.CarResponseVo;
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -20,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,10 +48,11 @@ public class CarController {
                     required    = true,
                     example     = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62"
             )
-            @RequestHeader(value = "memberUuid", required = true, defaultValue = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62") String memberUuid,
-            @ParameterObject RegisterCarRequestVo requestVo
+//            @RequestHeader(value = "memberUuid", required = true, defaultValue = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62") String memberUuid,
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
+            @RequestBody RegisterCarRequestVo requestVo
     ) {
-        return  BaseResponse.of(carService.registerCar(requestVo.toDto(),memberUuid));
+        return  BaseResponse.of(carService.registerCar(requestVo.toDto(),customMemberDetails.getUserUuid()));
     }
 
     @Operation(summary = "회원의 등록 차량 리스트 조회",   description = """
@@ -59,17 +62,14 @@ public class CarController {
         """)
     @GetMapping("/{memberUuid}/list")
     public BaseResponse<List<CarResponseVo>> getCarsByMemberUuid(
-            @Parameter(description = "조회 대상 회원 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-            @PathVariable("memberUuid") String memberUuid,
-
-            @Parameter(description = "인증된 사용자 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-            @RequestHeader("memberUuid") String authenticatedUuid
+//            @Parameter(description = "조회 대상 회원 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
+//            @PathVariable("memberUuid") String memberUuid,
+//
+//            @Parameter(description = "인증된 사용자 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
+//            @RequestHeader("memberUuid") String authenticatedUuid
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails
     ) {
-        // 본인 아니면 에러
-        if (!memberUuid.equals(authenticatedUuid)) {
-            throw new BaseException(BaseResponseStatus.DISALLOWED_ACTION);
-        }
-        List<CarResponseDto> dtoList = carService.getCarsByMemberUuid(memberUuid);
+        List<CarResponseDto> dtoList = carService.getCarsByMemberUuid(customMemberDetails.getUserUuid());
 
         return BaseResponse.of(
                 dtoList.stream()

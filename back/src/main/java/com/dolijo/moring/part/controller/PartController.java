@@ -37,7 +37,7 @@ public class PartController {
     )
     @PostMapping("/")
     public BaseResponse<Long> registerPart(
-            @ParameterObject RegisterPartRequestVo requestVo
+            @RequestBody RegisterPartRequestVo requestVo
     ) {
         log.info("받은 VO: {}", requestVo);
         return BaseResponse.of(partService.registerPart(requestVo.toDto()));
@@ -69,7 +69,7 @@ public class PartController {
     )
     @PostMapping("/change-log")
     public BaseResponse<Long> registerPartChangeLog(
-            @ParameterObject RegisterPartChangeLogRequestVo requestVo
+            @RequestBody RegisterPartChangeLogRequestVo requestVo
     ) {
         return BaseResponse.of(
                 partService.registerPartChangeLog(requestVo.toDto())
