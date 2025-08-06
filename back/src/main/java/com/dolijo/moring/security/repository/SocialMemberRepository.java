@@ -61,4 +61,9 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
 //    boolean isLoggedin(@Param("memberId") Long id);
     Boolean existsByMemberIdAndTokenIdIsNotNull(Long memberId);
 
+    @Modifying
+    @Query("UPDATE SocialMember sm SET sm.fcmTokenId = :fcmTokenId WHERE sm.member.id = :memberId AND sm.type = :socialType")
+    int updateFcmTokenIdByMemberIdAndSocialType(@Param("memberId") Long memberId,
+                                                @Param("socialType") SocialType socialType,
+                                                @Param("fcmTokenId") String fcmTokenId);
 }
