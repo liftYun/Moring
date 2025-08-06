@@ -112,7 +112,11 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         const SnackBar(content: Text('차량이 등록되었습니다!')),
       );
 
-      // Navigator.pushReplacementNamed(context, '/registration_complete');
+      Navigator.pushReplacementNamed(
+          context,
+          '/registration_complete',
+          arguments: {'modelName': model},
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('등록 실패: $e')),

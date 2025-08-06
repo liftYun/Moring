@@ -15,7 +15,11 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "notification")
+@Table(name = "notification",
+       indexes = {
+           @Index(name = "idx_notification_readflag_createdat", columnList = "read_flag ASC, created_at DESC")
+       }
+)
 public class Notification extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
