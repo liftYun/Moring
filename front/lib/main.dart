@@ -104,11 +104,7 @@ class MyApp extends ConsumerWidget {
           '/registration': (context) => const CarRegistrationPage(),
           '/registration_complete': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            final modelName = args?['modelName'] as String?;
-
-            if (modelName == null) {
-              return const RegistrationCompletePage(modelName: 'defaultModelName');
-            }
+            final modelName = args?['modelName'] as String;
             return RegistrationCompletePage(modelName: modelName);
           }
         },
