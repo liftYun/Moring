@@ -82,7 +82,13 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
         _cars = carList;
       });
 
-      if (_cars.isEmpty) {
+      // if (_cars.isEmpty) {
+      //   Future.microtask(() {
+      //     Navigator.pushReplacementNamed(context, '/nocar');
+      //   });
+      //   return;
+      // }
+      if (_cars.length <= 6) {
         Future.microtask(() {
           Navigator.pushReplacementNamed(context, '/nocar');
         });
