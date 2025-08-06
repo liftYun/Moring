@@ -88,7 +88,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
       //   });
       //   return;
       // }
-      if (_cars.length <= 6) {
+      if (_cars.length <= 7) {
         Future.microtask(() {
           Navigator.pushReplacementNamed(context, '/nocar');
         });
