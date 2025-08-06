@@ -135,18 +135,7 @@ public class SseService {
                 car.getVin(), notificationType, notificationDetailType.getDescription());
     }
 
-    /**
-     * 차량에게 푸시 알림 전송 (차량 점검 등의 알림)
-     * Firebase를 통한 푸시 알림 전송 예정
-     * @param carVin 차량 VIN
-     * @param eventName 이벤트 이름
-     * @param data 전송할 데이터
-     */
-    public void sendPushNotification(String carVin, String eventName, Object data) {
-        // TODO: Firebase를 통한 푸시 알림 전송 구현 예정
-        log.info("푸시 알림 전송 요청 - 차량: {}, 이벤트: {}, 데이터: {}", carVin, eventName, data);
-        log.warn("Firebase 푸시 알림 기능 구현 예정");
-    }
+
 
     /**
      * 차량 연결 해제
