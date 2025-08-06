@@ -99,7 +99,8 @@ class MyApp extends ConsumerWidget {
           '/login': (context) => const LoginPage(),
           '/carselection': (context) => CarSelectionContainer(),
           '/nocar': (context) => const CarNotRegisteredPage(),
-	        '/root': (context) => const RootPage()
+	        '/root': (context) => const RootPage(),
+          '/registration': (context) => const CarRegistrationPage(),
         },
       ),
     );
