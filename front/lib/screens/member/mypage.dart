@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/models/user_info.dart';
 import 'package:moring/providers/user_provider.dart';
 
-import '../../utils/base_scaffold.dart';
+import 'package:moring/utils/base_scaffold.dart';
 
 class MyPageScreen extends ConsumerWidget {
   const MyPageScreen({Key? key}) : super(key: key);

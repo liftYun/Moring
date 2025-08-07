@@ -79,8 +79,8 @@ public class PartController {
     @Operation(
             summary = "차량의 부품 소모 상태 전체 조회",
             description = """
-        회원의 차량(VIN)별 모든 부품의 최신 교체 이력/마감일/소모율을 반환합니다.
-        dueDate가 null이면 등록한 교체 이력이 없는 부품입니다.
+                회원의 차량(VIN)별 모든 부품의 최신 교체 이력/마감일/소모율을 반환합니다.
+                dueDate가 null이면 등록한 교체 이력이 없는 부품입니다.
     """
     )
     @GetMapping("/status/{vin}")

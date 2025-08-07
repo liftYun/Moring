@@ -28,6 +28,7 @@ public class PartDslRepository {
 
         return queryFactory
                 .select(new QPartStatusListDto(
+                        part.id,
                         part.nameEn,
                         partChangeLog.createdAt,
                         part.recommendedCycleMonths

@@ -10,13 +10,15 @@ import java.time.LocalDateTime;
 @Getter
 @ToString
 public class PartStatusListDto  {
-    private final String nameEn; // 부품 영어이름
-    private final LocalDateTime lastChange; // 마지막 교환 날짜시간
-    private final Integer recommendedCycleMonths; // 권장 교체 주기(달)
+    private  Long partId; // 부품 ID
+    private  String nameEn; // 부품 영어이름
+    private  LocalDateTime lastChange; // 마지막 교환 날짜시간
+    private  Integer recommendedCycleMonths; // 권장 교체 주기(달)
 
     @QueryProjection
     @Builder
-    public PartStatusListDto (String nameEn, LocalDateTime lastChange, Integer recommendedCycleMonths) {
+    public PartStatusListDto(Long partId, String nameEn, LocalDateTime lastChange, Integer recommendedCycleMonths) {
+        this.partId = partId;
         this.nameEn = nameEn;
         this.lastChange = lastChange;
         this.recommendedCycleMonths = recommendedCycleMonths;
