@@ -2,6 +2,7 @@ package com.dolijo.moring.car.service;
 
 
 import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
+import com.dolijo.moring.car.dto.in.RegisterCarInspectionDto;
 import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
@@ -27,7 +28,7 @@ public interface CarService {
 
     public Slice<CarMileageLogResponseDto> getLogsByVin(String vin, Pageable pageable);
 
-    void registerCarInspection(String vin, String inspectionDate);
+    void registerCarInspection(String vin, RegisterCarInspectionDto dto);
 
     Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable);
 }

@@ -25,9 +25,6 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  // print('message :  ${message.toMap()}');
-  // print('백그라운드에서 알림 수신: ${message.notification?.title}');
-
   await LocalNotificationService.showNotification(message);
 }
 
@@ -39,16 +36,14 @@ Future<void> main() async {
   );
 
   try {
-    //Firebase 초기화
     await Firebase.initializeApp();
 
-    // FCM 백그라운드 핸들러 등록
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     await LocalNotificationService.init();
 
   } catch (e) {
-    print('Firebase/FCM 초기화 실패: $e');
+    debugPrint('Firebase/FCM 초기화 실패: $e');
   }
 
   runApp(
@@ -63,33 +58,15 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authAsync = ref.watch(isLoggedInProvider);
 
-    // FCM Provider 감시 및 초기화 트리거
     ref.listen<String?>(fCMNotifierProvider, (previous, next) {
       if (next != null) {
-        // print('FCM 토큰 상태 변경: ${next.substring(0, 20)}...');
-        print('FCM 토큰 상태 변경(전체 토큰): ${next}...');
-        // FCM 토큰이 생성되거나 갱신될 때마다 호출됨
+        debugPrint('FCM 토큰 상태 변경(전체 토큰): ${next}...');
       }
-    });
-
-    // 로그인 상태 변화 감시하여 FCM 자동 처리
-    ref.listen<AsyncValue<bool>>(isLoggedInProvider, (previous, next) {
-      next.whenData((isLoggedIn) async {
-        final fcmNotifier = ref.read(fCMNotifierProvider.notifier);
-
-        if (isLoggedIn) {
-          // print('로그인 감지 - FCM 토큰 서버 전송');
-          await fcmNotifier.sendTokenAfterLogin();
-        } else {
-          // print('로그아웃 감지 - FCM 알림 차단');
-          await fcmNotifier.handleLogout();
-        }
-      });
     });
 
     return OverlaySupport.global( // 👈 추가: Overlay 지원
       child: MaterialApp(
-	navigatorKey: navigatorKey,   // ← 여기에 추가
+	      navigatorKey: navigatorKey,   // ← 여기에 추가
         title: 'Moring App',
         theme: AppTheme, // utils/app_theme.dart 에 정의
         debugShowCheckedModeBanner: false,
