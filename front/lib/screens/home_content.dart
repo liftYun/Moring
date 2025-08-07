@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import 'package:moring/models/car.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/widgets/driving_log_section.dart';
-import 'package:moring/screens/car/car_info.dart';
 
 import '../providers/current_car_provider.dart';
-
 
 class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({Key? key}) : super(key: key);
@@ -37,12 +34,14 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   @override
   void initState() {
     super.initState();
-
-    if (widget.car != null) {
-      _carVin = widget.car!.vin;
-      _setCarImages(widget.car!.modelName.toLowerCase());
-      _fetchConsumables();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final car = ref.read(currentCarProvider);
+      if (car != null) {
+        _carVin = car.vin;
+        _setCarImages(car.modelName.toLowerCase());
+        _fetchConsumables();
+      }
+    });
   }
 
   Future<void> _fetchConsumables() async {
@@ -73,7 +72,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         _isLoading = false;
       });
     }
-
   }
 
   void _setCarImages(String carName) {
@@ -81,10 +79,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       int numImages;
       String basePath;
       switch (carName) {
-        case 'xm3': numImages = 36; basePath = 'assets/xm3/'; break;
-        case '그랜저': numImages = 36; basePath = 'assets/그랜저/'; break;
-        case '재규어': numImages = 30; basePath = 'assets/재규어/'; break;
-        default: numImages = 0; basePath = '';
+        case 'xm3':
+          numImages = 36;
+          basePath = 'assets/xm3/';
+          break;
+        case '그랜저':
+          numImages = 36;
+          basePath = 'assets/그랜저/';
+          break;
+        case '재규어':
+          numImages = 30;
+          basePath = 'assets/재규어/';
+          break;
+        default:
+          numImages = 0;
+          basePath = '';
       }
       _currentCarImagePaths = List.generate(numImages, (i) => '$basePath${i + 1}.png');
     });
@@ -92,10 +101,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_error != null) return Center(child: Text(_error!));
-    // 소모품 목록, vin 함께 전달!
 
     final car = ref.watch(currentCarProvider);
 
@@ -104,12 +111,10 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // CarViewerSection(imagePaths: _currentCarImagePaths),
-          if (car != null)
-            CarViewerSection(imagePaths: _currentCarImagePaths),
+          if (car != null) CarViewerSection(imagePaths: _currentCarImagePaths),
           const SizedBox(height: 20),
           if (_carVin != null)
-            ConsumablesSection(consumables: _consumables, vin: _carVin!), // <-- vin 넘김!
+            ConsumablesSection(consumables: _consumables, vin: _carVin!),
           const SizedBox(height: 20),
           DrivingLogSection(title: 'Today', logs: todayLogs),
           const SizedBox(height: 20),
