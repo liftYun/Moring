@@ -44,8 +44,8 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
     @Transactional
 //    @Query("DELETE FROM SocialMember sm WHERE sm.member.id = :memberId")
     @Query("UPDATE SocialMember sm " +
-//            "SET sm.tokenId = NULL, sm.fcmTokenId = NULL " +
-            "SET sm.tokenId = NULL " +
+            "SET sm.tokenId = NULL, sm.fcmTokenId = NULL " +
+//            "SET sm.tokenId = NULL " +
             "WHERE sm.member.id = :memberId")
     void deleteByMemberid(@Param("memberId") Long id);
 
