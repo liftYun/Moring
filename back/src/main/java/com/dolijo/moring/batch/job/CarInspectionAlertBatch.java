@@ -111,7 +111,8 @@ public class CarInspectionAlertBatch {
                 .whereClause(
                         "WHERE " +
                                 "    DATEDIFF(cil.inspection_date, SYSDATE()) IN (60, 30, 15, 7, 3, 1, 0) " +
-                                "    AND cil.inspection_status = 'PENDING'"
+                                "    AND cil.inspection_status = 'PENDING' " +
+                                "    AND sm.fcm_token_id is not null"
                 )
                 .sortKeys(Map.of("cil.inspection_date", Order.ASCENDING))
                 .rowMapper((ResultSet rs, int rowNum) -> {
@@ -159,6 +160,8 @@ public class CarInspectionAlertBatch {
                         .body(message)
                         .build()
         );
+        throw new RuntimeException("비동기 테스트용 예외 발생"); // 비동기 테스트용 예외
+
     }
 
     // 알림 DB에 저장
