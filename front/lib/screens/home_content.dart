@@ -7,6 +7,7 @@ import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/screens/information/driving_record.dart';
 import 'package:moring/screens/car/car_info.dart';
+import 'package:moring/screens/information/inspection_detail_page.dart';
 
 import '../providers/current_car_provider.dart';
 
@@ -29,6 +30,11 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   bool _mileageLoading = true;
   String? _mileageError;
 
+  // 점검로그용 state
+  List<Map<String, dynamic>> _inspectionLogs = [];
+  bool _inspectionLoading = true;
+  String? _inspectionError;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +45,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         _setCarImages(car.modelName.toLowerCase());
         _fetchConsumables();
         _fetchMileageLogs();
+        _fetchInspectionLogs();
       }
     });
   }
@@ -72,7 +79,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     }
   }
 
-  // ✅ 주행로그 페이징 호출
   Future<void> _fetchMileageLogs() async {
     setState(() {
       _mileageLoading = true;
@@ -101,6 +107,42 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     } finally {
       setState(() {
         _mileageLoading = false;
+      });
+    }
+  }
+
+  // ✅ 점검로그 API 연동
+  Future<void> _fetchInspectionLogs() async {
+    setState(() {
+      _inspectionLoading = true;
+      _inspectionError = null;
+    });
+    try {
+      final dio = ref.read(authDioProvider);
+      final response = await dio.get(
+        '/api/v1/cars/${_carVin ?? "TEST_VIN"}/inspection-logs-paging?page=0&size=10',
+      );
+      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+        final List content = response.data['result']['content'] ?? [];
+        setState(() {
+          _inspectionLogs = content.map((e) => {
+            'date': (e['inspectionDateTime'] ?? e['inspectionDatetime'] ?? '').toString().split('T')[0],
+            'status': e['inspectionStatus'] ?? '',
+            'detail': e,
+          }).toList();
+        });
+      } else {
+        setState(() {
+          _inspectionError = '점검로그를 불러오지 못했습니다: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _inspectionError = '점검로그를 가져오는 중 오류가 발생했습니다: $e';
+      });
+    } finally {
+      setState(() {
+        _inspectionLoading = false;
       });
     }
   }
@@ -143,13 +185,13 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         children: [
           if (car != null)
             GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CarInfoPage()),
-                  );
-                },
-                child: CarViewerSection(imagePaths: _currentCarImagePaths),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CarInfoPage()),
+                );
+              },
+              child: CarViewerSection(imagePaths: _currentCarImagePaths),
             ),
           const SizedBox(height: 20),
           if (_carVin != null)
@@ -164,7 +206,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             Center(child: Text(_mileageError!))
           else
             SizedBox(
-              height: 110, // 2개만 보이게
+              height: 150,
               child: ListView.builder(
                 scrollDirection: Axis.vertical,
                 itemCount: _mileageLogs.length,
@@ -195,9 +237,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                 children: [
                                   Text(
                                     log['distance'] ?? '',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        color: Colors.white, fontWeight: FontWeight.bold
-                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
@@ -214,6 +253,75 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                   );
                 },
               ),
+            ),
+          const SizedBox(height: 24),
+          // 🛠️ 점검로그 Section (점검 완료만 보이게)
+          Text('점검 로그', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          if (_inspectionLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_inspectionError != null)
+            Center(child: Text(_inspectionError!))
+          else
+            Builder(
+              builder: (context) {
+                // 여기서 점검 완료만 필터
+                final onlyCompletedLogs = _inspectionLogs.where((e) => e['status'] == "점검 완료").toList();
+                return SizedBox(
+                  height: 150,
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: onlyCompletedLogs.length,
+                    itemBuilder: (context, idx) {
+                      final log = onlyCompletedLogs[idx];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs, // ← "전체 리스트" 넘기기! (대기, 완료 둘 다)
+                                currentIndex: idx,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  log['date'] ?? '', // 상단에 점검 날짜!
+                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.verified, color: Colors.lightBlueAccent, size: 22),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      log['status'] ?? '',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
         ],
       ),
