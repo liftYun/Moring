@@ -10,3 +10,5 @@ final notificationApiProvider = Provider<NotificationApi>((ref) {
   final Dio authDio = ref.watch(authDioProvider);
   return NotificationApi(authDio);
 });
+
+final unreadCountProvider = StateProvider<int>((ref) => 0);
