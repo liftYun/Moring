@@ -39,15 +39,15 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
     @Query("DELETE FROM SocialMember sm WHERE sm.member.uuid = :uuid")
     void deleteByMemberUuid(@Param("uuid") String uuid);
 
-    // id 기준 삭제
+    // id 기준 삭제 -> 토큰값만 NULL처리이므로 update로 변경
     @Modifying
     @Transactional
 //    @Query("DELETE FROM SocialMember sm WHERE sm.member.id = :memberId")
     @Query("UPDATE SocialMember sm " +
-//            "SET sm.tokenId = NULL, sm.fcmTokenId = NULL " +
-            "SET sm.tokenId = NULL " +
+            "SET sm.tokenId = NULL, sm.fcmTokenId = NULL " +
+//            "SET sm.tokenId = NULL " +
             "WHERE sm.member.id = :memberId")
-    void deleteByMemberid(@Param("memberId") Long id);
+    void updateByMemberid(@Param("memberId") Long id);
 
     // users.uuid + 소셜타입 기준 삭제
     @Modifying
