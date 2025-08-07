@@ -63,8 +63,6 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       // Dio도 무료화
       ref.invalidate(authDioProvider);
       ref.invalidate(noAuthDioProvider);
-
-      Navigator.pushReplacementNamed(context, '/login');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
