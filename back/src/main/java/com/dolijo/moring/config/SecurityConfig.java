@@ -103,9 +103,9 @@ public class SecurityConfig {
                 // 기존 로그인(username/password) 엔드포인트
                 .requestMatchers(HttpMethod.POST, "/login", "/logout/rToken").permitAll()
                 // Swagger, 공용 API
-                .requestMatchers("/", "/api/v1/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // 토큰 보유자
-                .requestMatchers("/api/v1/cache/**").authenticated()
+                .requestMatchers("/api/v1/**").authenticated()
                 // 역할별 접근 제어
 //                .requestMatchers("/admin/**").hasRole("ADMIN")
 //                .requestMatchers("/user/**").hasRole("USER")
