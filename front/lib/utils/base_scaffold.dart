@@ -1,4 +1,3 @@
-// lib/utils/base_scaffold.dart
 import 'package:flutter/material.dart';
 import 'package:moring/utils/custom_app_bar.dart';
 import 'package:moring/utils/bottom_nav_bar.dart';
@@ -11,9 +10,14 @@ class BaseScaffold extends StatelessWidget {
   final bool withBottomNav;
   final int selectedIndex;
   final ValueChanged<int>? onItemTapped;
-  final VoidCallback? onNotificationPressed;
   final bool showBack;
   final VoidCallback? onBackButtonPressed;
+  final VoidCallback? onNotificationButtonPressed;
+
+  /// 알림 버튼 보일지 여부
+  final bool showNotificationButton;
+  /// 알림 개수
+  final int notificationCount;
 
   const BaseScaffold({
     Key? key,
@@ -22,9 +26,11 @@ class BaseScaffold extends StatelessWidget {
     this.withBottomNav = false,
     this.selectedIndex = 0,
     this.onItemTapped,
-    this.onNotificationPressed,
     this.showBack = false,
     this.onBackButtonPressed,
+    this.onNotificationButtonPressed,
+    this.showNotificationButton = true,
+    this.notificationCount = 0,
   }) : super(key: key);
 
   @override
@@ -33,7 +39,10 @@ class BaseScaffold extends StatelessWidget {
       appBar: CustomAppBar(
         title: title,
         onBackButtonPressed: showBack ? onBackButtonPressed : null,
-        onNotificationPressed: onNotificationPressed,
+        // onNotificationButtonPressed: showNotificationButton ? onNotificationButtonPressed : null,
+        showNotificationButton: showNotificationButton,
+        onNotificationButtonPressed: onNotificationButtonPressed,
+        notificationCount: notificationCount,
       ),
       body: body,
       bottomNavigationBar: withBottomNav && onItemTapped != null

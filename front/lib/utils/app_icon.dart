@@ -19,5 +19,16 @@ class AppIcons {
   static const Icon transmissionFluid = Icon(Icons.radio);
   static const Icon loccation = Icon(Icons.location_on);
   static const Icon camera = Icon(Icons.center_focus_weak);
+  /// 운전 집중 필요
+  static const Icon distractionAlert = Icon(Icons.drive_eta);
+  /// 전방 주시 필요
+  static const Icon frontAlert = Icon(Icons.directions_car);
+  /// 정기 점검 기간
+  static const Icon inspectionAlert = Icon(Icons.build_circle);
+  /// 산소 부족 경고
+  static const Icon oxygenAlert = Icon(Icons.local_hospital);
+  /// 부품 교환 권장
+  static const Icon partAlert = Icon(Icons.precision_manufacturing);
+
 }
 

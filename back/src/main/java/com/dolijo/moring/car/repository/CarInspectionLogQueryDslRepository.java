@@ -23,8 +23,12 @@ public class CarInspectionLogQueryDslRepository {
     public Slice<CarInspectionLogResponseDto> findInspectionLogsResponseDtoByVin(String vin, Pageable pageable) {
         List<CarInspectionLogResponseDto> fetch = queryFactory
                 .select(new QCarInspectionLogResponseDto(
-                        carInspectionLog.inspectionDate,
-                        carInspectionLog.inspectionStatus // enum을 그대로 가져오기
+                        carInspectionLog.createdAt,
+                        carInspectionLog.inspectionStatus,
+                        carInspectionLog.inadequateDetails,
+                        carInspectionLog.recommendationDetails,
+                        carInspectionLog.selfDiagnosis,
+                        carInspectionLog.specialNotes
                 ))
                 .from(carInspectionLog)
                 .join(carInspectionLog.car, car)

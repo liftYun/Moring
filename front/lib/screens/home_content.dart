@@ -7,10 +7,13 @@ import 'package:moring/providers/api_client.dart';
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/widgets/driving_log_section.dart';
+import 'package:moring/screens/car/car_info.dart';
+
+import '../providers/current_car_provider.dart';
+
 
 class HomeContent extends ConsumerStatefulWidget {
-  final Car? car;
-  const HomeContent({Key? key, this.car}) : super(key: key);
+  const HomeContent({Key? key}) : super(key: key);
 
   @override
   ConsumerState<HomeContent> createState() => _HomeContentState();
@@ -34,6 +37,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   @override
   void initState() {
     super.initState();
+
     if (widget.car != null) {
       _carVin = widget.car!.vin;
       _setCarImages(widget.car!.modelName.toLowerCase());
@@ -69,6 +73,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         _isLoading = false;
       });
     }
+
   }
 
   void _setCarImages(String carName) {
@@ -87,15 +92,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_error != null) return Center(child: Text(_error!));
     // 소모품 목록, vin 함께 전달!
+
+    final car = ref.watch(currentCarProvider);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CarViewerSection(imagePaths: _currentCarImagePaths),
+          // CarViewerSection(imagePaths: _currentCarImagePaths),
+          if (car != null)
+            CarViewerSection(imagePaths: _currentCarImagePaths),
           const SizedBox(height: 20),
           if (_carVin != null)
             ConsumablesSection(consumables: _consumables, vin: _carVin!), // <-- vin 넘김!
