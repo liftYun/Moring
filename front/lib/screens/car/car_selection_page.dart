@@ -88,6 +88,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
         });
         return;
       }
+
       if (_cars.isNotEmpty) {
         _selectedCarForDropdown = _cars[0];
       }
