@@ -16,9 +16,9 @@ final carListProvider = FutureProvider.autoDispose<List<Car>>((ref) async {
 });
 
 /// 목록에서 선택된 인덱스를 저장 (기본 0)
-final selectedCarIndexProvider = StateProvider<int>((_) => 0);
+final selectedCarIndexProvider = StateProvider.autoDispose<int>((_) => 0);
 
-final currentVinProvider = Provider<String?>((ref) {
+final currentVinProvider = Provider.autoDispose<String?>((ref) {
   final carsAsync = ref.watch(carListProvider);
   final idx = ref.watch(selectedCarIndexProvider);
   return carsAsync.maybeWhen(
