@@ -81,7 +81,6 @@ public class PartServiceImpl implements PartService {
     public List<PartStatusListResponseDto> getPartStatusList(String vin) {
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-        log.info(car.getId()+ " 조회됨");
         List<PartStatusListDto> dtos = partDslRepository.findPartStatusListByCarId(car.getId());
 
         LocalDate today = LocalDate.now();
@@ -101,6 +100,7 @@ public class PartServiceImpl implements PartService {
             if (lastChange == null || cycleMonths == null || cycleMonths <= 0) {
                 result.add(
                         PartStatusListResponseDto.builder()
+                                .partId(dto.getPartId())
                                 .nameEn(nameEn)
                                 .percentUsed(0)
                                 .dueDate(null)
@@ -123,6 +123,7 @@ public class PartServiceImpl implements PartService {
             int percent = (int) Math.min(100, Math.max(0, (passedDays * 100 / totalDays)));
             result.add(
                     PartStatusListResponseDto.builder()
+                            .partId(dto.getPartId())
                             .nameEn(nameEn)
                             .percentUsed(percent)
                             .dueDate(dueDate)
