@@ -100,12 +100,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/kakao/redirect").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/kakao/login").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/refresh").permitAll()
+                        .requestMatchers("/api/v1/health/**", "/api/v1/auth/login/test").permitAll()
                 // 기존 로그인(username/password) 엔드포인트
-                .requestMatchers(HttpMethod.POST, "/login", "/logout/rToken").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout/rToken").permitAll()
                 // Swagger, 공용 API
-                .requestMatchers("/", "/api/v1/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // 토큰 보유자
-                .requestMatchers("/api/v1/cache/**").authenticated()
+                .requestMatchers("/api/v1/**").authenticated()
                 // 역할별 접근 제어
 //                .requestMatchers("/admin/**").hasRole("ADMIN")
 //                .requestMatchers("/user/**").hasRole("USER")

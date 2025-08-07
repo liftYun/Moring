@@ -26,9 +26,13 @@ public class SocialMember {
     @Comment("소셜 로그인  유형")
     private SocialType type;
 
-    @Column(name = "token_id" , nullable = false)
+    @Column(name = "token_id" , nullable = true)
     @Comment("소셜인증 토큰값")
     private String tokenId;
+
+    @Column(name = "fcm_token_id" , nullable = true)
+    @Comment("푸시 관련 토큰값")
+    private String fcmTokenId;
 
     /** 토큰 만료 시각 */
     @Column(name = "expires_at", nullable = false)

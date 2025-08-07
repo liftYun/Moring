@@ -4,7 +4,9 @@ import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
 import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.repository.MemberRepository;
+import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
+import com.dolijo.moring.security.repository.SocialMemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,9 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
+    private final SocialMemberRepository socialMemberRepository;
 
-    public CustomUserDetailsService(MemberRepository memberRepository) {
+    public CustomUserDetailsService(MemberRepository memberRepository, SocialMemberRepository socialMemberRepository) {
         this.memberRepository = memberRepository;
+        this.socialMemberRepository = socialMemberRepository;
     }
 
     /**
@@ -59,11 +63,19 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomMemberDetails(member);
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public int updateNickName(String uuid, String nickName) throws UsernameNotFoundException {
         Member member = memberRepository.findByUuid(uuid)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER ));
 
         return memberRepository.updateNickNameById(member.getUuid(), nickName);
     }
+
+    @Transactional(readOnly = false)
+    public int updateFcmTokenAndSocialType(String uuid, String fcmTokenId, SocialType socialType) {
+        Member member = memberRepository.findByUuid(uuid)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_MEMBER));
+        return socialMemberRepository.updateFcmTokenIdByMemberIdAndSocialType(member.getId(), socialType, fcmTokenId);
+    }
+
 }

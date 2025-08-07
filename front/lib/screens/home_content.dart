@@ -12,7 +12,6 @@ import 'package:moring/widgets/consumables_section.dart'; // <-- 수정된 Consu
 import 'package:moring/widgets/driving_log_section.dart';
 import 'package:moring/screens/car/car_info.dart';
 
-
 class HomeContent extends ConsumerStatefulWidget {
   final Car? car;
   const HomeContent({Key? key, this.car}) : super(key: key);
@@ -152,7 +151,19 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CarViewerSection(imagePaths: _currentCarImagePaths),
+          GestureDetector(
+            onTap: () {
+              if (widget.car != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CarInfoPage(car: widget.car!),
+                  ),
+                );
+              }
+            },
+            child: CarViewerSection(imagePaths: _currentCarImagePaths),
+          ),
           const SizedBox(height: 20),
           ConsumablesSection(consumables: consumables),
           const SizedBox(height: 20),

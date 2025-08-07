@@ -80,11 +80,11 @@ public class CarController {
 
 
     @Operation(summary = "회원의 등록 차량 단건 삭제", description = "VIN(차대번호)을 기준으로 차량 정보를 삭제합니다.")
-    @DeleteMapping("/{carVin}")
+    @DeleteMapping("/{vin}")
     public BaseResponse<Void> deleteCarByVin(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin) {
-        carService.deleteCarByVin(carVin);
+            @PathVariable("vin") String vin) {
+        carService.deleteCarByVin(vin);
         return BaseResponse.ok();
     }
 
@@ -133,6 +133,7 @@ public class CarController {
     ) {
         Slice<CarInspectionLogResponseDto> dtoSlice = carService.getCarInspectionLogs(vin, pageable);
         Slice<CarInspectionLogResponseVo> voSlice = dtoSlice.map(CarInspectionLogResponseDto::toVo);
+        
         return BaseResponse.of(voSlice);
     }
 
