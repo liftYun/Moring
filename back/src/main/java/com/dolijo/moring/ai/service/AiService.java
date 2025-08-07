@@ -2,6 +2,7 @@ package com.dolijo.moring.ai.service;
 
 import com.dolijo.moring.ai.vo.out.CarRegistrationOcrResponseVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,31 +15,52 @@ import java.util.Map;
 
 
 @Service
-public class OcrService {
+public class AiService {
 
     private final WebClient gmsWebClient;
-    private final GptService gptService;
+    private final OcrService ocrService;
 
     private final String gmsKey;
 
-    public OcrService(
+    public AiService(
             WebClient gmsWebClient,
-            GptService gptService,
+            OcrService ocrService,
             @Value("${spring.ai.openai.api-key}") String gmsKey
     ) {
         this.gmsWebClient = gmsWebClient;
         this.gmsKey = gmsKey;
-        this.gptService = gptService;
+        this.ocrService = ocrService;
     }
 
-
-    public String ask(String prompt) {  Map<String, Object> body = Map.of(
+    /**
+     * GPT 메시지 바디 생성 (프롬프트만 입력)
+     */
+    private Map<String, Object> buildGptMessageBody(String prompt) {
+        return Map.of(
             "model", "gpt-4o-mini",
             "messages", List.of(
-                    Map.of("role", "system", "content", "You are a helpful assistant."),
-                    Map.of("role", "user", "content", prompt)
+                Map.of("role", "system", "content", "You are a helpful assistant."),
+                Map.of("role", "user", "content", prompt)
             )
-    );
+        );
+    }
+
+    /**
+     * GPT 메시지 바디 생성 (프롬프트 + 추가 메시지)
+     */
+    private Map<String, Object> buildGptMessageBody(String prompt, String extraUserContent) {
+        return Map.of(
+            "model", "gpt-4o-mini",
+            "messages", List.of(
+                Map.of("role", "system", "content", "You are a helpful assistant."),
+                Map.of("role", "user", "content", prompt),
+                Map.of("role", "user", "content", extraUserContent)
+            )
+        );
+    }
+
+    public String ask(String prompt) {
+        Map<String, Object> body = buildGptMessageBody(prompt);
 
         Map response = gmsWebClient.post()
                 .uri("/chat/completions")
@@ -67,14 +89,7 @@ public class OcrService {
             - 나머지 주요 차량 정보만 아래 JSON 형태로 정확히 추출해주세요.
             예시: { \"vin\": \"...\", \"modelName\": \"...\", \"registeredAt\": \"...\" }
             """;
-        Map<String, Object> body = Map.of(
-            "model", "gpt-4o-mini",
-            "messages", List.of(
-                Map.of("role", "system", "content", "You are a helpful assistant."),
-                Map.of("role", "user", "content", prompt),
-                Map.of("role", "user", "content", base64Image)
-            )
-        );
+        Map<String, Object> body = buildGptMessageBody(prompt, base64Image);
         Map response = gmsWebClient.post()
                 .uri("/chat/completions")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + gmsKey)

@@ -1,6 +1,6 @@
 package com.dolijo.moring.ai.controller;
 
-import com.dolijo.moring.ai.service.OcrService;
+import com.dolijo.moring.ai.service.AiService;
 import com.dolijo.moring.ai.vo.out.CarRegistrationOcrResponseVo;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "AI", description = "AI 관련 API")
 @Log4j2
 public class AIController {
-    private final OcrService ocrService;
+    private final AiService ocrService;
 
 //    @PostMapping(value = "/car-registration-ocr",
 //            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
