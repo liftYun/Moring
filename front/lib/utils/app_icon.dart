@@ -1,3 +1,4 @@
+// lib/utils/app_icon.dart
 import 'package:flutter/material.dart';
 
 class AppIcons {
@@ -17,6 +18,6 @@ class AppIcons {
   static const Icon sparkPlugs = Icon(Icons.auto_awesome);
   static const Icon transmissionFluid = Icon(Icons.radio);
   static const Icon loccation = Icon(Icons.location_on);
-
+  static const Icon camera = Icon(Icons.center_focus_weak);
 }
 
