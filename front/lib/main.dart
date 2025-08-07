@@ -82,13 +82,9 @@ class MyApp extends ConsumerWidget {
 	        '/root': (context) => const RootPage(),
           '/registration': (context) => const CarRegistrationPage(),
           '/ocr': (context) => const OcrRegistrationPage(),
-          '/registration_complete': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            final car = args?['car'] as Car;
-            return RegistrationCompletePage(car: car);
-          }
+          '/registration_complete': (context) => const RegistrationCompletePage(),
         },
       ),
-    );
+    );  // OverlaySupport.global 닫는 괄호
   }
 }

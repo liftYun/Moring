@@ -33,10 +33,24 @@ class CarSelectionContainer extends ConsumerWidget {
           showNotificationButton: false,
           body: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: cars.length,
+            itemCount: cars.length + 1, // +1을 해서 플러스 버튼 추가
             itemBuilder: (ctx, index) {
-              final car = cars[index];
-              return _CarCard(car: car, index: index);
+              if (index < cars.length) {
+                final car = cars[index];
+                return _CarCard(car: car, index: index);
+              } else {
+                // 마지막 인덱스에 플러스 버튼 추가
+                return Center(
+                  child: IconButton(
+                    iconSize: 40,
+                    icon: const Icon(Icons.add, color: Colors.white24),
+                    tooltip: '차량 등록',
+                    onPressed: () {
+                      Navigator.pushNamed(ctx, '/registration');
+                    },
+                  ),
+                );
+              }
             },
           ),
         );
@@ -73,11 +87,17 @@ class _CarCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(car.nickname,
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  car.nickname,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(car.modelName,
+                Text(
+                  car.modelName,
                   style: const TextStyle(color: Colors.white70, fontSize: 15),
                 ),
                 const Spacer(),
@@ -95,8 +115,11 @@ class _CarCard extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.white38),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 24),
                     ),
                     child: const Text('선택하기'),
                   ),
