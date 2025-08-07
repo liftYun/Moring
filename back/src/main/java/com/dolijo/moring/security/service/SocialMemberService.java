@@ -121,6 +121,17 @@ public class SocialMemberService {
     }
 
     /**
+     * 사용자의 로그인 여부 확인
+     */
+
+    public boolean isLoggedin(String uuid) {
+        // uuid 로 멤버 조회
+        Long id = memberRepository.findIdByUuid(uuid);
+
+        return socialMemberRepository.existsByMemberIdAndTokenIdIsNotNull(id);
+    }
+
+    /**
      * 지정된 사용자(UUID)의 모든 리프레시 토큰을 삭제합니다.
      */
     public void deleteToken(String memberUuid) {
