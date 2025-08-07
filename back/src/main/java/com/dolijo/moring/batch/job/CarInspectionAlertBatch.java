@@ -28,6 +28,8 @@ import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilde
 import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.batch.core.repository.JobRepository;
 
@@ -42,6 +44,7 @@ import java.util.Map;
  * - 알림 전송 실패 시 DLQ로 재시도
  */
 @Configuration
+@EnableAsync
 @RequiredArgsConstructor
 @Log4j2
 public class CarInspectionAlertBatch {
@@ -133,7 +136,7 @@ public class CarInspectionAlertBatch {
             log.info("[정기점검 알림 배치] 대상 데이터: {}", dto);
             NotificationBatchDto notiDto = new NotificationBatchDto();
             notiDto.setCarId(dto.getCarId());
-            notiDto.setNotificationType(NotificationType.GENERAL.name());
+            notiDto.setNotificationType(NotificationType.PUSH.name());
             notiDto.setNotificationDetailType(NotificationDetailType.INSPECTION_ALERT.name());
             notiDto.setMessage(
                     "차량 정기점검일이 임박했습니다. 점검일: " + dto.getInspectionDate() +
@@ -142,18 +145,20 @@ public class CarInspectionAlertBatch {
                             ")"
             );
             String fcmToken = dto.getFcmTokenId();
-            FCMNotificationRequestDto requestDto = FCMNotificationRequestDto.builder()
-                    .fcmToken(fcmToken)
-                    .title("차량 정기점검 알림")
-//                    .body("차량 정기점검일이 임박했습니다. 점검일: %s (%s 남음)".formatted(
-//                            "2023-10-01", "3일"
-//                    ))
-                    .body(notiDto.getMessage())
-                    .build();
-            // 푸시 알림 - FCM 토큰 없으면 전송하지 않음
-            pushService.sendPushNotification(requestDto);
+            sendPushAsync(fcmToken, notiDto.getMessage());
             return notiDto;
         };
+    }
+
+    @Async
+    public void sendPushAsync(String fcmToken, String message) {
+        pushService.sendPushNotification(
+                FCMNotificationRequestDto.builder()
+                        .fcmToken(fcmToken)
+                        .title("차량 정기점검 알림")
+                        .body(message)
+                        .build()
+        );
     }
 
     // 알림 DB에 저장

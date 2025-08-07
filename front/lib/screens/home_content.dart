@@ -10,6 +10,7 @@ import 'package:moring/utils/app_icon.dart'; // AppIcons 임포트
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart'; // <-- 수정된 ConsumablesSection 임포트
 import 'package:moring/widgets/driving_log_section.dart';
+import 'package:moring/screens/car/car_info.dart';
 
 
 class HomeContent extends ConsumerStatefulWidget {
@@ -143,7 +144,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           List.generate(numImages, (i) => '$basePath${i + 1}.png');
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(

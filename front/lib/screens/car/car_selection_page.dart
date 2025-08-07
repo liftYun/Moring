@@ -8,7 +8,6 @@ import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/user_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
-import '../home_page.dart';
 import '../root.dart';
 
 class CarSelectionContainer extends ConsumerWidget {
@@ -23,7 +22,6 @@ class CarSelectionContainer extends ConsumerWidget {
     );
   }
 }
-
 
 class CarSelectionPage extends ConsumerStatefulWidget {
   final String memberUuid;
@@ -109,9 +107,6 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
     });
   }
 
-  // void _navigateToCarDetail(Car car) {
-  //   Navigator.pushNamed(context, '/root', arguments: {'car': car});
-  // }
   void _navigateToCarDetail(Car car) {
     Navigator.pushReplacement(
       context,
@@ -122,7 +117,6 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
   }
 
   Widget buildCarCard(Car car) {
-    // 등록된 차량 모델 이름에 맞춰 동일한 사진을 띄움
     String carName = car.modelName.toLowerCase();
     debugPrint('car_selection Name : $carName');
     final String demoCarImage = 'assets/$carName/4.png'; // 에셋(로컬) 이미지 경로 예시
@@ -184,7 +178,7 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
             child: SizedBox(
               width: 300,
               height: 180,
-              child: Image.asset( // 만약 네트워크 이미지라면 Image.network로 변경
+              child: Image.asset(
                 demoCarImage,
                 fit: BoxFit.contain,
               ),
@@ -204,21 +198,32 @@ class _CarSelectionPageState extends ConsumerState<CarSelectionPage> {
       onItemTapped: _onItemTapped,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : (_error != null
+          : _error != null
           ? Center(
         child: Text(
           _error!,
           style: const TextStyle(color: Colors.red),
         ),
       )
-          : ListView.builder(
-        itemCount: _cars.length,
-        itemBuilder: (context, index) {
-          final car = _cars[index];
-          return buildCarCard(car);
-        },
-      )),
+          : SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            ..._cars.map((car) => buildCarCard(car)).toList(),
+            // 차량 카드들 아래 바로 붙는 + 버튼
+            Center(
+              child: IconButton(
+                iconSize: 40,
+                icon: const Icon(Icons.add, color: Colors.white24),
+                tooltip: '차량 등록',
+                onPressed: () {
+                  Navigator.pushNamed(context, '/registration');
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
-
