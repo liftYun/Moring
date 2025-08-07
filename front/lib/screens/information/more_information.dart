@@ -6,6 +6,7 @@ import 'package:moring/providers/user_provider.dart'; // userInfoProvider
 import 'package:moring/models/user_info.dart';
 
 import 'package:moring/screens//member/user_info_edit.dart';
+import 'package:moring/screens/information/notification_panel.dart';
 
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
@@ -69,7 +70,7 @@ class MorePage extends ConsumerWidget {
         child: ListView(
           children: [
             // --- Profile 섹션 ---
-            _buildSectionHeader(context, 'Profile'),
+            _buildSectionHeader(context, '프로필'),
             // 실제 유저 정보를 불러와서 렌더링
             userAsync.when(
               loading: () => const Padding(
@@ -122,32 +123,31 @@ class MorePage extends ConsumerWidget {
             ),
 
             // --- App Settings 섹션 ---
-            _buildSectionHeader(context, 'App Settings'),
+            _buildSectionHeader(context, ''),
             _buildTile(
-              icon: Icons.settings_outlined,
-              title: 'App Preferences',
-              subtitle: 'Manage your app preferences',
+              icon: Icons.event_note,
+              title: '점검 로그',
+              subtitle: '점검일을 확인하세요',
               onTap: () {
                 // App Preferences 페이지
               },
             ),
             _buildTile(
               icon: Icons.notifications_outlined,
-              title: 'Notifications',
-              subtitle: 'Manage your notifications',
+              title: '알림',
+              subtitle: '알림을 관리하세요',
               onTap: () {
-                // Notifications 페이지
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationPanel()),
+                );
               },
             ),
             _buildTile(
               icon: Icons.privacy_tip_outlined,
-              title: 'Privacy',
-              subtitle: 'Manage your privacy settings',
+              title: '정책',
+              subtitle: '사용 정책을 확인하세요',
               onTap: () {
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(builder: (context) => InspectionHistoryPage()),
-              //   );
               },
             ),
 

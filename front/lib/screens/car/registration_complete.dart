@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/utils/custom_app_bar.dart'; // 경로는 프로젝트 맞게 조정
 import 'package:moring/screens/root.dart';
-import 'package:moring/models/car.dart';
+import 'package:moring/providers/current_car_provider.dart';
 
-class RegistrationCompletePage extends StatelessWidget {
-  final Car car;
-  const RegistrationCompletePage({Key? key, required this.car}) : super(key: key);
+class RegistrationCompletePage extends ConsumerWidget {
+  const RegistrationCompletePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final car = ref.watch(currentCarProvider);
+
+    if (car == null) {
+      return Scaffold(
+        appBar: CustomAppBar(
+          title: '차량 등록 완료',
+          onBackButtonPressed: () => Navigator.pop(context),
+        ),
+        body: const Center(child: Text('등록된 차량 정보가 없습니다.')),
+      );
+    }
+
     String carImagePath = 'assets/${car.modelName.toLowerCase()}/11.png';
 
     return Scaffold(
@@ -19,10 +31,10 @@ class RegistrationCompletePage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, // ← 핵심 부분!
+          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 22), // 상단 공백(원하는 만큼 조절)
+            const SizedBox(height: 22),
             // 차량 이미지 + 효과
             Stack(
               alignment: Alignment.center,
@@ -33,10 +45,10 @@ class RegistrationCompletePage extends StatelessWidget {
                   decoration: const BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        Color(0x40FFFFFF),   // 중심 glow (옅은 흰색)
-                        Color(0x00FFFFFF),   // 중간은 완전 투명 흰색(흐림 효과 경계)
-                        Color(0x22181A20),   // 얇게 덮는 어두운 투명 (더 자연스럽게 소프트)
-                        Color(0xFF181A20),   // 마지막: 완전 검정(배경색)
+                        Color(0x40FFFFFF),
+                        Color(0x00FFFFFF),
+                        Color(0x22181A20),
+                        Color(0xFF181A20),
                       ],
                       center: Alignment(0, 0.4),
                       radius: 1.1,
@@ -103,7 +115,7 @@ class RegistrationCompletePage extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => RootPage(initialCar: car),
+                      builder: (_) => const RootPage(),
                     ),
                   );
                 },

@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/models/car.dart';
 import 'package:moring/providers/api_client.dart'; // authDioProvider 위치
+import 'package:moring/providers/car_provider.dart';
+import 'package:moring/providers/current_car_provider.dart';
 
 class CarInfoPage extends ConsumerStatefulWidget {
-  final Car car;
-  const CarInfoPage({Key? key, required this.car}) : super(key: key);
+  const CarInfoPage({Key? key}) : super(key: key);
 
   @override
   ConsumerState<CarInfoPage> createState() => _CarInfoPageState();
@@ -35,7 +36,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
     }
   }
 
-  void _showDeleteConfirm(BuildContext context) {
+  void _showDeleteConfirm(BuildContext context, String vin) {
     showModalBottomSheet(
       context: context,
       barrierColor: Colors.black.withOpacity(0.3),
@@ -52,8 +53,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                 filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                 child: Container(
                   color: Colors.transparent,
-                  // Modal의 높이 결정: 모달 내용의 높이에 맞게 (예: 200)
-                  height: 220, // 또는 필요시 mainAxisSize: MainAxisSize.min
+                  height: 220,
                 ),
               ),
               Container(
@@ -122,8 +122,9 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             ),
                             onPressed: () async {
                               Navigator.pop(context); // 삭제 모달 닫기
-                              final success = await _deleteCarByVin(widget.car.vin);
+                              final success = await _deleteCarByVin(vin);
                               if (success) {
+                                ref.refresh(carListProvider);
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -164,6 +165,15 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
   Widget build(BuildContext context) {
     const Color cardDark = Color(0xFF23262B);
 
+    final car = ref.watch(currentCarProvider);
+
+    if (car == null) {
+      return BaseScaffold(
+        title: '차량 정보',
+        body: const Center(child: Text('차량 정보가 없습니다.')),
+      );
+    }
+
     return BaseScaffold(
       title: '차량 정보',
       withBottomNav: true,
@@ -179,7 +189,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
               width: double.infinity,
               height: 170,
               child: Image.asset(
-                'assets/${widget.car.modelName.toLowerCase()}/11.png',
+                'assets/${car.modelName.toLowerCase()}/11.png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -193,7 +203,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.car.nickname,
+                    car.nickname,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -213,7 +223,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              widget.car.vin,
+                              car.vin,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -237,7 +247,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    widget.car.modelName,
+                    car.modelName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -251,7 +261,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            _showDeleteConfirm(context);
+                            _showDeleteConfirm(context, car.vin);
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.transparent,

@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import 'package:moring/models/car.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
-import 'package:moring/widgets/driving_log_section.dart';
-import 'package:moring/screens/car/car_info.dart';
+import 'package:moring/screens/information/driving_record.dart';
 
 import '../providers/current_car_provider.dart';
-
 
 class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({Key? key}) : super(key: key);
@@ -26,23 +23,23 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   String? _carVin;
   List<String> _currentCarImagePaths = [];
 
-  final List<Map<String, String>> todayLogs = [
-    {'distance': '15.2 mi', 'time': '12:30 PM - 1:00 PM'},
-  ];
-  final List<Map<String, String>> yesterdayLogs = [
-    {'distance': '22.5 mi', 'time': '9:00 AM - 9:45 AM'},
-    {'distance': '5.0 mi', 'time': '5:30 PM - 5:45 PM'},
-  ];
+  // 주행로그용 state
+  List<Map<String, dynamic>> _mileageLogs = [];
+  bool _mileageLoading = true;
+  String? _mileageError;
 
   @override
   void initState() {
     super.initState();
-
-    if (widget.car != null) {
-      _carVin = widget.car!.vin;
-      _setCarImages(widget.car!.modelName.toLowerCase());
-      _fetchConsumables();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final car = ref.read(currentCarProvider);
+      if (car != null) {
+        _carVin = car.vin;
+        _setCarImages(car.modelName.toLowerCase());
+        _fetchConsumables();
+        _fetchMileageLogs();
+      }
+    });
   }
 
   Future<void> _fetchConsumables() async {
@@ -50,7 +47,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       _isLoading = true;
       _error = null;
     });
-
     try {
       final dio = ref.read(authDioProvider);
       final response = await dio.get('/api/v1/parts/status/${_carVin ?? "TEST_VIN"}');
@@ -73,7 +69,39 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         _isLoading = false;
       });
     }
+  }
 
+  // ✅ 주행로그 페이징 호출
+  Future<void> _fetchMileageLogs() async {
+    setState(() {
+      _mileageLoading = true;
+      _mileageError = null;
+    });
+    try {
+      final dio = ref.read(authDioProvider);
+      final response = await dio.get('/api/v1/cars/${_carVin ?? "TEST_VIN"}/mileage-logs-paging?page=0&size=10');
+      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+        final List content = response.data['result']['content'] ?? [];
+        setState(() {
+          _mileageLogs = content.map((e) => {
+            'distance': '${e['mileageKm']} km',
+            'date': e['recordedDate'] ?? '',
+          }).toList();
+        });
+      } else {
+        setState(() {
+          _mileageError = '주행로그를 불러오지 못했습니다: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _mileageError = '주행로그를 가져오는 중 오류가 발생했습니다: $e';
+      });
+    } finally {
+      setState(() {
+        _mileageLoading = false;
+      });
+    }
   }
 
   void _setCarImages(String carName) {
@@ -81,10 +109,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       int numImages;
       String basePath;
       switch (carName) {
-        case 'xm3': numImages = 36; basePath = 'assets/xm3/'; break;
-        case '그랜저': numImages = 36; basePath = 'assets/그랜저/'; break;
-        case '재규어': numImages = 30; basePath = 'assets/재규어/'; break;
-        default: numImages = 0; basePath = '';
+        case 'xm3':
+          numImages = 36;
+          basePath = 'assets/xm3/';
+          break;
+        case '그랜저':
+          numImages = 36;
+          basePath = 'assets/그랜저/';
+          break;
+        case '재규어':
+          numImages = 30;
+          basePath = 'assets/재규어/';
+          break;
+        default:
+          numImages = 0;
+          basePath = '';
       }
       _currentCarImagePaths = List.generate(numImages, (i) => '$basePath${i + 1}.png');
     });
@@ -92,11 +131,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_error != null) return Center(child: Text(_error!));
-    // 소모품 목록, vin 함께 전달!
-
     final car = ref.watch(currentCarProvider);
 
     return SingleChildScrollView(
@@ -104,16 +140,71 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // CarViewerSection(imagePaths: _currentCarImagePaths),
-          if (car != null)
-            CarViewerSection(imagePaths: _currentCarImagePaths),
+          if (car != null) CarViewerSection(imagePaths: _currentCarImagePaths),
           const SizedBox(height: 20),
           if (_carVin != null)
-            ConsumablesSection(consumables: _consumables, vin: _carVin!), // <-- vin 넘김!
-          const SizedBox(height: 20),
-          DrivingLogSection(title: 'Today', logs: todayLogs),
-          const SizedBox(height: 20),
-          DrivingLogSection(title: 'Yesterday', logs: yesterdayLogs),
+            ConsumablesSection(consumables: _consumables, vin: _carVin!),
+          const SizedBox(height: 24),
+          // 🚗 주행로그 Section
+          Text('주행 로그', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          if (_mileageLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_mileageError != null)
+            Center(child: Text(_mileageError!))
+          else
+            SizedBox(
+              height: 110, // 2개만 보이게
+              child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: _mileageLogs.length,
+                itemBuilder: (context, idx) {
+                  final log = _mileageLogs[idx];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DrivingRecordPage(logs: _mileageLogs),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      color: const Color(0xFF232326),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.place, color: Colors.white54, size: 20),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    log['distance'] ?? '',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: Colors.white, fontWeight: FontWeight.bold
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    log['date'] ?? '',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
         ],
       ),
     );
