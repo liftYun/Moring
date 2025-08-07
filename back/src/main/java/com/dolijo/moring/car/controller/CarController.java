@@ -1,20 +1,18 @@
 package com.dolijo.moring.car.controller;
 
 import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
-import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.service.CarService;
 import com.dolijo.moring.car.vo.in.RegisterCarRequestVo;
+import com.dolijo.moring.car.vo.in.RegisterCarInspectionVo;
 import com.dolijo.moring.car.vo.out.CarInspectionLogResponseVo;
 import com.dolijo.moring.car.vo.out.CarResponseVo;
 import com.dolijo.moring.common.base.BaseResponse;
-import com.dolijo.moring.common.base.BaseResponseStatus;
-import com.dolijo.moring.common.exception.BaseException;
+
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -62,11 +60,6 @@ public class CarController {
         """)
     @GetMapping("/{memberUuid}/list")
     public BaseResponse<List<CarResponseVo>> getCarsByMemberUuid(
-//            @Parameter(description = "조회 대상 회원 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-//            @PathVariable("memberUuid") String memberUuid,
-//
-//            @Parameter(description = "인증된 사용자 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-//            @RequestHeader("memberUuid") String authenticatedUuid
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails
     ) {
         List<CarResponseDto> dtoList = carService.getCarsByMemberUuid(customMemberDetails.getUserUuid());
@@ -112,15 +105,14 @@ public class CarController {
     }
     
     // 차량 정기점검 등록
-    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일을 받아 정기점검을 등록합니다. 상태는 서버에서 PENDING으로 고정됩니다.")
+    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일, 점검 상세정보(부적합, 시정권고, 자기진단, 특기사항)를 받아 정기점검을 등록합니다. 상태는 서버에서 PENDING으로 고정됩니다.")
     @PostMapping("/{vin}/inspection")
     public BaseResponse<Void> registerCarInspection(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
             @PathVariable("vin") String vin,
-            @Parameter(description = "점검일 (YYYY-MM-DD)", required = true, example = "2025-01-01")
-            @RequestParam("inspectionDate") String inspectionDate
+            @RequestBody RegisterCarInspectionVo requestVo
     ) {
-        carService.registerCarInspection(vin, inspectionDate);
+        carService.registerCarInspection(vin, requestVo.toDto());
         return BaseResponse.ok();
     }
 
