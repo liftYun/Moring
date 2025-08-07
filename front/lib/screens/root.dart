@@ -7,6 +7,7 @@ import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/utils/bottom_nav_bar.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/information/more_information.dart';
+import 'package:moring/screens/navigation/navigation_page.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
@@ -84,11 +85,10 @@ class _RootPageState extends ConsumerState<RootPage>
   }
 
   List<Widget> get _pages => <Widget>[
-    // HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
-    const HomePage(),
-    const HomePage(),
-    const HomePage(),
-    const MorePage(),
+    HomePage(car: widget.initialCar),    // Home 탭
+    const NavigationPage(),              // Navigation 탭 - 우리 네비게이션 기능
+    const HomePage(),                    // Driving Log 탭
+    const MorePage(),                    // More 탭
   ];
 
   void _onItemTapped(int index) => setState(() => _currentIndex = index);
