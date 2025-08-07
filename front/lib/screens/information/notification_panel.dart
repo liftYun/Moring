@@ -98,9 +98,13 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
     );
 
     // 2) 실제 데이터에서 제거하고, 높이/버튼 상태 등을 리빌드
-    setState(() {
-      _notifications.removeAt(index);
-    });
+    // setState(() {
+    //   _notifications.removeAt(index);
+    // });
+    _notifications.removeAt(index);
+
+    ref.read(unreadCountProvider.notifier).state--;
+    setState(() {});
   }
 
   Future<void> _markAllRead() async {
@@ -108,7 +112,7 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
     if (vin == null) return;
     final api = ref.read(notificationApiProvider);
     await api.fetchReadAllNotification(vin: vin);
-
+    ref.read(unreadCountProvider.notifier).state = 0;
     // 뒤에서부터 하나씩 애니메이션 삭제
     for (int i = _notifications.length - 1; i >= 0; i--) {
       _removeAt(i);
