@@ -26,7 +26,7 @@ class RootPage extends ConsumerStatefulWidget {
 
 class _RootPageState extends ConsumerState<RootPage>
     with WidgetsBindingObserver {
-  int _unreadCount = 0;
+  // int _unreadCount = 0;
   int _currentIndex = 0;
   Timer? _timer;
   static const _titles = ['Moring', 'Navigation', 'Driving Log', 'More'];
@@ -60,10 +60,12 @@ class _RootPageState extends ConsumerState<RootPage>
     try {
       final count = await api.fetchUnreadCount(vin);
       debugPrint('🏠[RootPage] fetchUnreadCount 응답: $count');
-      if (count != _unreadCount) {
-        setState(() => _unreadCount = count);
-        debugPrint('🏠[RootPage] _unreadCount 업데이트: $_unreadCount');
-      }
+      ref.read(unreadCountProvider.notifier).state = count;
+      // if (count != _unreadCount) {
+      //   // setState(() => _unreadCount = count);
+      //   ref.read(unreadCountProvider.notifier).state = count;
+      //   debugPrint('🏠[RootPage] _unreadCount 업데이트: $_unreadCount');
+      // }
     } catch (e, st) {
       debugPrint('🏠[RootPage] 뱃지 카운트 에러: $e\n$st');
     }
@@ -95,6 +97,7 @@ class _RootPageState extends ConsumerState<RootPage>
 
   @override
   Widget build(BuildContext context) {
+    final count = ref.watch(unreadCountProvider);
     return BaseScaffold(
       title: _titles[_currentIndex],
       showBack: true,
@@ -108,7 +111,7 @@ class _RootPageState extends ConsumerState<RootPage>
       onItemTapped: _onItemTapped,         // 탭 누르면 이 콜백이 불린다
       showNotificationButton: true,
       onNotificationButtonPressed: _openNotificationPanel,
-      notificationCount: _unreadCount,
+      notificationCount: count,
     );
   }
   void _handleBack() {

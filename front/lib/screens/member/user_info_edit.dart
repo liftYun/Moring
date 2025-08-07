@@ -52,10 +52,17 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       ),
     );
     if (resp.statusCode == 200 || resp.statusCode == 302) {
+      debugPrint('캐싱 삭제');
       await repo.deleteAllTokens();
-      // 2) 캐싱된 사용자/차량 정보를 무효화
+      ref.read(selectedCarIndexProvider.notifier).state = 0;
+      // 캐싱된 사용자/차량 정보를 무효화
       ref.invalidate(userInfoProvider);
       ref.invalidate(carListProvider);
+      ref.invalidate(currentVinProvider);
+      // ref.invalidate(selectedCarIndexProvider);
+      // Dio도 무료화
+      ref.invalidate(authDioProvider);
+      ref.invalidate(noAuthDioProvider);
 
       Navigator.pushReplacementNamed(context, '/login');
     } else {
