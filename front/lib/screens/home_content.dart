@@ -6,6 +6,7 @@ import 'package:moring/providers/api_client.dart';
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/screens/information/driving_record.dart';
+import 'package:moring/screens/car/car_info.dart';
 
 import '../providers/current_car_provider.dart';
 
@@ -140,7 +141,16 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (car != null) CarViewerSection(imagePaths: _currentCarImagePaths),
+          if (car != null)
+            GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CarInfoPage()),
+                  );
+                },
+                child: CarViewerSection(imagePaths: _currentCarImagePaths),
+            ),
           const SizedBox(height: 20),
           if (_carVin != null)
             ConsumablesSection(consumables: _consumables, vin: _carVin!),
