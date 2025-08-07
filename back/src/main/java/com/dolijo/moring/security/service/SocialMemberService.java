@@ -146,28 +146,40 @@ public class SocialMemberService {
      * 기존 토큰은 먼저 삭제됩니다.
      */
     public void saveToken(String uuid, SocialType type, String refreshToken, LocalDateTime expiresAt) {
-        Long id = memberRepository.findIdByUuid(uuid);
-        // 1) 기존 토큰 삭제
-        socialMemberRepository.updateByMemberid(id);
-
-        // 2) UserEntity 조회 (member 필수)
         Member findMember = memberRepository.findByUuid(uuid)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Invalid user ID: " + uuid));
 
-        // 3) 새로운 RefreshTokenEntity 생성 및 저장
-        SocialMember entity = SocialMember.builder()
-                .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
-                .type(type)
-                .tokenId(refreshToken)
-                .expiresAt(
+        // Optional로 조회한 후 존재 여부를 확인하는 경우
+        Optional<SocialMember> existingSocialMember = socialMemberRepository
+                .findByMemberIdAndType(findMember.getId(), type);
+
+        if (existingSocialMember.isEmpty()) {
+            // 등록 로직
+            // 새로운 RefreshTokenEntity 생성 및 저장
+            SocialMember entity = SocialMember.builder()
+                    .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
+                    .type(type)
+                    .tokenId(refreshToken)
+                    .expiresAt(
 //                        LocalDateTime.now()
 //                                .plus(Duration.ofMillis(jwtUtil.getRefreshExpiredMs()))
-                        expiresAt
-                )
-                .createdAt(LocalDateTime.now())
-                .build();
-        socialMemberRepository.save(entity);
+                            expiresAt
+                    )
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            socialMemberRepository.save(entity);
+        } else {
+            // 기존 토큰 삭제
+            socialMemberRepository.updateByMemberid(findMember.getId());
+
+            LocalDateTime expires = expiresAt;
+            LocalDateTime created = LocalDateTime.now();
+
+            socialMemberRepository.updateTokenByMemberid(findMember.getId(), refreshToken, expires, created);
+        }
+
+
     }
 
     /**

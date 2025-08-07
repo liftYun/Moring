@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -66,4 +67,7 @@ public interface SocialMemberRepository extends JpaRepository<SocialMember, Long
     int updateFcmTokenIdByMemberIdAndSocialType(@Param("memberId") Long memberId,
                                                 @Param("socialType") SocialType socialType,
                                                 @Param("fcmTokenId") String fcmTokenId);
+    @Modifying
+    @Query("UPDATE SocialMember sm SET sm.tokenId = :tokenId, sm.createdAt = :createdAt, sm.expiresAt= :expiresAt WHERE sm.member.id = :memberId")
+    void updateTokenByMemberid(@Param("memberId") Long id, @Param("tokenId") String refreshToken, @Param("expiresAt")LocalDateTime expires, @Param("createdAt")LocalDateTime created);
 }
