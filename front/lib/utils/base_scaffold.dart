@@ -20,7 +20,7 @@ class BaseScaffold extends StatelessWidget {
   final int notificationCount;
 
   const BaseScaffold({
-    Key? key,
+    super.key,
     required this.title,
     required this.body,
     this.withBottomNav = false,
@@ -31,7 +31,7 @@ class BaseScaffold extends StatelessWidget {
     this.onNotificationButtonPressed,
     this.showNotificationButton = true,
     this.notificationCount = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

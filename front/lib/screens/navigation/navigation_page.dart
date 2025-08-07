@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:math';
 import 'dart:async';
 
 // 서비스들
@@ -21,7 +20,7 @@ import 'widgets/driving_controls.dart';
 import 'widgets/search_results_dialog.dart';
 
 class NavigationPage extends StatefulWidget {
-  const NavigationPage({Key? key}) : super(key: key);
+  const NavigationPage({super.key});
 
   @override
   State<NavigationPage> createState() => _NavigationPageState();
@@ -442,7 +441,7 @@ class _NavigationPageState extends State<NavigationPage> with WidgetsBindingObse
   String _formatDuration(int seconds) {
     int minutes = seconds ~/ 60;
     int remainingSeconds = seconds % 60;
-    return '${minutes}분 ${remainingSeconds}초';
+    return '$minutes분 $remainingSeconds초';
   }
   
   /// 거리 포맷팅 (미터 -> km)

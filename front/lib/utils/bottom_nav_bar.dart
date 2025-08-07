@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moring/screens/member/user_info_edit.dart';
 import 'package:moring/utils/app_icon.dart';
 
-import '../screens/member/mypage.dart'; // AppIcons를 사용하기 위해 임포트
+// AppIcons를 사용하기 위해 임포트
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;

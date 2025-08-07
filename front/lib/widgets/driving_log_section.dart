@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class DrivingLogSection extends StatelessWidget {
   final String title;
   final List<Map<String, String>> logs;
-  const DrivingLogSection({Key? key, required this.title, required this.logs}) : super(key: key);
+  const DrivingLogSection({super.key, required this.title, required this.logs});
 
   @override
   Widget build(BuildContext context) {

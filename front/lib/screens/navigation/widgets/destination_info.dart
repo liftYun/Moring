@@ -9,13 +9,13 @@ class DestinationInfo extends StatelessWidget {
   final VoidCallback onClear;
   
   const DestinationInfo({
-    Key? key,
+    super.key,
     required this.destination,
     required this.estimatedTime,
     required this.estimatedDistance,
     required this.trafficInfo,
     required this.onClear,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

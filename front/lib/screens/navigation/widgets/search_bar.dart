@@ -7,11 +7,11 @@ class DestinationSearchBar extends StatelessWidget {
   final bool isSearching;
   
   const DestinationSearchBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onSearch,
     required this.isSearching,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

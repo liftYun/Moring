@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
-import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
@@ -11,6 +10,7 @@ import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/car/registration_complete.dart';
 import 'package:moring/screens/ocr.dart';
 import 'package:moring/utils/app_theme.dart';
+import 'package:moring/models/car.dart';
 import 'providers/auth_provider.dart';
 // firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -59,7 +59,7 @@ class MyApp extends ConsumerWidget {
 
     ref.listen<String?>(fCMNotifierProvider, (previous, next) {
       if (next != null) {
-        debugPrint('FCM 토큰 상태 변경(전체 토큰): ${next}...');
+        debugPrint('FCM 토큰 상태 변경(전체 토큰): $next...');
       }
     });
 
@@ -83,8 +83,8 @@ class MyApp extends ConsumerWidget {
           '/ocr': (context) => const OcrRegistrationPage(),
           '/registration_complete': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            final modelName = args?['modelName'] as String;
-            return RegistrationCompletePage(modelName: modelName);
+            final car = args?['car'] as Car;
+            return RegistrationCompletePage(car: car);
           }
         },
       ),

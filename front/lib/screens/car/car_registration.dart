@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/utils/base_scaffold.dart';
+import 'package:moring/models/car.dart';
 
 class CarRegistrationPage extends ConsumerStatefulWidget {
-  const CarRegistrationPage({Key? key}) : super(key: key);
+  const CarRegistrationPage({super.key});
 
   @override
   ConsumerState<CarRegistrationPage> createState() => _CarRegistrationPageState();
@@ -40,8 +40,7 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
               onPrimary: Colors.white,
               surface: const Color(0xFF23262B),
               onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: const Color(0xFF181A20),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF181A20)),
           ),
           child: child!,
         );
@@ -108,6 +107,13 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         registeredAt: registerDate,
       );
 
+      final car = Car(
+        vin: vin,
+        nickname: nickname,
+        modelName: model,
+        imgUrl: '', // 필요 시 채우기
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('차량이 등록되었습니다!')),
       );
@@ -115,7 +121,7 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
       Navigator.pushReplacementNamed(
           context,
           '/registration_complete',
-          arguments: {'modelName': model},
+          arguments: {'car': car},
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

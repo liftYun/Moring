@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moring/utils/app_icon.dart'; // AppIcons 클래스가 테마 내에서 사용될 경우 (현재 테마에는 직접 사용되지 않지만, 다른 곳에서 테마와 함께 사용될 수 있으므로 참고)
+// AppIcons 클래스가 테마 내에서 사용될 경우 (현재 테마에는 직접 사용되지 않지만, 다른 곳에서 테마와 함께 사용될 수 있으므로 참고)
 
 // 앱의 공통 테마 데이터를 정의하는 파일
 

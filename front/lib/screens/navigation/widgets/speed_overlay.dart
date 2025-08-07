@@ -5,10 +5,10 @@ class SpeedOverlay extends StatelessWidget {
   final bool isDriving;
   
   const SpeedOverlay({
-    Key? key,
+    super.key,
     required this.currentSpeed,
     required this.isDriving,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

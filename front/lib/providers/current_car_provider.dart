@@ -1,4 +1,5 @@
 /// providers/current_car_provider.dart
+library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/utils/iterable_extensions.dart';
 import 'package:moring/models/car.dart';

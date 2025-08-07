@@ -6,7 +6,7 @@ import 'package:moring/utils/custom_app_bar.dart';
 List<CameraDescription>? cameras;
 
 class OcrRegistrationPage extends StatefulWidget {
-  const OcrRegistrationPage({Key? key}) : super(key: key);
+  const OcrRegistrationPage({super.key});
 
   @override
   State<OcrRegistrationPage> createState() => _OcrRegistrationPageState();

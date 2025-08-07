@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:moring/screens/root.dart';
 import 'package:moring/utils/app_icon.dart';
 
 
@@ -14,13 +13,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 
   const CustomAppBar({
-    Key? key,
+    super.key,
     required this.title,
     this.onBackButtonPressed,
     this.onNotificationButtonPressed,
     this.showNotificationButton = true,
     this.notificationCount = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

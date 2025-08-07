@@ -4,7 +4,7 @@ import 'package:moring/widgets/car_360_viewer.dart';
 /// 차량 360° 뷰어 섹션
 class CarViewerSection extends StatelessWidget {
   final List<String> imagePaths;
-  const CarViewerSection({Key? key, required this.imagePaths}) : super(key: key);
+  const CarViewerSection({super.key, required this.imagePaths});
 
   @override
   Widget build(BuildContext context) {

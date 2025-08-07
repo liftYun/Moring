@@ -9,13 +9,13 @@ class DrivingControls extends StatelessWidget {
   final String drivingTime;
   
   const DrivingControls({
-    Key? key,
+    super.key,
     required this.isDriving,
     required this.onStartDriving,
     required this.onStopDriving,
     required this.totalDistance,
     required this.drivingTime,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

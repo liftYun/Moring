@@ -73,7 +73,8 @@
         <!-- Google Maps API 키 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCBm2CIESi_7lt7XYHgadqu_JpVZ848km8" />
+            android:value="AIzaSyACLWrHshoQR78a0grj9erUJzSctaFVMgE" />
+<!--            android:value="AIzaSyCBm2CIESi_7lt7XYHgadqu_JpVZ848km8" />-->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

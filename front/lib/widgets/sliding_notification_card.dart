@@ -9,10 +9,10 @@ class SlidingNotificationCard extends ConsumerStatefulWidget {
   final VoidCallback onMarkedRead;
 
   const SlidingNotificationCard({
-    Key? key,
+    super.key,
     required this.notification,
     required this.onMarkedRead,
-  }) : super(key: key);
+  });
 
   @override
   _SlidingNotificationCardState createState() => _SlidingNotificationCardState();

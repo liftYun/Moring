@@ -8,12 +8,12 @@ class CustomNotificationCard extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const CustomNotificationCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.body,
     required this.onTap,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

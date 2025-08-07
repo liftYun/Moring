@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class CarNotRegisteredPage extends StatefulWidget {
-  const CarNotRegisteredPage({Key? key}) : super(key: key);
+  const CarNotRegisteredPage({super.key});
 
   @override
   _CarNotRegisteredPageState createState() => _CarNotRegisteredPageState();

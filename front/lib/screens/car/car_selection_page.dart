@@ -7,7 +7,7 @@ import '../root.dart';
 
 /// 차량 선택 화면
 class CarSelectionContainer extends ConsumerWidget {
-  const CarSelectionContainer({Key? key}) : super(key: key);
+  const CarSelectionContainer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -5,10 +5,10 @@ class SearchResultsDialog extends StatelessWidget {
   final Function(Map<String, dynamic>) onSelect;
   
   const SearchResultsDialog({
-    Key? key,
+    super.key,
     required this.results,
     required this.onSelect,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

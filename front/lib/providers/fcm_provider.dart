@@ -2,7 +2,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -88,12 +87,12 @@ class FCMNotifier extends _$FCMNotifier {
       // FCM 토큰 가져오기
       String? savedToken = await _storage.read(key: 'fcm_token');
 
-      debugPrint('saveToken : ${savedToken}');
+      debugPrint('saveToken : $savedToken');
 
       if (savedToken != null && savedToken.isNotEmpty) {
         _fcmToken = savedToken;
         state = savedToken;
-        debugPrint('기존 FCM 토큰(전체): ${savedToken}...');
+        debugPrint('기존 FCM 토큰(전체): $savedToken...');
 
       } else {
         _fcmToken = await _firebaseMessaging.getToken();
@@ -108,7 +107,7 @@ class FCMNotifier extends _$FCMNotifier {
 
       // 토큰 갱신 리스너 설정
       _firebaseMessaging.onTokenRefresh.listen((newToken) async {
-        debugPrint('FCM 토큰 갱신: ${newToken}...');
+        debugPrint('FCM 토큰 갱신: $newToken...');
         _fcmToken = newToken;
         state = newToken; // 상태 업데이트
 

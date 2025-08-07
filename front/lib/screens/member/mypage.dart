@@ -6,7 +6,7 @@ import 'package:moring/providers/user_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 class MyPageScreen extends ConsumerWidget {
-  const MyPageScreen({Key? key}) : super(key: key);
+  const MyPageScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

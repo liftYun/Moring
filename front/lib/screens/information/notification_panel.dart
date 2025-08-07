@@ -8,7 +8,7 @@ import 'package:moring/providers/car_provider.dart';
 import '../../widgets/sliding_notification_card.dart';
 
 class NotificationPanel extends ConsumerStatefulWidget {
-  const NotificationPanel({Key? key}) : super(key: key);
+  const NotificationPanel({super.key});
 
   @override
   ConsumerState<NotificationPanel> createState() => _NotificationPanelState();

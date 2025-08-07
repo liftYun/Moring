@@ -6,12 +6,11 @@ import 'package:moring/providers/car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 import 'package:moring/providers/api_client.dart';
-import 'package:moring/providers/auth_provider.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:moring/services/user_service.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
-  const ProfileEditPage({Key? key}) : super(key: key);
+  const ProfileEditPage({super.key});
 
   @override
   ConsumerState<ProfileEditPage> createState() => _ProfileEditPageState();

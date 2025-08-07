@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:moring/utils/custom_app_bar.dart'; // 경로는 프로젝트 맞게 조정
+import 'package:moring/screens/root.dart';
+import 'package:moring/models/car.dart';
 
 class RegistrationCompletePage extends StatelessWidget {
-  final String modelName;
-  const RegistrationCompletePage({Key? key, required this.modelName}) : super(key: key);
+  final Car car;
+  const RegistrationCompletePage({super.key, required this.car});
 
   @override
   Widget build(BuildContext context) {
-    String carImagePath = 'assets/${modelName.toLowerCase()}/11.png';
+    String carImagePath = 'assets/${car.modelName.toLowerCase()}/11.png';
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -63,7 +65,7 @@ class RegistrationCompletePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
+                SizedBox(
                   width: 340,
                   height: 140,
                   child: Image.asset(
@@ -75,7 +77,7 @@ class RegistrationCompletePage extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             const Text(
-              '차량 등록 완료',
+              '차량 등록',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -98,9 +100,11 @@ class RegistrationCompletePage extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(
-                      context,
-                      '/carselection',
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RootPage(initialCar: car),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(

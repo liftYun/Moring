@@ -4,13 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/utils/base_scaffold.dart';
-import 'package:moring/utils/bottom_nav_bar.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/information/more_information.dart';
 import 'package:moring/screens/navigation/navigation_page.dart';
-import 'package:moring/providers/token_repository.dart';
-import 'package:moring/providers/api_client.dart';
-import 'package:dio/dio.dart';
 
 import '../models/car.dart';
 import '../providers/car_provider.dart';
@@ -19,7 +15,7 @@ import 'information/notification_panel.dart';
 
 class RootPage extends ConsumerStatefulWidget {
   final Car? initialCar;
-  const RootPage({Key? key, this.initialCar}) : super(key: key);
+  const RootPage({super.key, this.initialCar});
 
   @override
   ConsumerState<RootPage> createState() => _RootPageState();
@@ -85,7 +81,8 @@ class _RootPageState extends ConsumerState<RootPage>
   }
 
   List<Widget> get _pages => <Widget>[
-    HomePage(car: widget.initialCar),    // Home 탭
+    // HomePage(car: widget.initialCar),    // Home 탭
+    const HomePage(),
     const NavigationPage(),              // Navigation 탭 - 우리 네비게이션 기능
     const HomePage(),                    // Driving Log 탭
     const MorePage(),                    // More 탭
@@ -113,8 +110,11 @@ class _RootPageState extends ConsumerState<RootPage>
   }
   void _handleBack() {
     final nav = Navigator.of(context);
-    if (nav.canPop()) nav.pop();
-    else nav.pushNamedAndRemoveUntil('/carselection', (_) => false);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      nav.pushNamedAndRemoveUntil('/carselection', (_) => false);
+    }
   }
 
   void _openNotificationPanel() {
