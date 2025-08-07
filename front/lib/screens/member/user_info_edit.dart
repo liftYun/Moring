@@ -10,6 +10,7 @@ import 'package:moring/providers/car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 import '../../providers/api_client.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/token_repository.dart';
 import '../../services/user_service.dart';
 
@@ -59,6 +60,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       // 2) 캐싱된 사용자/차량 정보를 무효화
       ref.invalidate(userInfoProvider);
       ref.invalidate(carListProvider);
+
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
