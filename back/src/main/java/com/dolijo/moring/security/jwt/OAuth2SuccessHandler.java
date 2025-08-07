@@ -165,6 +165,8 @@ import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static com.dolijo.moring.member.valueobject.SocialType.KAKAO;
+
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
@@ -250,14 +252,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // 5) **카카오 리프레시 토큰** DB에 저장
         socialMemberService.saveToken(
                 member.getUuid(),
-                SocialType.KAKAO,
+                KAKAO,
                 kakaoRefreshToken,
                 kakaoRefreshExpiresAt
         );
 
         // 6) **자체 JWT** 발급
         String ourAccessToken  = jwtUtil.generateAccessToken(member);
-        String ourRefreshToken = jwtUtil.generateRefreshToken(member);
+        String ourRefreshToken = jwtUtil.generateRefreshToken(member, KAKAO);
 
 //        // 7) 클라이언트 응답 구성
 //        //   - Authorization 헤더

@@ -61,11 +61,13 @@ public class RefreshController {
         Claims claims = jwtUtil.parseClaims(refreshToken);
         String memberUuid = claims.get("uuid", String.class);
 //        Long id = claims.get("id", Long.class);
-//        SocialType type = SocialType.valueOf(claims.get("type", String.class));
-        SocialType type = KAKAO;
+        SocialType type = SocialType.valueOf(claims.get("type", String.class));
+//        SocialType type = KAKAO;
+        System.out.println("Social Tyype : " + type);
 
         // 2) DB 저장 토큰 검증
         if (!socialMemberService.isValidWhitSocialToken(memberUuid, type)) {
+            System.out.println("DB 저장 토큰 검증 ERROR");
             socialMemberService.deleteToken(memberUuid);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -73,7 +75,7 @@ public class RefreshController {
         // 3) UserDetails 재조회
         CustomMemberDetails userDetails = customUserDetailsService.loadMemberUuid(memberUuid);
         // 4) 새 토큰 생성
-        String newRefreshToken = jwtUtil.createRefreshToken(memberUuid);
+        String newRefreshToken = jwtUtil.createRefreshToken(memberUuid,type);
         String newAccessToken = jwtUtil.createAccessToken(
                 memberUuid,
 //                userDetails.getUserEmail(),

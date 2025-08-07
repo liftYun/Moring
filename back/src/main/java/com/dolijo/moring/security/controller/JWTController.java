@@ -3,6 +3,7 @@ package com.dolijo.moring.security.controller;
 import com.dolijo.moring.common.base.BaseEntity;
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.member.entity.Member;
+import com.dolijo.moring.member.valueobject.SocialType;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.service.JoinService;
 import com.dolijo.moring.security.service.SocialMemberService;
@@ -20,7 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
+
+import static com.dolijo.moring.member.valueobject.SocialType.KAKAO;
+import static com.dolijo.moring.member.valueobject.SocialType.LOCAL;
 
 @RestController
 @Log4j2
@@ -119,7 +125,14 @@ public class JWTController {
         );
 
         String accessToken = jwtUtil.generateAccessToken(member);
-        String refreshToken = jwtUtil.generateRefreshToken(member);
+        String refreshToken = jwtUtil.generateRefreshToken(member, LOCAL);
+
+        socialMemberService.saveToken(
+                member.getUuid(),
+                LOCAL,
+                refreshToken,
+                LocalDateTime.now().plusDays(7)
+        );
 
         // Access-Token 헤더
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);

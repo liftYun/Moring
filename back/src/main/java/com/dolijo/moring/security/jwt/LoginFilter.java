@@ -66,7 +66,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         String accessToken = jwtUtil.createAccessToken(uuid, nickname);
-        String refreshToken = jwtUtil.createRefreshToken(uuid);
+        String refreshToken = jwtUtil.createRefreshToken(uuid, type);
         LocalDateTime expiresAt = LocalDateTime.now().plusDays(30);
 
         // Refresh Token 을 DB 혹은 Redis 등에 저장 (토큰 회수/무효화 위해)

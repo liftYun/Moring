@@ -117,6 +117,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import static com.dolijo.moring.member.valueobject.SocialType.KAKAO;
+
 @RestController
 @RequestMapping("/api/kakao")
 @Tag(name = "회원", description = "회원 관련 API")
@@ -222,14 +224,14 @@ public class KakaoAuthController {
 
         socialMemberService.saveToken(
                 member.getUuid(),
-                SocialType.KAKAO,
+                KAKAO,
                 kakaoRefreshToken,
                 kakaoRefreshExpiresAt
         );
 
         // 5) 자체 JWT 발급
         String ourAccess  = jwtUtil.generateAccessToken(member);
-        String ourRefresh = jwtUtil.generateRefreshToken(member);
+        String ourRefresh = jwtUtil.generateRefreshToken(member, KAKAO);
 
         // 6) 응답에 JWT 전달
         // Access-Token 헤더
