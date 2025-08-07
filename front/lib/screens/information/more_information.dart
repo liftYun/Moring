@@ -7,6 +7,7 @@ import 'package:moring/models/user_info.dart';
 
 import 'package:moring/screens//member/user_info_edit.dart';
 import 'package:moring/screens/information/notification_panel.dart';
+import 'package:moring/screens/car/registration_inspection.dart';
 
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
@@ -129,7 +130,6 @@ class MorePage extends ConsumerWidget {
               title: '점검 로그',
               subtitle: '점검일을 확인하세요',
               onTap: () {
-                // App Preferences 페이지
               },
             ),
             _buildTile(
