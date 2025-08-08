@@ -82,9 +82,11 @@ flutter:
     - assets/xm3/ #assets 폴더 내의 xm3폴더 등록
     - assets/그랜저/ #assets 폴도 내의 그렌저 폴더 등록
     - assets/재규어/ #assets 폴도 내의 재규어 폴더 등록
-    - assets/xm3/4.png
-    - assets/그랜저/4.png
-    - assets/그랜저/11.png
+    - assets/투싼/
+    - assets/모닝/
+    - assets/스포티지/
+    - assets/아반떼/
+    - assets/코나/
     - assets/kakao_logo.jpg
     - assets/google_logo.png
 
