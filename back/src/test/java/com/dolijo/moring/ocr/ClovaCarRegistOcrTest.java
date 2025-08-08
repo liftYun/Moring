@@ -16,8 +16,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
+
 @Log4j2
-public class NcloudOcrTest {
+public class ClovaCarRegistOcrTest {
     private final String SECRET = "bmJzakt6eExRdWRNUVNqVkdUbm1sdXJacXVmVHFkZ2o=";
     private final String apiUrl = "https://oqtnvjdj34.apigw.ntruss.com/custom/v1/44865/93935de02c44ae657c0d9d7d60e5e9b3fc08985403bf479497a0935aeff4c0c7/general";        // 예: https://api.ocr.ncloud.com/v1/...
 
@@ -245,6 +246,85 @@ public class NcloudOcrTest {
             return Base64.getEncoder().encodeToString(imageData);
         }
     }
+
+    @Test
+    public void callNcloudOcrApiAndParseCarInfo() throws Exception {
+        String resourcePath = "/img/IMG_8249.jpg"; // src/main/resources/img/...
+        String base64Image = encodeImageToBase64FromResource(resourcePath);
+
+        Map<String, Object> imageMap = new HashMap<>();
+        imageMap.put("format", "jpg");
+        imageMap.put("name", "demo");
+        imageMap.put("data", base64Image);
+
+        Map<String, Object> requestJson = new HashMap<>();
+        requestJson.put("images", List.of(imageMap));
+        requestJson.put("requestId", UUID.randomUUID().toString());
+        requestJson.put("version", "V2");
+        requestJson.put("timestamp", System.currentTimeMillis());
+        requestJson.put("lang", "ko"); // 한국어
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String payload = objectMapper.writeValueAsString(requestJson);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("X-OCR-SECRET", SECRET);
+
+        HttpEntity<String> entity = new HttpEntity<>(payload, headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+
+        JsonNode root = objectMapper.readTree(response.getBody());
+        JsonNode fields = root.path("images").get(0).path("fields");
+
+        String modelName = null;
+        String vin = null;
+        String registrationDate = null;
+
+        for (int i = 0; i < fields.size(); i++) {
+            String text = fields.get(i).path("inferText").asText();
+
+            // 모델명 (명 항목)
+            if (text.equals("명") && i + 1 < fields.size()) {
+                modelName = fields.get(i + 1).path("inferText").asText();
+            }
+
+            // VIN (대 번호 항목)
+            if (text.contains("대") && text.contains("번호") && i + 1 < fields.size()) {
+                String candidate = fields.get(i + 1).path("inferText").asText();
+                if (candidate.matches("[A-HJ-NPR-Z0-9]{17}")) { // VIN 패턴
+                    vin = candidate;
+                }
+            }
+
+            // 최초등록일
+            if (text.contains("최초등록일") && registrationDate == null) {
+                for (int j = i + 1; j < Math.min(i + 5, fields.size()); j++) {
+                    String candidate = fields.get(j).path("inferText").asText();
+                    if (candidate.matches("\\d{4}[-년]\\s?\\d{1,2}[-월]\\s?\\d{1,2}")) {
+                        registrationDate = candidate
+                                .replace("년", "-")
+                                .replace("월", "-")
+                                .replace("일", "")
+                                .replaceAll("\\s", "");
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.println("모델명: " + modelName);
+        System.out.println("VIN: " + vin);
+        System.out.println("최초등록일: " + registrationDate);
+    }
+
 
 
 }
