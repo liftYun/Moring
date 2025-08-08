@@ -8,6 +8,7 @@ import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/screens/information/driving_record.dart';
 import 'package:moring/screens/car/car_info.dart';
 import 'package:moring/screens/information/inspection_detail_page.dart';
+import 'package:moring/screens/navigation/alerts_sse_page.dart'; //이거는 난중에 네비로 갈거임
 
 import '../providers/current_car_provider.dart';
 
@@ -323,6 +324,17 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                 );
               },
             ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AlertsSsePage()),
+              );
+            },
+            icon: const Icon(Icons.wifi_tethering),
+            label: const Text('SSE Alerts TEST'),
+            style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+          ),
         ],
       ),
     );
