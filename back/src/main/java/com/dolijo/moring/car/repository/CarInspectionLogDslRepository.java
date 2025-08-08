@@ -1,12 +1,14 @@
 package com.dolijo.moring.car.repository;
 
 import com.dolijo.moring.car.entity.Car;
+import com.dolijo.moring.car.entity.QCarInspectionLog;
 import com.dolijo.moring.car.valueobject.InspectionStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static com.dolijo.moring.car.entity.QCarInspectionLog.carInspectionLog;
 
@@ -52,11 +54,29 @@ public class CarInspectionLogDslRepository {
                     .set(carInspectionLog.inspectionStatus, status)
                     .set(carInspectionLog.inadequateDetails, inadequateDetails)
                     .set(carInspectionLog.recommendationDetails, recommendationDetails)
+                    .set(carInspectionLog.updatedAt, LocalDateTime.now()) // 업데이트 시간 설정
                     .set(carInspectionLog.selfDiagnosis, selfDiagnosis)
                     .set(carInspectionLog.specialNotes, specialNotes)
                 .where(carInspectionLog.car.eq(car)
                     .and(carInspectionLog.inspectionDate.goe(inspectionDate))
                     .and(carInspectionLog.inspectionStatus.eq(InspectionStatus.PENDING))) // 완료상태가 되는 것은 대기 상태뿐
                 .execute();
+    }
+
+    /**
+     * 차량 ID로 가장 최근의 대기 중인 점검일 조회
+     *
+     * @param carId 차량 ID
+     * @return 가장 최근의 대기 중인 점검일
+     */
+    public LocalDate findLatestPendingInspectionDateByCarId(Long carId) {
+
+        return queryFactory.select(carInspectionLog.inspectionDate)
+                .from(carInspectionLog)
+                .where(carInspectionLog.car.id.eq(carId)
+                        .and(carInspectionLog.inspectionStatus.eq(InspectionStatus.PENDING)))
+                .orderBy(carInspectionLog.inspectionDate.desc())
+                .limit(1)
+                .fetchOne();
     }
 }
