@@ -56,9 +56,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       await repo.deleteAllTokens();
       ref.read(selectedCarIndexProvider.notifier).state = 0;
       // 캐싱된 사용자/차량 정보를 무효화
-      ref.invalidate(userInfoProvider);
-      ref.invalidate(carListProvider);
-      ref.invalidate(currentVinProvider);
+      ref.refresh(userInfoProvider);
+      ref.refresh(carListProvider);
+      ref.refresh(currentVinProvider);
       // ref.invalidate(selectedCarIndexProvider);
       // Dio도 무료화
       ref.invalidate(authDioProvider);

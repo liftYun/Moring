@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/services/social_auth_service.dart';
+import 'package:moring/providers/car_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +16,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _loading = true);
     try {
       await ref.read(socialAuthServiceProvider).loginWithKakao();
+      ref.invalidate(carListProvider);
       if (mounted) Navigator.pushReplacementNamed(context, '/carselection');
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -28,6 +30,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _loading = true);
     try {
       await ref.read(socialAuthServiceProvider).loginWithTest();
+      ref.invalidate(carListProvider);
       if (mounted) Navigator.pushReplacementNamed(context, '/carselection');
     } catch (e) {
       ScaffoldMessenger.of(context)
