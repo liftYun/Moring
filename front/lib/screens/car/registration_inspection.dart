@@ -51,13 +51,6 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_car == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('현재 선택된 차량이 없습니다.')),
-      );
-      return;
-    }
-
     setState(() => _isSubmitting = true);
 
     try {
