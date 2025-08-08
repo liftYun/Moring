@@ -20,7 +20,7 @@ class NotificationApi {
   }) async {
     final resp = await _dio.get(
       '/api/v1/notifications/$vin/unread',
-      queryParameters: {'page': page, 'size': size},
+      // queryParameters: {'page': page, 'size': size},
     );
     // BaseResponse<Slice<...>> 구조를 가정
     final content = (resp.data['result']['content'] as List).cast<Map<String, dynamic>>();
@@ -32,7 +32,7 @@ class NotificationApi {
   /// PATCH /api/v1/notifications/read/{notificationId}
   Future<bool> fetchReadNotification({required int id})async {
     final resp = await _dio.patch(
-      '/api/v1/notifications/read/$id'
+        '/api/v1/notifications/read/$id'
     );
     if (resp.statusCode == 200) {
       debugPrint('✅PATCH 성공 : $id 알림 확인');

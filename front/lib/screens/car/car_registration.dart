@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:moring/providers/api_client.dart';
+import 'package:moring/providers/car_provider.dart';
+import 'package:moring/providers/current_car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/models/car.dart';
 
@@ -81,7 +83,7 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
     }
   }
 
-  void _onRegister() async {
+  Future<void> _onRegister() async {
     final vin = _vinController.text.trim();
     final nickname = _nicknameController.text.trim();
     final model = _modelController.text.trim();
@@ -109,12 +111,8 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         registeredAt: registerDate,
       );
 
-      final car = Car(
-        vin: vin,
-        nickname: nickname,
-        modelName: model,
-        imgUrl: '', // 필요 시 채우기
-      );
+      ref.invalidate(carListProvider);
+      ref.invalidate(currentCarProvider);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('차량이 등록되었습니다!')),
@@ -123,7 +121,6 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
       Navigator.pushReplacementNamed(
           context,
           '/registration_complete',
-          arguments: {'car': car},
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
