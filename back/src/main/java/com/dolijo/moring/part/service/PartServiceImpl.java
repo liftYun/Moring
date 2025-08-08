@@ -73,8 +73,11 @@ public class PartServiceImpl implements PartService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         return  partChangeLogRepository.save(
-                PartChangeLog.builder().part(part).car(car).createdAt(dto.getCreatedAt()).build()
-        ).getId();
+                PartChangeLog.builder()
+                        .part(part)
+                        .car(car)
+                        .changedAt(dto.getChangedAt())
+                        .build()).getId();
     }
 
     @Override

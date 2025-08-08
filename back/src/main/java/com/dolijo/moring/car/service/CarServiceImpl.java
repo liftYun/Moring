@@ -159,4 +159,11 @@ public class CarServiceImpl implements CarService{
     public Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable) {
         return carInspectionLogQueryDslRepository.findInspectionLogsResponseDtoByVin(vin, pageable);
     }
+
+    @Override
+    public LocalDate getLatestPendingInspectionDate(String vin) {
+        Long carId = carRepository.findByVin(vin).map(Car::getId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
+        return carInspectionLogDslRepository.findLatestPendingInspectionDateByCarId(carId);
+    }
 }
