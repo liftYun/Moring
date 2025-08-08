@@ -10,15 +10,15 @@ final carServiceProvider = Provider<CarService>((ref) {
   return CarService(dio);
 });
 
-final carListProvider = FutureProvider.autoDispose<List<Car>>((ref) async {
+final carListProvider = FutureProvider<List<Car>>((ref) async {
   final user = await ref.read(userInfoProvider.future);
   return ref.read(carServiceProvider).getMyCars(user.uuid);
 });
 
 /// 목록에서 선택된 인덱스를 저장 (기본 0)
-final selectedCarIndexProvider = StateProvider.autoDispose<int>((_) => 0);
+final selectedCarIndexProvider = StateProvider<int>((_) => 0);
 
-final currentVinProvider = Provider.autoDispose<String?>((ref) {
+final currentVinProvider = Provider<String?>((ref) {
   final carsAsync = ref.watch(carListProvider);
   final idx = ref.watch(selectedCarIndexProvider);
   return carsAsync.maybeWhen(
