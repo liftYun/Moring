@@ -1,22 +1,25 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/api_client.dart';
+import 'package:moring/providers/api_client.dart';
+import 'package:moring/providers/fcm_provider.dart';
 
 final socialAuthServiceProvider = Provider<SocialAuthService>((ref) {
   final dio = ref.read(noAuthDioProvider);
   final tokenRepo = ref.read(tokenRepositoryProvider);
-  return SocialAuthService(dio, tokenRepo);
+  final fcmNotifier = ref.read(fCMNotifierProvider.notifier);
+  return SocialAuthService(dio, tokenRepo, fcmNotifier);
 });
 
 class SocialAuthService {
-  SocialAuthService(this._dio, this._tokenRepo);
+  SocialAuthService(this._dio, this._tokenRepo, this._fcmNotifier);
   final Dio _dio;
   final TokenRepository _tokenRepo;
+  final FCMNotifier _fcmNotifier;
 
   /// 카카오 로그인 → 인가 코드 → 서버 콜 → JWT 저장
   Future<void> loginWithKakao() async {
@@ -38,6 +41,7 @@ class SocialAuthService {
 
     // 3) Set-Cookie -> refreshToken
     final setCookie = resp.headers['set-cookie'] ?? [];
+    debugPrint('setCookie : $setCookie');
     for (final header in setCookie) {
       if (header.trim().startsWith('refreshToken=')) {
         final cookie = Cookie.fromSetCookieValue(header);
@@ -48,9 +52,16 @@ class SocialAuthService {
 
     // 4) body -> accessToken
     final access = resp.data['accessToken'] as String?;
+    debugPrint('access : $access');
     if (access != null) {
       await _tokenRepo.saveAccessToken(access);
+      await _tokenRepo.saveSocialType('KAKAO');
+      debugPrint('카카오 소셜 타입 저장 완료');
     }
+    
+     // 5) FCM Token 서버로 전송
+    await _fcmNotifier.sendTokenAfterLogin();
+
   }
 
   ///  구글 로그인 로직 분리
@@ -81,6 +92,11 @@ class SocialAuthService {
     final access = resp.data['accessToken'] as String?;
     if (access != null) {
       await _tokenRepo.saveAccessToken(access);
+
+      await _tokenRepo.saveSocialType('GOOGLE');
     }
+    
+    // 5) FCM Token 서버로 전송
+    await _fcmNotifier.sendTokenAfterLogin();
   }
 }

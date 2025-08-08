@@ -50,12 +50,14 @@ dependencies {
 	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
 	implementation 'org.springframework.ai:spring-ai-openai'
 
-
-
+	// spring batch
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// firebase push
+	implementation 'com.google.firebase:firebase-admin:9.5.0'
 	// 테스트 코드에도 lombok 적용
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor'org.projectlombok:lombok'

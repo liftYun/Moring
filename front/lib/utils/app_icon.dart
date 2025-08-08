@@ -1,3 +1,4 @@
+// lib/utils/app_icon.dart
 import 'package:flutter/material.dart';
 
 class AppIcons {
@@ -17,6 +18,17 @@ class AppIcons {
   static const Icon sparkPlugs = Icon(Icons.auto_awesome);
   static const Icon transmissionFluid = Icon(Icons.radio);
   static const Icon loccation = Icon(Icons.location_on);
+  static const Icon camera = Icon(Icons.center_focus_weak);
+  /// 운전 집중 필요
+  static const Icon distractionAlert = Icon(Icons.remove_red_eye);
+  /// 전방 주시 필요
+  static const Icon frontAlert = Icon(Icons.directions_car);
+  /// 정기 점검 기간
+  static const Icon inspectionAlert = Icon(Icons.calendar_today);
+  /// 산소 부족 경고
+  static const Icon oxygenAlert = Icon(Icons.local_hospital);
+  /// 부품 교환 권장
+  static const Icon partAlert = Icon(Icons.precision_manufacturing);
 
 }
 

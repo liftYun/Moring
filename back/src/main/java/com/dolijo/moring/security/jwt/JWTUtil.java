@@ -1,6 +1,7 @@
 package com.dolijo.moring.security.jwt;
 
 import com.dolijo.moring.member.entity.Member;
+import com.dolijo.moring.member.valueobject.SocialType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -77,9 +78,10 @@ public class JWTUtil {
     }
 
     /** RefreshToken 생성 (직접 호출용) */
-    public String createRefreshToken(String memberUuid) {
+    public String createRefreshToken(String memberUuid, SocialType type) {
         return Jwts.builder()
                 .claim("uuid", memberUuid)
+                .claim("type", type)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshExpiredMs))
                 .signWith(secretKey)
@@ -95,8 +97,8 @@ public class JWTUtil {
         );
     }
 
-    public String generateRefreshToken(Member member) {
-        return createRefreshToken(member.getUuid());
+    public String generateRefreshToken(Member member, SocialType type) {
+        return createRefreshToken(member.getUuid(), type);
     }
 
     /** 서명 검증 후 Claims 반환 */

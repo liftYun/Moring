@@ -28,6 +28,7 @@ public class PartDslRepository {
 
         return queryFactory
                 .select(new QPartStatusListDto(
+                        part.id,
                         part.nameEn,
                         partChangeLog.createdAt,
                         part.recommendedCycleMonths
@@ -44,7 +45,7 @@ public class PartDslRepository {
                                                 .and(subChangeLog.car.id.eq(carId)))
                         ))
                 )
-                .orderBy(part.id.asc()) // 정렬 추가로 일관성 확보
+                .orderBy(part.id.asc())
                 .limit(LIMIT_VALUE) // 부품 테이블 데이터 많을 만약의 경우 부하 방지
                 .fetch();
     }

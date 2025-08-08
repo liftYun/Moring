@@ -22,4 +22,12 @@ class SecureStorage {
   Future<void> deleteAccessToken() =>
       storage.delete(key: 'accessToken');
 
+  Future<void> saveSocialType(String socialType) =>
+      storage.write(key: 'socialType', value: socialType);
+
+  Future<String?> getSocialType() =>
+      storage.read(key: 'socialType');
+
+  Future<void> deleteSocialType() =>
+      storage.delete(key: 'socialType');
 }

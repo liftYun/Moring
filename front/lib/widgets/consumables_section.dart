@@ -1,15 +1,16 @@
-// Path: front/lib/widgets/consumables_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:moring/models/consumable.dart';
-import 'package:moring/utils/app_icon.dart';
 import 'package:moring/screens/consumable/consumable_parts.dart';
 
-/// 소모품 리스트 섹션 (홈 화면용)
 class ConsumablesSection extends StatelessWidget {
   final List<Consumable> consumables;
+  final String vin;
 
-  const ConsumablesSection({Key? key, required this.consumables}) : super(key: key);
+  const ConsumablesSection({
+    Key? key,
+    required this.consumables,
+    required this.vin,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,33 +20,39 @@ class ConsumablesSection extends StatelessWidget {
       children: [
         Text(
           '소모품 현황',
-          style: theme.textTheme.headlineSmall
-              ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 250, // 높이는 그대로 유지
+          height: 250,
           child: ListView.builder(
-            shrinkWrap: true,
             itemCount: consumables.length,
             itemBuilder: (context, index) {
               final consumable = consumables[index];
-              final date = '${consumable.lastReplacedDate.year}-${consumable.lastReplacedDate.month.toString().padLeft(2, '0')}-${consumable.lastReplacedDate.day.toString().padLeft(2, '0')}';
+              final date = consumable.dueDate != null
+                  ? '${consumable.dueDate!.year}-${consumable.dueDate!.month.toString().padLeft(2, '0')}-${consumable.dueDate!.day.toString().padLeft(2, '0')}'
+                  : '날짜 정보 없음';
+
+              // percentUsed: 0(새것) → 100(교체필요)
+              final progress = 1.0 - (consumable.percentUsed / 100.0);
 
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ConsumablePartsScreen(),
+                      builder: (context) => ConsumablePartsScreen(
+                        consumables: consumables,
+                        vin: vin,
+                      ),
                     ),
                   );
                 },
                 child: _ConsumableCard(
                   icon: consumable.icon,
                   title: consumable.title,
-                  date: date, // 'YYYY-MM-DD' 형식의 날짜만 전달
-                  progress: consumable.getRemainingPercentage(),
+                  date: date,
+                  progress: progress,
                 ),
               );
             },
@@ -56,12 +63,11 @@ class ConsumablesSection extends StatelessWidget {
   }
 }
 
-// _ConsumableCard 위젯 (홈 화면용)
 class _ConsumableCard extends StatelessWidget {
   final Icon icon;
   final String title;
-  final String date; // 'YYYY-MM-DD' 형식의 다음 교체일
-  final double progress; // 0.0 ~ 1.0
+  final String date;
+  final double progress;
 
   const _ConsumableCard({
     Key? key,
@@ -96,19 +102,17 @@ class _ConsumableCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // '다음 교체: YYYY-MM-DD' 형식의 날짜
                   Text(
-                    '$date',
+                    date,
                     style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                   ),
                 ],
               ),
             ),
-            // 프로그레스 바와 퍼센트를 가로로 배치
             Row(
               children: [
                 SizedBox(
-                  width: 80, // 프로그레스 바의 너비
+                  width: 80,
                   child: LinearProgressIndicator(
                     value: progress,
                     backgroundColor: Colors.grey[700],
@@ -121,9 +125,9 @@ class _ConsumableCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                const SizedBox(width: 8), // 프로그레스 바와 퍼센트 사이 간격
+                const SizedBox(width: 8),
                 Text(
-                  '${(progress * 100).toInt()}%', // 퍼센트 표시
+                  '${(progress * 100).toInt()}%',
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
                 ),
               ],

@@ -76,8 +76,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * 리프레시 토큰 검증 및 저장/삭제 서비스 (JPA 기반)
@@ -101,25 +103,32 @@ public class SocialMemberService {
     /**
      * 전달받은 리프레시 토큰이 유효한지 검사합니다.
      */
-    public boolean isValid(String uuid, String refreshToken, SocialType type) {
+    public boolean isValidWhitSocialToken(String uuid, SocialType type) {
 
         // uuid 로 멤버 조회
         Long id = memberRepository.findIdByUuid(uuid);
 
+        Optional<SocialMember> socialMember = socialMemberRepository.findByMemberIdAndType(id, type);
+        System.out.println("socialMember: " + socialMember);
 
-        // 1) 토큰 서명 및 만료 검증
-        try {
-            jwtUtil.parseClaims(refreshToken);
-        } catch (Exception e) {
-            return false;
-        }
-        // 2) DB에 저장된 토큰과 일치하고, 아직 만료되지 않았는지 확인
-        return socialMemberRepository
-                .findByMemberUuidAndType(id, type)
-                .filter(ent ->
-                        ent.getTokenId().equals(refreshToken) &&
-                                ent.getExpiresAt().isAfter(LocalDateTime.now()))
-                .isPresent();
+        // 2) 아직 만료되지 않았는지 확인
+        if(socialMember.isPresent()) {
+            SocialMember sm = socialMember.get();
+            String token = sm.getTokenId();
+            LocalDateTime expiresAt = sm.getExpiresAt();
+            return token != null && expiresAt.isAfter(LocalDateTime.now());
+        } else return false;
+    }
+
+    /**
+     * 사용자의 로그인 여부 확인
+     */
+
+    public boolean isLoggedin(String uuid) {
+        // uuid 로 멤버 조회
+        Long id = memberRepository.findIdByUuid(uuid);
+
+        return socialMemberRepository.existsByMemberIdAndTokenIdIsNotNull(id);
     }
 
     /**
@@ -129,7 +138,7 @@ public class SocialMemberService {
         Long id = memberRepository.findIdByUuid(memberUuid);
         System.out.println("claims uuid = " + memberUuid);
 
-        socialMemberRepository.deleteByMemberid(id);
+        socialMemberRepository.updateByMemberid(id);
     }
 
     /**
@@ -137,28 +146,40 @@ public class SocialMemberService {
      * 기존 토큰은 먼저 삭제됩니다.
      */
     public void saveToken(String uuid, SocialType type, String refreshToken, LocalDateTime expiresAt) {
-        Long id = memberRepository.findIdByUuid(uuid);
-        // 1) 기존 토큰 삭제
-        socialMemberRepository.deleteByMemberid(id);
-
-        // 2) UserEntity 조회 (member 필수)
         Member findMember = memberRepository.findByUuid(uuid)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Invalid user ID: " + uuid));
 
-        // 3) 새로운 RefreshTokenEntity 생성 및 저장
-        SocialMember entity = SocialMember.builder()
-                .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
-                .type(type)
-                .tokenId(refreshToken)
-                .expiresAt(
+        // Optional로 조회한 후 존재 여부를 확인하는 경우
+        Optional<SocialMember> existingSocialMember = socialMemberRepository
+                .findByMemberIdAndType(findMember.getId(), type);
+
+        if (existingSocialMember.isEmpty()) {
+            // 등록 로직
+            // 새로운 RefreshTokenEntity 생성 및 저장
+            SocialMember entity = SocialMember.builder()
+                    .member(findMember)  // ← UserEntity를 반드시 설정해야 null 에러 방지
+                    .type(type)
+                    .tokenId(refreshToken)
+                    .expiresAt(
 //                        LocalDateTime.now()
 //                                .plus(Duration.ofMillis(jwtUtil.getRefreshExpiredMs()))
-                        expiresAt
-                )
-                .createdAt(LocalDateTime.now())
-                .build();
-        socialMemberRepository.save(entity);
+                            expiresAt
+                    )
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            socialMemberRepository.save(entity);
+        } else {
+            // 기존 토큰 삭제
+            socialMemberRepository.updateByMemberid(findMember.getId());
+
+            LocalDateTime expires = expiresAt;
+            LocalDateTime created = LocalDateTime.now();
+
+            socialMemberRepository.updateTokenByMemberid(findMember.getId(), refreshToken, expires, created);
+        }
+
+
     }
 
     /**

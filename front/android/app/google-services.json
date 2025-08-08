@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872789129624",
+    "project_id": "moring-fcm",
+    "storage_bucket": "moring-fcm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872789129624:android:51238c85270e795d8e93ed",
+        "android_client_info": {
+          "package_name": "com.example.moring"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACLWrHshoQR78a0grj9erUJzSctaFVMgE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

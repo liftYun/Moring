@@ -2,17 +2,20 @@ package com.dolijo.moring.security.jwt;
 
 import com.dolijo.moring.security.dto.in.MemberDetailRequestDto;
 import com.dolijo.moring.security.dto.out.CustomMemberDetails;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -22,11 +25,17 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
+    // JWT 검사를 하지 않을 URL 목록
+    private static final List<String> EXCLUDE_URLS = List.of(
+            "/api/kakao/redirect",
+            "/api/v1/auth/refresh"   // ← 여길 추가!
+    );
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         // 인가 코드 콜백 URL을 JWT 검사에서 제외
         String path = request.getServletPath();
-        return "/api/kakao/redirect".equals(path);
+        return EXCLUDE_URLS.contains(path);
     }
 
     @Override
@@ -44,29 +53,53 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = authorization.split(" ")[1];
 
-        // 토큰 소멸 시간 검증
-        if(jwtUtil.isExpired(token)) {
-            throw new JwtException("Access token expired");
+        try {
+            // 2) 만료 검사
+            if (jwtUtil.isExpired(token)) {
+                // 2-1) 만료된 경우 401 응답
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.getWriter()
+                        .write("{\"error\":\"Access token expired\"}");
+                return;
+            }
+
+            // 3) 토큰에서 사용자 정보 파싱
+            String uuid         = jwtUtil.getUserUuid(token);
+            String userEmail    = jwtUtil.getUserEmail(token);
+            String userNickname = jwtUtil.getUserNickname(token);
+
+            MemberDetailRequestDto memberDetailRequestDto= new MemberDetailRequestDto(
+                    uuid,
+                    userEmail,
+                    userNickname
+            );
+
+            // 4) 스프링 시큐리티 컨텍스트에 인증 정보 세팅
+            CustomMemberDetails userDetails =
+                    new CustomMemberDetails(
+                            MemberDetailRequestDto.from(memberDetailRequestDto)
+                    );
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            // 5) 정상 처리 시 다음 필터로
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            // parser 내부에서 만료 예외가 터질 경우에도 401
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write("{\"error\":\"Access token expired\"}");
+
+        } catch (JwtException e) {
+            // 6) 토큰 유효하지 않음(서명 불일치 등)이면 401 응답
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter()
+                    .write("{\"error\":\"Invalid access token\"}");
         }
-
-        //토큰에서 id, username과 role 획득
-        String uuid = jwtUtil.getUserUuid(token);
-        String userEmail = jwtUtil.getUserEmail(token);
-        String userNickname = jwtUtil.getUserNickname(token);
-
-        //user를 생성하여 값 set
-        MemberDetailRequestDto memberDetailRequestDto = new MemberDetailRequestDto();
-        memberDetailRequestDto.setUuid(uuid);
-        memberDetailRequestDto.setEmail(userEmail);
-
-        //UserDetails에 회원 정보 객체 담기
-        CustomMemberDetails customMemberDetails = new CustomMemberDetails(MemberDetailRequestDto.from(memberDetailRequestDto));
-
-        //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customMemberDetails, null, customMemberDetails.getAuthorities());
-        //세션에 사용자 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
     }
 }

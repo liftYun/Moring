@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:moring/services/SocialAuthService.dart';
+import 'package:moring/services/social_auth_service.dart';
+import 'package:moring/providers/car_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +16,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _loading = true);
     try {
       await ref.read(socialAuthServiceProvider).loginWithKakao();
-      if (mounted) Navigator.pushReplacementNamed(context, '/home');
+      ref.invalidate(carListProvider);
+      if (mounted) Navigator.pushReplacementNamed(context, '/carselection');
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('로그인에 실패했습니다.')));
@@ -28,7 +30,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _loading = true);
     try {
       await ref.read(socialAuthServiceProvider).loginWithTest();
-      if (mounted) Navigator.pushReplacementNamed(context, '/home');
+      ref.invalidate(carListProvider);
+      if (mounted) Navigator.pushReplacementNamed(context, '/carselection');
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('로그인에 실패했습니다.')));

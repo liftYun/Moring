@@ -2,6 +2,7 @@ package com.dolijo.moring.car.service;
 
 
 import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
+import com.dolijo.moring.car.dto.in.RegisterCarInspectionDto;
 import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
@@ -76,9 +77,9 @@ public class CarServiceImpl implements CarService{
 
     @Override
     @Transactional
-    public void deleteCarByVin(String carVin) {
+    public void deleteCarByVin(String vin) {
         // 차량 삭제 (삭제된 레코드 수 반환)
-        long deletedCount = carRepository.deleteByVin(carVin);
+        long deletedCount = carRepository.deleteByVin(vin);
         log.info("차량 삭제 레코드 수 : " + deletedCount);
         if (deletedCount == 0) {
             throw new BaseException(BaseResponseStatus.NO_EXIST_CAR);
@@ -115,39 +116,54 @@ public class CarServiceImpl implements CarService{
 
     @Override
     @Transactional
-    public void registerCarInspection(String vin, String inspectionDate) {
+    public void registerCarInspection(String vin, RegisterCarInspectionDto dto) {
         // 1. 차량 존재 여부 확인
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-        
-        LocalDate today = LocalDate.parse(inspectionDate);
-        
-        // 2. 해당 점검일에 대한 기존 점검 로그 상태를 COMPLETED로 업데이트
-        long updatedCount = carInspectionLogDslRepository.updateStatusByCarAndDate(car, today, InspectionStatus.COMPLETED);
-        
+
+        LocalDate inspectionDate = dto.getInspectionDate();
+
+        // 2. 해당 점검일에 대한 기존 점검 로그 상태 및 상세정보를 COMPLETED로 업데이트
+        long updatedCount = carInspectionLogDslRepository.updateStatusAndDetailsByCarAndDate(
+                car,
+                inspectionDate,
+                InspectionStatus.COMPLETED,
+                dto.getInadequateDetails(),
+                dto.getRecommendationDetails(),
+                dto.getSelfDiagnosis(),
+                dto.getSpecialNotes()
+        );
+
         // 3. 업데이트된 레코드가 정확히 1개인지 확인
         if (updatedCount == 0) {
             throw new BaseException(BaseResponseStatus.NO_EXIST_INSPECTION_LOG);
         } else if (updatedCount > 1) {
-            log.error("차량 ID: {}, 점검일: {}에 대해 여러 개의 점검 기록이 업데이트됨", car.getId(), today);
+            log.error("차량 ID: {}, 점검일: {}에 대해 여러 개의 점검 기록이 업데이트됨", car.getId(), inspectionDate);
             throw new BaseException(BaseResponseStatus.INTERNAL_SERVER_ERROR);
         }
-        
+
         // 4. 다음 점검일(+2년)로 새로운 PENDING 점검 로그 생성
-        LocalDate nextInspectionDate = today.plusYears(2);
+        LocalDate nextInspectionDate = inspectionDate.plusYears(2);
         CarInspectionLog nextInspectionLog = CarInspectionLog.builder()
                 .car(car)
                 .inspectionDate(nextInspectionDate)
                 .inspectionStatus(InspectionStatus.PENDING)
                 .build();
-        
+
         carInspectionLogRepository.save(nextInspectionLog);
 
-        log.info("차량 점검 완료 처리 - VIN: {}, 점검일: {}, 다음 점검일: {}", vin, today, nextInspectionDate);
+        log.info("차량 점검 완료 처리 - VIN: {}, 점검일: {}, 다음 점검일: {}", vin, inspectionDate, nextInspectionDate);
     }
 
     @Override
     public Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable) {
         return carInspectionLogQueryDslRepository.findInspectionLogsResponseDtoByVin(vin, pageable);
+    }
+
+    @Override
+    public LocalDate getLatestPendingInspectionDate(String vin) {
+        Long carId = carRepository.findByVin(vin).map(Car::getId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
+        return carInspectionLogDslRepository.findLatestPendingInspectionDateByCarId(carId);
     }
 }

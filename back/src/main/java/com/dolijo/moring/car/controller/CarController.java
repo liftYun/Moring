@@ -1,27 +1,28 @@
 package com.dolijo.moring.car.controller;
 
 import com.dolijo.moring.car.dto.CarInspectionLogResponseDto;
-import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.service.CarService;
 import com.dolijo.moring.car.vo.in.RegisterCarRequestVo;
+import com.dolijo.moring.car.vo.in.RegisterCarInspectionVo;
 import com.dolijo.moring.car.vo.out.CarInspectionLogResponseVo;
 import com.dolijo.moring.car.vo.out.CarResponseVo;
 import com.dolijo.moring.common.base.BaseResponse;
-import com.dolijo.moring.common.base.BaseResponseStatus;
-import com.dolijo.moring.common.exception.BaseException;
+
+import com.dolijo.moring.security.dto.out.CustomMemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -46,10 +47,11 @@ public class CarController {
                     required    = true,
                     example     = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62"
             )
-            @RequestHeader(value = "memberUuid", required = true, defaultValue = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62") String memberUuid,
-            @ParameterObject RegisterCarRequestVo requestVo
+//            @RequestHeader(value = "memberUuid", required = true, defaultValue = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62") String memberUuid,
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
+            @RequestBody RegisterCarRequestVo requestVo
     ) {
-        return  BaseResponse.of(carService.registerCar(requestVo.toDto(),memberUuid));
+        return  BaseResponse.of(carService.registerCar(requestVo.toDto(),customMemberDetails.getUserUuid()));
     }
 
     @Operation(summary = "회원의 등록 차량 리스트 조회",   description = """
@@ -59,17 +61,9 @@ public class CarController {
         """)
     @GetMapping("/{memberUuid}/list")
     public BaseResponse<List<CarResponseVo>> getCarsByMemberUuid(
-            @Parameter(description = "조회 대상 회원 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-            @PathVariable("memberUuid") String memberUuid,
-
-            @Parameter(description = "인증된 사용자 UUID", required = true, example = "f19f7658-6b86-11f0-8ea9-ea7f6f85ec62")
-            @RequestHeader("memberUuid") String authenticatedUuid
+            @AuthenticationPrincipal CustomMemberDetails customMemberDetails
     ) {
-        // 본인 아니면 에러
-        if (!memberUuid.equals(authenticatedUuid)) {
-            throw new BaseException(BaseResponseStatus.DISALLOWED_ACTION);
-        }
-        List<CarResponseDto> dtoList = carService.getCarsByMemberUuid(memberUuid);
+        List<CarResponseDto> dtoList = carService.getCarsByMemberUuid(customMemberDetails.getUserUuid());
 
         return BaseResponse.of(
                 dtoList.stream()
@@ -80,11 +74,11 @@ public class CarController {
 
 
     @Operation(summary = "회원의 등록 차량 단건 삭제", description = "VIN(차대번호)을 기준으로 차량 정보를 삭제합니다.")
-    @DeleteMapping("/{carVin}")
+    @DeleteMapping("/{vin}")
     public BaseResponse<Void> deleteCarByVin(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin) {
-        carService.deleteCarByVin(carVin);
+            @PathVariable("vin") String vin) {
+        carService.deleteCarByVin(vin);
         return BaseResponse.ok();
     }
 
@@ -112,19 +106,18 @@ public class CarController {
     }
     
     // 차량 정기점검 등록
-    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일을 받아 정기점검을 등록합니다. 상태는 서버에서 PENDING으로 고정됩니다.")
+    @Operation(summary = "차량 정기점검 등록", description = "차량 VIN과 점검일, 점검 상세정보(부적합, 시정권고, 자기진단, 특기사항)를 받아 정기점검을 등록합니다. 상태는 서버에서 PENDING으로 고정됩니다.")
     @PostMapping("/{vin}/inspection")
     public BaseResponse<Void> registerCarInspection(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
             @PathVariable("vin") String vin,
-            @Parameter(description = "점검일 (YYYY-MM-DD)", required = true, example = "2025-01-01")
-            @RequestParam("inspectionDate") String inspectionDate
+            @RequestBody RegisterCarInspectionVo requestVo
     ) {
-        carService.registerCarInspection(vin, inspectionDate);
+        carService.registerCarInspection(vin, requestVo.toDto());
         return BaseResponse.ok();
     }
 
-    @Operation(summary = "차량 정기점검 로그 조회", description = "차량 VIN으로 정기점검 로그를 페이징 조회.")
+    @Operation(summary = "차량 정기점검 로그 조회(과거)", description = "차량 VIN으로 정기점검 로그를 페이징 조회. \n  완료 혹은 만료된 기록만 조회됩니다.")
     @GetMapping("/{vin}/inspection-logs-paging")
     public BaseResponse<Slice<CarInspectionLogResponseVo>> getCarInspectionLogs(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
@@ -133,9 +126,19 @@ public class CarController {
     ) {
         Slice<CarInspectionLogResponseDto> dtoSlice = carService.getCarInspectionLogs(vin, pageable);
         Slice<CarInspectionLogResponseVo> voSlice = dtoSlice.map(CarInspectionLogResponseDto::toVo);
-
         return BaseResponse.of(voSlice);
     }
+
+    @Operation(summary = "차량의 가장 최근 PENDING 점검일 조회", description = "차량 VIN으로 예정된 정기점검의 가장 최근 날짜를 조회합니다. \n 만약 예정된 점검이 없다면 null을 반환합니다.")
+    @GetMapping("/{vin}/latest-pending-inspection-date")
+    public BaseResponse<LocalDate> getLatestPendingInspectionDate(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin
+    ) {
+        return BaseResponse.of(carService.getLatestPendingInspectionDate(vin));
+    }
+
+
 
 
 
