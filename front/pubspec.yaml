@@ -47,7 +47,7 @@ dependencies:
   overlay_support: ^2.1.0
   # local noti
   flutter_local_notifications: ^17.2.2
-  
+
   jwt_decoder: ^2.0.1
 
   # The following adds the Cupertino Icons font to your application.
@@ -66,6 +66,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.0
   riverpod_generator: ^2.0.3
+  flutter_client_sse: ^2.0.3 # 최신 버전으로 확인하고 사용하세요.
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
