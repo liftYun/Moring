@@ -11,16 +11,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CarService {
 
-    // 장바구니 아이템 추가 [상품디테일 페이지의 장바구니 추가버튼]
-
     public Long registerCar(RegisterCarRequestDto dto, String memberUuid);
 
     public List<CarResponseDto> getCarsByMemberUuid(String memberUuid);
-
 
     public void deleteCarByVin(String vin);
 
@@ -31,4 +29,6 @@ public interface CarService {
     void registerCarInspection(String vin, RegisterCarInspectionDto dto);
 
     Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable);
+
+    LocalDate getLatestPendingInspectionDate(String vin);
 }

@@ -10,5 +10,5 @@ import java.time.LocalDateTime;
 public class RegisterPartChangeLogRequestDto {
     private String vin;
     private Long partId;
-    private LocalDateTime createdAt;
+    private LocalDateTime changedAt;// 교환일시
 }

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -116,7 +117,7 @@ public class CarController {
         return BaseResponse.ok();
     }
 
-    @Operation(summary = "차량 정기점검 로그 조회", description = "차량 VIN으로 정기점검 로그를 페이징 조회.")
+    @Operation(summary = "차량 정기점검 로그 조회(과거)", description = "차량 VIN으로 정기점검 로그를 페이징 조회. \n  완료 혹은 만료된 기록만 조회됩니다.")
     @GetMapping("/{vin}/inspection-logs-paging")
     public BaseResponse<Slice<CarInspectionLogResponseVo>> getCarInspectionLogs(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
@@ -128,6 +129,17 @@ public class CarController {
         
         return BaseResponse.of(voSlice);
     }
+
+    @Operation(summary = "차량의 가장 최근 PENDING 점검일 조회", description = "차량 VIN으로 예정된 정기점검의 가장 최근 날짜를 조회합니다. \n 만약 예정된 점검이 없다면 null을 반환합니다.")
+    @GetMapping("/{vin}/latest-pending-inspection-date")
+    public BaseResponse<LocalDate> getLatestPendingInspectionDate(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin
+    ) {
+        return BaseResponse.of(carService.getLatestPendingInspectionDate(vin));
+    }
+
+
 
 
 
