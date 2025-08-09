@@ -290,7 +290,13 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             ),
           const SizedBox(height: 24),
           // 🛠️ 점검로그 Section (점검 완료만 보이게)
-          Text('점검 로그', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            '점검 로그',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           if (_inspectionLoading)
             const Center(child: CircularProgressIndicator())
@@ -299,22 +305,34 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           else
             Builder(
               builder: (context) {
-                // 여기서 점검 완료만 필터
-                final onlyCompletedLogs = _inspectionLogs.where((e) => e['status'] == "점검 완료").toList();
+                final onlyCompletedLogs =
+                _inspectionLogs.where((e) => e['status'] == '점검 완료').toList();
+
+                // ✅ "점검 완료"가 없으면: 카드만 노출 (자동 이동 없음)
                 if (onlyCompletedLogs.isEmpty) {
-                  return SizedBox(
-                    height: 150, // 전체 영역을 차지하도록 크기 지정
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        child: Text(
-                          '점검 기록이 없습니다.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ),
+                  return Card(
+                    color: const Color(0xFF232326),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: const Icon(Icons.article_outlined, color: Colors.white70),
+                      title: const Text('점검 완료 이력이 없습니다', style: TextStyle(color: Colors.white)),
+                      subtitle: const Text('상세 화면으로 이동합니다', style: TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InspectionDetailPage(
+                              inspectionLogs: _inspectionLogs,
+                              vin: _carVin!,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 }
+
+                // ✅ "점검 완료"가 있으면: 리스트 표시
                 return SizedBox(
                   height: 150,
                   child: ListView.builder(
@@ -328,8 +346,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => InspectionDetailPage(
-                                inspectionLogs: _inspectionLogs, // ← "전체 리스트" 넘기기! (대기, 완료 둘 다)
-                                currentIndex: idx,
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
                               ),
                             ),
                           );
@@ -344,10 +362,10 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  log['date'] ?? '', // 상단에 점검 날짜!
+                                  log['date'] ?? '',
                                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -371,6 +389,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                 );
               },
             ),
+          const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.push(
@@ -380,9 +399,11 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             },
             icon: const Icon(Icons.wifi_tethering),
             label: const Text('SSE Alerts TEST'),
-            style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+            ),
           ),
-        ],
+        ],// 난중에 지울거
       ),
     );
   }
