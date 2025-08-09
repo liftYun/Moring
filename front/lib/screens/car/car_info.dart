@@ -189,7 +189,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
               width: double.infinity,
               height: 170,
               child: Image.asset(
-                'assets/${car.modelName.toLowerCase()}/11.png',
+                'assets/${car.modelName.toLowerCase()}/10.png',
                 fit: BoxFit.contain,
               ),
             ),

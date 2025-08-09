@@ -66,7 +66,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.0
   riverpod_generator: ^2.0.3
-  flutter_client_sse: ^2.0.3 # 최신 버전으로 확인하고 사용하세요.
+  flutter_client_sse: ^2.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -83,9 +83,19 @@ flutter:
     - assets/xm3/ #assets 폴더 내의 xm3폴더 등록
     - assets/그랜저/ #assets 폴도 내의 그렌저 폴더 등록
     - assets/재규어/ #assets 폴도 내의 재규어 폴더 등록
-    - assets/xm3/4.png
-    - assets/그랜저/4.png
-    - assets/그랜저/11.png
+    - assets/투싼/
+    - assets/모닝/
+    - assets/스포티지/
+    - assets/아반떼/
+    - assets/코나/
+#    - assets/xm3/4.png
+#    - assets/그랜저/4.png
+#    - assets/재규어/4.png
+#    - assets/투싼/4.png
+#    - assets/모닝/4.png
+#    - assets/스포티지/4.png
+#    - assets/아반떼/4.png
+#    - assets/코나/4.png
     - assets/kakao_logo.jpg
     - assets/google_logo.png
 

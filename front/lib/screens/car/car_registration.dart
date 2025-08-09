@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/providers/current_car_provider.dart';
+import 'package:moring/providers/user_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/models/car.dart';
 
@@ -97,11 +98,11 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
     }
 
     try {
-      // final userInfo = ref.read(userInfoProvider).maybeWhen(
-      //   data: (user) => user,
-      //   orElse: () => null,
-      // );
-      // if (userInfo == null) throw Exception('사용자 정보 없음');
+      final userInfo = ref.read(userInfoProvider).maybeWhen(
+        data: (user) => user,
+        orElse: () => null,
+      );
+      if (userInfo == null) throw Exception('사용자 정보 없음');
 
       await _registerCar(
         // memberUuid: userInfo.uuid,
@@ -111,18 +112,33 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         registeredAt: registerDate,
       );
 
+      // 1. carListProvider를 먼저 새로고침합니다.
+      await ref.refresh(carListProvider.future);
+
+      // 2. 새로운 차량의 VIN을 StateProvider에 저장합니다.
       ref.read(currentVinProvider.notifier).state = vin;
 
-      ref.invalidate(carListProvider);
-      ref.invalidate(currentCarProvider);
+      // 3. selectedCarIndexProvider를 새로 등록된 차량의 인덱스로 설정합니다.
+      final cars = ref.read(carListProvider).maybeWhen(
+        data: (list) => list,
+        orElse: () => <Car>[],
+      );
+
+      final newCarIndex = cars.indexWhere((car) => car.vin == vin);
+      if (newCarIndex != -1) {
+        ref.read(selectedCarIndexProvider.notifier).state = newCarIndex;
+      }
+
+      // 4. Provider 동기화가 완료될 때까지 잠시 대기
+      await Future.delayed(const Duration(milliseconds: 100));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('차량이 등록되었습니다!')),
       );
 
       Navigator.pushReplacementNamed(
-          context,
-          '/registration_complete',
+        context,
+        '/registration_complete',
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

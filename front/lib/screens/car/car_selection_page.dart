@@ -69,7 +69,11 @@ class _CarCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final carName = car.modelName.toLowerCase();
-    final demoCarImage = 'assets/$carName/4.png';
+    final demoCarImage = 'assets/$carName/3.png';
+
+    print('🚗 차량 카드 빌드 - Index: $index');
+    print('�� 차량 정보 - VIN: ${car.vin}, Model: ${car.modelName}, Nickname: ${car.nickname}');
+    print('🚗 이미지 경로: $demoCarImage');
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -104,6 +108,8 @@ class _CarCard extends ConsumerWidget {
                 Center(
                   child: OutlinedButton(
                     onPressed: () {
+                      print('🎯 차량 선택 버튼 클릭 - Index: $index');
+                      print('🎯 선택된 차량 - VIN: ${car.vin}, Model: ${car.modelName}');
                       // 3) 선택 인덱스를 전역 상태에 저장
                       ref.read(selectedCarIndexProvider.notifier).state = index;
                       // 4) RootPage 로 넘어가기 (currentVinProvider 가 pick up)
