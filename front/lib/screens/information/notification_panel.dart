@@ -28,14 +28,14 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPage());
-    _scrollCtrl.addListener(() {
-      if (_scrollCtrl.position.pixels >=
-          _scrollCtrl.position.maxScrollExtent - 100 &&
-          !_isLoading &&
-          _hasMore) {
-        _loadPage();
-      }
-    });
+    // _scrollCtrl.addListener(() {
+    //   if (_scrollCtrl.position.pixels >=
+    //       _scrollCtrl.position.maxScrollExtent - 100 &&
+    //       !_isLoading &&
+    //       _hasMore) {
+    //     _loadPage();
+    //   }
+    // });
   }
 
   Future<void> _loadPage() async {
@@ -52,8 +52,8 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
       final api = ref.read(notificationApiProvider);
       final fetched = await api.fetchUnreadNotifications(
         vin: vin,
-        page: _page,
-        size: _size,
+        // page: _page,
+        // size: _size,
       );
       final insertIndex = _notifications.length;
       _notifications.addAll(fetched);
@@ -64,7 +64,7 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
         );
       }
       _hasMore = fetched.length == _size;
-      if (_hasMore) _page++;
+      if (_hasMore && fetched.isNotEmpty) _page++;
     } catch (e) {
       debugPrint('🔔 loadPage error: $e');
     } finally {
@@ -197,11 +197,22 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (!_isLoading && _notifications.isEmpty) {
+      // 로딩 끝났고 알림이 없을 때 메시지 표시
+      return const Center(
+        child: Text(
+          '알림이 없습니다.',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+      );
+    }
+
     return AnimatedList(
       key: _listKey,
       controller: _scrollCtrl,
       // 초기 카운트는 내부 상태에서만 사용하므로, 리빌드 시 재설정 불필요
-      initialItemCount: _notifications.length + (_hasMore ? 1 : 0),
+      // initialItemCount: _notifications.length + (_hasMore ? 1 : 0),
+      initialItemCount: _notifications.length,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemBuilder: (ctx, idx, anim) {
         // 로딩 스피너
