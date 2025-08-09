@@ -40,10 +40,23 @@ public class PartChangeLog {
     @Comment("최초생성일")
     private LocalDateTime createdAt;
 
+    @Column(name = "changed_at", nullable = false)
+    @Comment("부품 교환일시")
+    private LocalDateTime changedAt;
+
+
+
+    @PrePersist // 저장 전에 동작
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
+
     @Builder
-    public PartChangeLog(Part part, Car car, LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public PartChangeLog(Part part, Car car, LocalDateTime createdAt, LocalDateTime changedAt) {
         this.part = part;
         this.car = car;
+        this.createdAt = createdAt;
+        this.changedAt = changedAt;
     }
+
 }

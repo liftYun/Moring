@@ -18,14 +18,14 @@ public class RegisterPartChangeLogRequestVo {
     @Schema(description = "부품 ID", required = true, example = "1")
     private Long partId;
 
-    @Schema(description = "교환 일시", required = false, example = "2025-07-30T14:55:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "부품 교환 일시", required = true, example = "2025-07-30T14:55:00")
+    private LocalDateTime changedAt;
 
     public RegisterPartChangeLogRequestDto toDto() {
         return RegisterPartChangeLogRequestDto.builder()
                 .vin(this.vin)
                 .partId(this.partId)
-                .createdAt(this.createdAt)   // createdAt도 dto로 넘김
+                .changedAt(this.changedAt)   // createdAt도 dto로 넘김
                 .build();
     }
 }
