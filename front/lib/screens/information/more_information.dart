@@ -7,6 +7,7 @@ import 'package:moring/models/user_info.dart';
 import 'package:moring/screens/member/user_info_edit.dart';
 import 'package:moring/screens/information/notification_panel.dart';
 import 'package:moring/screens/car/car_registration.dart';
+import 'package:moring/screens/information/inspection_detail_container.dart';
 
 // 푸시 알림 허용 여부 상태 프로바이더 정의
 final pushNotificationAllowedProvider = StateProvider<bool>((ref) {
@@ -178,8 +179,10 @@ class MorePage extends ConsumerWidget {
               title: '점검 로그',
               subtitle: '점검일을 확인하세요',
               onTap: () {
-                // TODO: 점검 로그 화면 이동 구현
-              },
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InspectionDetailContainerPage()),
+                );              },
             ),
             _buildTile(
               icon: Icons.notifications_outlined,
