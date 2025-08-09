@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/providers/current_car_provider.dart';
+import 'package:moring/providers/user_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/models/car.dart';
 
@@ -97,11 +98,11 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
     }
 
     try {
-      // final userInfo = ref.read(userInfoProvider).maybeWhen(
-      //   data: (user) => user,
-      //   orElse: () => null,
-      // );
-      // if (userInfo == null) throw Exception('사용자 정보 없음');
+      final userInfo = ref.read(userInfoProvider).maybeWhen(
+        data: (user) => user,
+        orElse: () => null,
+      );
+      if (userInfo == null) throw Exception('사용자 정보 없음');
 
       await _registerCar(
         // memberUuid: userInfo.uuid,
@@ -111,16 +112,33 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         registeredAt: registerDate,
       );
 
-      ref.invalidate(carListProvider);
-      ref.invalidate(currentCarProvider);
+      // 1. carListProvider를 먼저 새로고침합니다.
+      await ref.refresh(carListProvider.future);
+
+      // 2. 새로운 차량의 VIN을 StateProvider에 저장합니다.
+      ref.read(currentVinProvider.notifier).state = vin;
+
+      // 3. selectedCarIndexProvider를 새로 등록된 차량의 인덱스로 설정합니다.
+      final cars = ref.read(carListProvider).maybeWhen(
+        data: (list) => list,
+        orElse: () => <Car>[],
+      );
+
+      final newCarIndex = cars.indexWhere((car) => car.vin == vin);
+      if (newCarIndex != -1) {
+        ref.read(selectedCarIndexProvider.notifier).state = newCarIndex;
+      }
+
+      // 4. Provider 동기화가 완료될 때까지 잠시 대기
+      await Future.delayed(const Duration(milliseconds: 100));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('차량이 등록되었습니다!')),
       );
 
       Navigator.pushReplacementNamed(
-          context,
-          '/registration_complete',
+        context,
+        '/registration_complete',
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -177,20 +195,57 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _modelController,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: darkField,
-                  hintText: '모델명',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
+              // TextField(
+              //   controller: _modelController,
+              //   style: const TextStyle(color: Colors.white, fontSize: 16),
+              //   decoration: InputDecoration(
+              //     filled: true,
+              //     fillColor: darkField,
+              //     hintText: '모델명',
+              //     hintStyle: const TextStyle(color: Colors.white38),
+              //     border: OutlineInputBorder(
+              //       borderRadius: BorderRadius.circular(8),
+              //       borderSide: BorderSide.none,
+              //     ),
+              //     contentPadding:
+              //     const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+              //   ),
+              // ),
+              Container(
+                decoration: BoxDecoration(
+                  color: darkField,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  title: Text(
+                    _modelController.text.isEmpty ? '모델명' : _modelController.text,
+                    style: TextStyle(
+                      color: _modelController.text.isEmpty ? Colors.white38 : Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                    onSelected: (String result) {
+                      setState(() {
+                        _modelController.text = result;
+                      });
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(value: 'XM3', child: Text('XM3')),
+                        const PopupMenuItem<String>(value: '그랜저', child: Text('그랜저')),
+                        const PopupMenuItem<String>(value: '모닝', child: Text('모닝')),
+                        const PopupMenuItem<String>(value: '스포티지', child: Text('스포티지')),
+                        const PopupMenuItem<String>(value: '아반떼', child: Text('아반떼')),
+                        const PopupMenuItem<String>(value: '재규어', child: Text('재규어')),
+                        const PopupMenuItem<String>(value: '코나', child: Text('코나')),
+                        const PopupMenuItem<String>(value: '투싼', child: Text('투싼')),
+                      ];
+                    },
+                    color: const Color(0xFF23262B), // 팝업 메뉴 배경색 설정
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
