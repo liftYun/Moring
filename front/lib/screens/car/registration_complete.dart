@@ -14,7 +14,7 @@ class RegistrationCompletePage extends ConsumerWidget {
     if (car == null) {
       return Scaffold(
         appBar: CustomAppBar(
-          title: '차량 등록 완료',
+          title: '차량 등록',
           onBackButtonPressed: () => Navigator.pop(context),
         ),
         body: const Center(child: Text('등록된 차량 정보가 없습니다.')),
@@ -89,7 +89,7 @@ class RegistrationCompletePage extends ConsumerWidget {
             ),
             const SizedBox(height: 40),
             const Text(
-              '차량 등록',
+              '차량 등록 완료',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
