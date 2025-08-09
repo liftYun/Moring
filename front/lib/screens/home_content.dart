@@ -165,6 +165,26 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           numImages = 30;
           basePath = 'assets/재규어/';
           break;
+        case '모닝':
+          numImages = 36;
+          basePath = 'assets/모닝/';
+          break;
+        case '스포티지':
+          numImages = 36;
+          basePath = 'assets/스포티지/';
+          break;
+        case '아반떼':
+          numImages = 36;
+          basePath = 'assets/아반떼/';
+          break;
+        case '코나':
+          numImages = 36;
+          basePath = 'assets/코나/';
+          break;
+        case '투싼':
+          numImages = 36;
+          basePath = 'assets/투싼/';
+          break;
         default:
           numImages = 0;
           basePath = '';
@@ -205,6 +225,19 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             const Center(child: CircularProgressIndicator())
           else if (_mileageError != null)
             Center(child: Text(_mileageError!))
+          else if (_mileageLogs.isEmpty)
+              SizedBox(
+                height: 150, // 전체 영역을 차지하도록 크기 지정
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Text(
+                      '주행 기록이 없습니다.',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                ),
+              )
           else
             SizedBox(
               height: 150,
@@ -268,6 +301,20 @@ class _HomeContentState extends ConsumerState<HomeContent> {
               builder: (context) {
                 // 여기서 점검 완료만 필터
                 final onlyCompletedLogs = _inspectionLogs.where((e) => e['status'] == "점검 완료").toList();
+                if (onlyCompletedLogs.isEmpty) {
+                  return SizedBox(
+                    height: 150, // 전체 영역을 차지하도록 크기 지정
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          '점검 기록이 없습니다.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ),
+                  );
+                }
                 return SizedBox(
                   height: 150,
                   child: ListView.builder(

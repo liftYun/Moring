@@ -69,7 +69,7 @@ class _CarCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final carName = car.modelName.toLowerCase();
-    final demoCarImage = 'assets/$carName/4.png';
+    final demoCarImage = 'assets/$carName/3.png';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
