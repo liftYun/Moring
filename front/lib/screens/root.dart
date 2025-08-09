@@ -15,6 +15,7 @@ import '../models/car.dart';
 import '../providers/car_provider.dart';
 import '../providers/notification_api_provider.dart';
 import 'information/notification_panel.dart';
+import 'package:moring/screens/information/driving_record_container.dart'; // ✅ 추가
 
 class RootPage extends ConsumerStatefulWidget {
   final Car? initialCar;
@@ -93,8 +94,19 @@ class _RootPageState extends ConsumerState<RootPage>
     const MorePage(),
   ];
 
-  void _onItemTapped(int index) => setState(() => _currentIndex = index);
+  void _onItemTapped(int index) {
+    // 2 = Driving Log 탭
+    if (index == 2) {
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => const DrivingRecordContainerPage(), // ✅ 컨테이너가 조회 후 기존 페이지로 넘김
+        ),
+      );
+      return; // 현재 탭(IndexedStack 인덱스)은 유지
+    }
 
+    setState(() => _currentIndex = index);
+  }
   @override
   Widget build(BuildContext context) {
     final count = ref.watch(unreadCountProvider);
