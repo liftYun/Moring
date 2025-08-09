@@ -26,7 +26,7 @@ class RegistrationCompletePage extends ConsumerWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: '차량 등록 완료',
-        onBackButtonPressed: () => Navigator.pop(context),
+        // onBackButtonPressed: () => Navigator.pop(context),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
