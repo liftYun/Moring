@@ -30,7 +30,7 @@ class _RootPageState extends ConsumerState<RootPage>
   // int _unreadCount = 0;
   int _currentIndex = 0;
   Timer? _timer;
-  static const _titles = ['Moring', 'Navigation', 'Driving Log', 'More'];
+  static const _titles = ['Moring', '내비게이션', '주행 로그', '더보기'];
 
   @override
   void initState() {
