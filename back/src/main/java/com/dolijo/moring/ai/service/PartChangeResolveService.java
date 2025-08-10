@@ -31,7 +31,10 @@ public class PartChangeResolveService {
         // 1) OCR
         OcrPartChangeLogExtractedDto ocr = ocrService.extractPartChangeLogFromEstimate(image);
         // OcrPartChangeLogExtractedDto 로깅
-        log.info("1차로 clova OCR Result: {}", ocr);
+        log.info("1차로 clova OCR Result: {}", ocr.getChangedAt());
+        ocr.getPartNameList().forEach(
+                partName -> log.info("OCR로 추출된 부품명: {}", partName)
+        );
 
         // 2) LLM 매칭 (내부에서 Tool(findPartCandidatesByName) 호출)
         return aiService.resolvePartIdsWithLlm(ocr);
