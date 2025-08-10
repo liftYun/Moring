@@ -226,16 +226,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           else if (_mileageError != null)
             Center(child: Text(_mileageError!))
           else if (_mileageLogs.isEmpty)
-              SizedBox(
-                height: 150, // 전체 영역을 차지하도록 크기 지정
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      '주행 기록이 없습니다.',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
+              Card(
+                color: const Color(0xFF232326),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: const Icon(Icons.article_outlined, color: Colors.white70),
+                  title: const Text('주행 기록이 없습니다', style: TextStyle(color: Colors.white)),
+                  subtitle: const Text('상세 화면으로 이동합니다', style: TextStyle(color: Colors.grey)),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DrivingRecordPage(logs: _mileageLogs),
+                      ),
+                    );
+                  },
                 ),
               )
           else
