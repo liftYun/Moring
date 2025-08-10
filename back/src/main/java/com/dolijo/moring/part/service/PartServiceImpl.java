@@ -65,19 +65,25 @@ public class PartServiceImpl implements PartService {
 
     @Transactional
     @Override
-    public Long registerPartChangeLog(RegisterPartChangeLogRequestDto dto) {
-        Part part = partRepository.findById(dto.getPartId())
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_PART));
-
+    public List<Long> registerPartChangeLog(RegisterPartChangeLogRequestDto dto) {
         Car car = carRepository.findByVin(dto.getVin())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-
-        return  partChangeLogRepository.save(
-                PartChangeLog.builder()
-                        .part(part)
-                        .car(car)
-                        .changedAt(dto.getChangedAt())
-                        .build()).getId();
+        List<PartChangeLog> logs = new ArrayList<>();
+        for (Long partId : dto.getPartIdList()) {
+            Part part = partRepository.findById(partId)
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_PART));
+            logs.add(PartChangeLog.builder()
+                    .part(part)
+                    .car(car)
+                    .changedAt(dto.getChangedAt())
+                    .build());
+        }
+        List<PartChangeLog> saved = partChangeLogRepository.saveAll(logs);
+        List<Long> ids = new ArrayList<>();
+        for (PartChangeLog pcl : saved) {
+            ids.add(pcl.getId());
+        }
+        return ids;
     }
 
     @Override

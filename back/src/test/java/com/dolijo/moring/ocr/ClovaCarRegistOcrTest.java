@@ -65,7 +65,7 @@ public class ClovaCarRegistOcrTest {
 
     @Test
     public void callNcloudOcrApiWithBase64() throws Exception {
-        String resourcePath = "/img/IMG_8249.jpg"; // src/main/resources/img/your_image.jpg
+        String resourcePath = "/img/XM3_REGIST1.jpg"; // src/main/resources/img/your_image.jpg
         String base64Image = encodeImageToBase64FromResource(resourcePath);
 
         Map<String, Object> imageMap = new HashMap<>();
@@ -104,7 +104,7 @@ public class ClovaCarRegistOcrTest {
     @Test
     public void callNcloudOcrApiWithBase64_2() throws Exception {
         // 1. 리소스 이미지 Base64 인코딩
-        String resourcePath = "/img/IMG_8249.jpg"; // src/main/resources/img/IMG_8249.jpg
+        String resourcePath = "/img/XM3_REGIST1.jpg"; // src/main/resources/img/XM3_REGIST1.jpg
         String base64Image = encodeImageToBase64FromResource(resourcePath);
 
         // 2. OCR API 요청 바디 생성
@@ -249,7 +249,7 @@ public class ClovaCarRegistOcrTest {
 
     @Test
     public void callNcloudOcrApiAndParseCarInfo() throws Exception {
-        String resourcePath = "/img/IMG_8249.jpg"; // src/main/resources/img/...
+        String resourcePath = "/img/XM3_REGIST1.jpg"; // src/main/resources/img/...
         String base64Image = encodeImageToBase64FromResource(resourcePath);
 
         Map<String, Object> imageMap = new HashMap<>();

@@ -19,7 +19,7 @@ public interface PartService {
 
     List<PartResponseDto> getAllParts();
 
-    Long registerPartChangeLog(RegisterPartChangeLogRequestDto dto);
+    List<Long> registerPartChangeLog(RegisterPartChangeLogRequestDto dto);
 
     List<PartStatusListResponseDto> getPartStatusList(String vin);
 

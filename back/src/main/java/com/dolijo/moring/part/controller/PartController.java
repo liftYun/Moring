@@ -36,10 +36,7 @@ public class PartController {
     """
     )
     @PostMapping("/")
-    public BaseResponse<Long> registerPart(
-            @RequestBody RegisterPartRequestVo requestVo
-    ) {
-        log.info("받은 VO: {}", requestVo);
+    public BaseResponse<Long> registerPart(@RequestBody RegisterPartRequestVo requestVo) {
         return BaseResponse.of(partService.registerPart(requestVo.toDto()));
     }
 
@@ -68,11 +65,11 @@ public class PartController {
     """
     )
     @PostMapping("/change-log")
-    public BaseResponse<Long> registerPartChangeLog(
-            @RequestBody RegisterPartChangeLogRequestVo requestVo
+    public BaseResponse<List<Long>> registerPartChangeLog(
+            @RequestBody RegisterPartChangeLogRequestVo requestVoList
     ) {
         return BaseResponse.of(
-                partService.registerPartChangeLog(requestVo.toDto())
+                partService.registerPartChangeLog(RegisterPartChangeLogRequestVo.from(requestVoList))
         );
     }
 

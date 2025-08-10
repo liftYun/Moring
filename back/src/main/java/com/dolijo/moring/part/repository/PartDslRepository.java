@@ -1,10 +1,13 @@
 package com.dolijo.moring.part.repository;
 
+import com.dolijo.moring.ai.dto.out.PartSearchResponseDto;
+import com.dolijo.moring.ai.dto.out.QPartSearchResponseDto;
 import com.dolijo.moring.part.dto.out.PartStatusListDto;
 import com.dolijo.moring.part.dto.out.QPartStatusListDto;
 import com.dolijo.moring.part.entity.Part;
 import com.dolijo.moring.part.entity.QPart;
 import com.dolijo.moring.part.entity.QPartChangeLog;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -49,4 +52,21 @@ public class PartDslRepository {
                 .limit(LIMIT_VALUE) // 부품 테이블 데이터 많을 만약의 경우 부하 방지
                 .fetch();
     }
+
+
+    public List<PartSearchResponseDto> findAllPartsAsSearchDto() {
+        return queryFactory
+                .select(
+                       new QPartSearchResponseDto(
+                                part.id,
+                                part.nameEn,
+                                part.nameKo
+                ))
+                .from(part)
+                .orderBy(part.id.asc())
+                .limit(LIMIT_VALUE) // 부품 테이블 데이터 많을 만약의 경우 부하 방지
+                .fetch();
+    }
+
+
 }
