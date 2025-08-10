@@ -98,11 +98,11 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
     }
 
     try {
-      final userInfo = ref.read(userInfoProvider).maybeWhen(
-        data: (user) => user,
-        orElse: () => null,
-      );
-      if (userInfo == null) throw Exception('사용자 정보 없음');
+    //   final userInfo = ref.read(userInfoProvider).maybeWhen(
+    //     data: (user) => user,
+    //     orElse: () => null,
+    //   );
+    //   if (userInfo == null) throw Exception('사용자 정보 없음');
 
       await _registerCar(
         // memberUuid: userInfo.uuid,

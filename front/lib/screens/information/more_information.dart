@@ -1,22 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+
+import 'package:moring/models/user_info.dart';
 import 'package:moring/providers/user_provider.dart'; // userInfoProvider
 import 'package:moring/providers/notification_api_provider.dart';
-import 'package:moring/models/user_info.dart';
 
 import 'package:moring/screens/member/user_info_edit.dart';
-import 'package:moring/screens/information/notification_panel.dart';
 import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/information/inspection_detail_container.dart';
+import 'package:moring/screens/information/notification_log.dart';
 
-// 푸시 알림 허용 여부 상태 프로바이더 정의
+// 로그아웃 관련 import (추가)
+import 'package:moring/providers/auth_provider.dart';
+import 'package:moring/providers/token_repository.dart';
+import 'package:moring/providers/car_provider.dart';
+import 'package:moring/providers/api_client.dart';
+
 final pushNotificationAllowedProvider = StateProvider<bool>((ref) {
-  // 초기값 true로 설정, 기기 권한 등 상태와 동기화 하는 로직 필요하면 여기에 구현
   return true;
 });
 
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
+
+  /// 로그아웃 처리
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    try {
+      final repo = ref.read(tokenRepositoryProvider);
+      final refreshToken = await repo.getRefreshToken();
+      final dio = ref.read(noAuthDioProvider);
+      final resp = await dio.post(
+        '/api/v1/auth/logout/rToken',
+        options: Options(
+          headers: {'Cookie': 'refreshToken=$refreshToken'},
+          validateStatus: (s) => s != null && s < 400,
+        ),
+      );
+      if (resp.statusCode == 200 || resp.statusCode == 302) {
+        await repo.deleteAllTokens();
+        ref.read(selectedCarIndexProvider.notifier).state = 0;
+        ref.refresh(userInfoProvider);
+        ref.refresh(carListProvider);
+        ref.refresh(currentVinProvider);
+        ref.invalidate(authDioProvider);
+        ref.invalidate(noAuthDioProvider);
+
+        // 로그인 화면으로 이동 (라우트 이름 수정 필요시 '/login' 확인)
+        if (context.mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('에러 발생: $e')),
+      );
+    }
+  }
 
   Widget _buildSectionHeader(BuildContext context, WidgetRef ref, String title) {
     return Padding(
@@ -121,12 +165,15 @@ class MorePage extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w400),
                 ),
-                onTap: () {
-                  // 프로필 편집 페이지로 이동
-                  Navigator.push(
+                onTap: () async {
+                  // 프로필 편집 페이지로 이동, 수정 완료 후 돌아오면 상태 새로고침
+                  final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(builder: (_) => const ProfileEditPage()),
                   );
+                  if (updated == true) {
+                    ref.refresh(userInfoProvider);
+                  }
                 },
               ),
             ),
@@ -163,44 +210,80 @@ class MorePage extends ConsumerWidget {
             // --- 기타 설정 섹션 ---
             _buildSectionHeader(context, ref, ''),
             _buildTile(
-              icon: Icons.directions_car_outlined,
-              title: '차량 등록',
-              subtitle: '새로운 차량을 등록하세요',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CarRegistrationPage()),
-                );
-              },
-            ),
-
-            _buildTile(
               icon: Icons.event_note,
               title: '점검 로그',
-              subtitle: '점검일을 확인하세요',
+              subtitle: '점검일을 확인하세요.',
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const InspectionDetailContainerPage()),
-                );              },
+                );
+              },
             ),
             _buildTile(
               icon: Icons.notifications_outlined,
               title: '알림',
-              subtitle: '알림을 관리하세요',
+              subtitle: '알림을 관리하세요.',
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const NotificationPanel()),
+                  MaterialPageRoute(builder: (context) => const NotificationLogPage()),
                 );
               },
             ),
             _buildTile(
               icon: Icons.privacy_tip_outlined,
               title: '정책',
-              subtitle: '사용 정책을 확인하세요',
+              subtitle: '사용 정책을 확인하세요.',
               onTap: () {
                 // TODO: 정책 페이지 이동 구현
+              },
+            ),
+
+            const Divider(color: Colors.white24, height: 32),
+
+            // --- 로그아웃 버튼 추가 ---
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF283038),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.logout, color: Colors.white),
+              ),
+              title: const Text(
+                '로그아웃',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              onTap: () async {
+                // 확인 다이얼로그 후 진행
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: Colors.grey[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    title: const Text('로그아웃', style: TextStyle(color: Colors.white)),
+                    content: const Text('정말 로그아웃 하시겠습니까?', style: TextStyle(color: Colors.white70)),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(foregroundColor: Colors.white70),
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('취소'),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('로그아웃'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  await _logout(context, ref);
+                }
               },
             ),
 
