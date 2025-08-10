@@ -21,6 +21,8 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -40,6 +42,20 @@ dependencies {
 
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+	//spring ai
+//	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+//	implementation 'org.springframework.ai:spring-ai-openai'
+
+	// spring ai - spring boot starter
+	// Spring AI BOM (안정판)
+	implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
+	// OpenAI 스타터 (ChatClient 자동구성)
+	implementation "org.springframework.ai:spring-ai-starter-model-openai"
+	// (이미 있는 것들은 유지)
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+
 	// spring batch
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 

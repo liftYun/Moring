@@ -16,17 +16,6 @@ class SocialMemberServiceTest {
     @Autowired
     SocialMemberRepository socialMemberRepository;
 
-    @Test
-     void test0() {
-        Long id = 2L;
-        log.info(socialMemberRepository.existsByMemberIdAndTokenIdIsNotNull(id));
-    }
-
-    @Test
-    void test1() {
-        Long id = 2L;
-        socialMemberRepository.deleteByMemberid(id);
-    }
 
 
 }
