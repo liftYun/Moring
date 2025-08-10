@@ -1,14 +1,13 @@
+import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/user_provider.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
-
 import 'package:moring/providers/api_client.dart';
-import 'package:moring/providers/auth_provider.dart';
-import 'package:moring/providers/token_repository.dart';
 import 'package:moring/services/user_service.dart';
+import 'package:moring/screens/information/more_information.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
   const ProfileEditPage({Key? key}) : super(key: key);
@@ -30,7 +29,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       orElse: () => null,
     );
     _nicknameController = TextEditingController(text: user?.nickname ?? '');
-    _emailController    = TextEditingController(text: user?.email    ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
   }
 
   @override
@@ -40,55 +39,29 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     super.dispose();
   }
 
-  Future<void> _logout() async {
-    final repo = ref.read(tokenRepositoryProvider);
-    final refreshToken = await repo.getRefreshToken();
-    final dio = ref.read(noAuthDioProvider);
-    final resp = await dio.post(
-      '/api/v1/auth/logout/rToken',
-      options: Options(
-        headers: {'Cookie': 'refreshToken=$refreshToken'},
-        validateStatus: (s) => s != null && s < 400,
-      ),
-    );
-    if (resp.statusCode == 200 || resp.statusCode == 302) {
-      debugPrint('캐싱 삭제');
-      await repo.deleteAllTokens();
-      ref.read(selectedCarIndexProvider.notifier).state = 0;
-      // 캐싱된 사용자/차량 정보를 무효화
-      ref.refresh(userInfoProvider);
-      ref.refresh(carListProvider);
-      ref.refresh(currentVinProvider);
-      // ref.invalidate(selectedCarIndexProvider);
-      // Dio도 무료화
-      ref.invalidate(authDioProvider);
-      ref.invalidate(noAuthDioProvider);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
-  }
-
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
     final newNick = _nicknameController.text.trim();
 
     try {
-      // 1) 서버에 PATCH 요청
+      // 닉네임 변경
       await ref.read(userServiceProvider).updateNickName(newNick);
 
-      // 2) userInfoProvider를 즉시 리프레시
+      // 즉시 사용자 정보 리프레시
       final updatedUser = await ref.refresh(userInfoProvider.future);
 
-      // 3) 컨트롤러에도 새 값 반영
+      // 컨트롤러 값 업데이트
       _nicknameController.text = updatedUser.nickname;
-      _emailController.text    = updatedUser.email;
+      _emailController.text = updatedUser.email;
 
-      // 4) 스낵바 알림 (화면은 그대로)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('닉네임이 정상적으로 변경되었습니다.')),
       );
+
+      if (context.mounted) {
+        Navigator.pop(context, true);
+      }
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('변경에 실패했습니다: $e')),
@@ -96,7 +69,135 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     }
   }
 
+  Future<bool> _deleteCarByVin(String vin) async {
+    final dio = ref.read(authDioProvider);
+    try {
+      final response = await dio.delete('/api/v1/cars/$vin');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      debugPrint('Delete failed: $e');
+      return false;
+    }
+  }
 
+  /// CarInfoPage 스타일 삭제 확인 바텀시트
+  void _showDeleteBottomSheet(BuildContext context, String vin, String carName) {
+    showModalBottomSheet(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.3),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      builder: (_) {
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Stack(
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(
+                  color: Colors.transparent,
+                  height: 220,
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF23262B),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 20,
+                      offset: Offset(0, -6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '차량을 삭제하시겠습니까?',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '삭제 시 입력된 모든 정보가 완전히 삭제됩니다.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white54),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('취소'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(context); // 모달 닫기
+                              final success = await _deleteCarByVin(vin);
+                              if (success) {
+                                ref.refresh(carListProvider);
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('차량이 삭제되었습니다.')),
+                                );
+                              } else {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('삭제에 실패했습니다. 관리자에게 문의하세요.'),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('삭제'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -132,7 +233,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // --- Nickname ---
+                  // 닉네임
                   _buildSectionHeader('Nickname'),
                   TextFormField(
                     controller: _nicknameController,
@@ -150,7 +251,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     (v == null || v.isEmpty) ? '닉네임을 입력해주세요' : null,
                   ),
 
-                  // --- Email (읽기 전용) ---
+                  // 이메일
                   _buildSectionHeader('Email'),
                   TextFormField(
                     controller: _emailController,
@@ -167,7 +268,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     style: const TextStyle(color: Colors.white70),
                   ),
 
-                  // --- 등록된 차량 (수정 불가) ---
+                  // 등록된 차량 리스트 + 삭제 버튼
                   _buildSectionHeader('등록된 차량'),
                   ...cars.map((c) => Card(
                     color: const Color(0xFF283038),
@@ -176,7 +277,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
-                      leading: Icon(Icons.directions_car, color: Colors.white),
+                      leading: const Icon(Icons.directions_car, color: Colors.white),
                       title: Text(
                         c.nickname.isNotEmpty ? c.nickname : c.modelName,
                         style: const TextStyle(color: Colors.white),
@@ -185,12 +286,23 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         c.modelName,
                         style: const TextStyle(color: Colors.white70),
                       ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle, color: Colors.redAccent),
+                        tooltip: '삭제',
+                        onPressed: () {
+                          _showDeleteBottomSheet(
+                            context,
+                            c.vin,
+                            c.nickname.isNotEmpty ? c.nickname : c.modelName,
+                          );
+                        },
+                      ),
                     ),
                   )),
 
                   const SizedBox(height: 32),
 
-                  // --- Save Button ---
+                  // 저장 버튼
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -204,30 +316,6 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       onPressed: _saveChanges,
                       child: const Text(
                         '저장',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white24,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      onPressed: _logout,
-                      child: const Text(
-                        '로그아웃',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
