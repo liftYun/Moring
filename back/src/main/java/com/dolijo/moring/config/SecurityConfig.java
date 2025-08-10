@@ -101,6 +101,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/kakao/login").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/refresh").permitAll()
                         .requestMatchers("/api/v1/health/**", "/api/v1/auth/login/test").permitAll()
+                // AI 엔드포인트 비로그인 허용
+                .requestMatchers(HttpMethod.POST, "/api/v1/AI/**").permitAll()
                 // 기존 로그인(username/password) 엔드포인트
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout/rToken").permitAll()
                 // Swagger, 공용 API

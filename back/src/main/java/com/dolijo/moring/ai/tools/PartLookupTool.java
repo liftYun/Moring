@@ -14,12 +14,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PartLookupTool {
 
-    private final PartService partService;
     private final PartDslRepository partDslRepository;
 
-
-    @Tool(description = "OCR로 추출된 부품명과 비교를 위해 RDB의 부품 테이블의 정보를 RAG를 위해 조회")
-    public List<PartSearchResponseDto> findPartCandidatesByName(String partName) {
+    @Tool(
+            name = "findPartCandidatesByNames",
+            description = "입력된 부품명과 유사한 표준 부품 후보를 DB에서 조회하여 반환." +
+                    "이 툴은 LLM이 부품 후보를 찾기 위해 사용됩니다." +
+                    "부품은 20개 이하이니 해당 Tool은 한번만 사용합니다."
+    )    public List<PartSearchResponseDto> findAllPartsAsSearchDto() {
         return partDslRepository.findAllPartsAsSearchDto();
     }
 }
