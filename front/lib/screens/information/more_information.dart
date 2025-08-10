@@ -47,9 +47,9 @@ class MorePage extends ConsumerWidget {
         ref.invalidate(noAuthDioProvider);
 
         // 로그인 화면으로 이동 (라우트 이름 수정 필요시 '/login' 확인)
-        if (context.mounted) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-        }
+        // if (context.mounted) {
+        //   Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        // }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
