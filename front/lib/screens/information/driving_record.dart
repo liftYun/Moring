@@ -6,19 +6,42 @@ class DrivingRecordPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEmpty = logs.isEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('주행 로그 전체 보기'),
         backgroundColor: Colors.black,
       ),
-      body: ListView.builder(
+      backgroundColor: Colors.black,
+      body: isEmpty
+          ? const Center(
+        child: Text(
+          '주행 기록이 없습니다.',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+      )
+          : ListView.builder(
         itemCount: logs.length,
         itemBuilder: (context, idx) {
           final log = logs[idx];
-          return ListTile(
-            leading: const Icon(Icons.place),
-            title: Text('${log['distance']}'),
-            subtitle: Text('${log['date']}'),
+          return Card(
+            color: const Color(0xFF232326),
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.place, color: Colors.white54),
+              title: Text(
+                '${log['distance']}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                '${log['date']}',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
           );
         },
       ),
