@@ -49,6 +49,12 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
   }
 
   Future<void> _submit() async {
+    if (_car == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('차량 정보를 불러오지 못했습니다.')),
+      );
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
@@ -57,10 +63,10 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
       final dio = ref.read(authDioProvider);
       final data = {
         "inspectionDate": _dateController.text,
-        "inadequateDetails": _inadequateController.text,
-        "recommendationDetails": _recommendationController.text,
-        "selfDiagnosis": _selfDiagnosisController.text,
-        "specialNotes": _specialNotesController.text,
+        "inadequateDetails": _inadequateController.text.isEmpty ? null : _inadequateController.text,
+        "recommendationDetails": _recommendationController.text.isEmpty ? null : _recommendationController.text,
+        "selfDiagnosis": _selfDiagnosisController.text.isEmpty ? null : _selfDiagnosisController.text,
+        "specialNotes": _specialNotesController.text.isEmpty ? null : _specialNotesController.text,
       };
 
       final resp = await dio.post(
@@ -149,7 +155,7 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
                   labelStyle: const TextStyle(color: Colors.white70),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today, color: Colors.white54),
                     onPressed: _selectDate,
@@ -157,7 +163,7 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? '날짜를 입력하세요' : null,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               buildExpandingField(_inadequateController, '부적합'),
               buildExpandingField(_recommendationController, '시정권고'),
               buildExpandingField(_selfDiagnosisController, '자기진단기센서'),

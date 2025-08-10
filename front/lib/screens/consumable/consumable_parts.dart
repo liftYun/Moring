@@ -87,7 +87,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
     final data = {
       'vin': widget.vin,
       'partId': _selectedConsumable!.id,
-      'createdAt': _replacementDateController.text + 'T00:00:00.000Z',
+      'changedAt': _replacementDateController.text + 'T00:00:00.000Z',
     };
 
     final dio = ref.read(authDioProvider);
