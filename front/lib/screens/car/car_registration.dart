@@ -167,8 +167,8 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: darkField,
-                  hintText: '차대번호',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  labelText: '차대번호',
+                  labelStyle: const TextStyle(color: Colors.white38),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -184,8 +184,8 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: darkField,
-                  hintText: '애칭',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  labelText: '애칭',
+                  labelStyle: const TextStyle(color: Colors.white38),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -211,43 +211,46 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
               //     const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
               //   ),
               // ),
-              Container(
-                decoration: BoxDecoration(
-                  color: darkField,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  title: Text(
-                    _modelController.text.isEmpty ? '모델명' : _modelController.text,
-                    style: TextStyle(
-                      color: _modelController.text.isEmpty ? Colors.white38 : Colors.white,
-                      fontSize: 16,
-                    ),
+              TextFormField(
+                controller: _modelController,
+                readOnly: true, // 직접 입력 안 하고 선택만 가능
+                onTap: () async {
+                  final selected = await showMenu<String>(
+                    context: context,
+                    position: const RelativeRect.fromLTRB(100, 300, 100, 100),
+                    items: [
+                      const PopupMenuItem<String>(value: 'XM3', child: Text('XM3')),
+                      const PopupMenuItem<String>(value: '그랜저', child: Text('그랜저')),
+                      const PopupMenuItem<String>(value: '모닝', child: Text('모닝')),
+                      const PopupMenuItem<String>(value: '스포티지', child: Text('스포티지')),
+                      const PopupMenuItem<String>(value: '아반떼', child: Text('아반떼')),
+                      const PopupMenuItem<String>(value: '재규어', child: Text('재규어')),
+                      const PopupMenuItem<String>(value: '코나', child: Text('코나')),
+                      const PopupMenuItem<String>(value: '투싼', child: Text('투싼')),
+                    ],
+                  );
+                  if (selected != null) {
+                    setState(() {
+                      _modelController.text = selected;
+                    });
+                  }
+                },
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: darkField,
+                  labelText: '모델명',
+                  labelStyle: const TextStyle(color: Colors.white38),
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
                   ),
-                  trailing: PopupMenuButton<String>(
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
-                    onSelected: (String result) {
-                      setState(() {
-                        _modelController.text = result;
-                      });
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(value: 'XM3', child: Text('XM3')),
-                        const PopupMenuItem<String>(value: '그랜저', child: Text('그랜저')),
-                        const PopupMenuItem<String>(value: '모닝', child: Text('모닝')),
-                        const PopupMenuItem<String>(value: '스포티지', child: Text('스포티지')),
-                        const PopupMenuItem<String>(value: '아반떼', child: Text('아반떼')),
-                        const PopupMenuItem<String>(value: '재규어', child: Text('재규어')),
-                        const PopupMenuItem<String>(value: '코나', child: Text('코나')),
-                        const PopupMenuItem<String>(value: '투싼', child: Text('투싼')),
-                      ];
-                    },
-                    color: const Color(0xFF23262B), // 팝업 메뉴 배경색 설정
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                  suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
                 ),
               ),
+
               const SizedBox(height: 16),
               TextField(
                 controller: _registerDateController,
@@ -257,8 +260,8 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: darkField,
-                  hintText: '등록일',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  labelText: '등록일',
+                  labelStyle: const TextStyle(color: Colors.white38),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,

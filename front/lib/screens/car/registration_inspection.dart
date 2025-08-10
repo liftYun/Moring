@@ -135,7 +135,7 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
     _car = ref.watch(currentCarProvider);
 
     return BaseScaffold(
-      title: '정기 점검 등록',
+      title: '점검 내역 등록',
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(18, 30, 18, 0),
         child: Form(
@@ -164,9 +164,6 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
                 validator: (v) => (v == null || v.isEmpty) ? '날짜를 입력하세요' : null,
               ),
               const SizedBox(height: 16),
-              buildExpandingField(_inadequateController, '부적합'),
-              buildExpandingField(_recommendationController, '시정권고'),
-              buildExpandingField(_selfDiagnosisController, '자기진단기센서'),
               buildExpandingField(_specialNotesController, '특기사항'),
               const SizedBox(height: 28),
               SizedBox(
@@ -184,38 +181,6 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
                   child: _isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('등록하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(child: Divider(color: Colors.white24)),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Text('or', style: TextStyle(color: Colors.white54)),
-              ),
-              Expanded(child: Divider(color: Colors.white24)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 48,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/ocr'); // OCR 페이지로 이동
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white38),
-                backgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-              child: const Text(
-                '스캔하기',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
-                  ),
                 ),
               ),
             ],
