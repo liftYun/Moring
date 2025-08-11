@@ -85,10 +85,11 @@ public class AiService {
                 .orElse("null");
 
         final List<String> names = Optional.ofNullable(ocr.getPartNameList()).orElseGet(List::of);
-
+        // names.forEach();
         return """
                 {
-                  "ocrPartNames": %s
+                      "changedAt": "%s",
+                      "ocrPartNames": %s
                 }
                 """.formatted(changedAtIso, names.toString());
     }
