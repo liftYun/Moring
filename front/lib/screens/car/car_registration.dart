@@ -224,7 +224,6 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                       const PopupMenuItem<String>(value: '모닝', child: Text('모닝')),
                       const PopupMenuItem<String>(value: '스포티지', child: Text('스포티지')),
                       const PopupMenuItem<String>(value: '아반떼', child: Text('아반떼')),
-                      const PopupMenuItem<String>(value: '재규어', child: Text('재규어')),
                       const PopupMenuItem<String>(value: '코나', child: Text('코나')),
                       const PopupMenuItem<String>(value: '투싼', child: Text('투싼')),
                     ],
@@ -314,8 +313,17 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/ocr');
+                  onPressed: () async {
+                    final result = await Navigator.pushNamed(context, '/car_ocr');
+
+                    // result는 OCR 페이지에서 pop할 때 전달한 데이터(Map 등)임
+                    if (result != null && result is Map<String, dynamic>) {
+                      setState(() {
+                        _vinController.text = result['vin'] ?? '';
+                        _modelController.text = result['modelName'] ?? '';
+                        _registerDateController.text = result['registeredAt'] ?? '';
+                      });
+                    }
                   },
                   child: const Text(
                     '차량 등록증 스캔',
