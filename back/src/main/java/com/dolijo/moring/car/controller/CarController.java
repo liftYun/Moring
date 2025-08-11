@@ -126,7 +126,6 @@ public class CarController {
     ) {
         Slice<CarInspectionLogResponseDto> dtoSlice = carService.getCarInspectionLogs(vin, pageable);
         Slice<CarInspectionLogResponseVo> voSlice = dtoSlice.map(CarInspectionLogResponseDto::toVo);
-        
         return BaseResponse.of(voSlice);
     }
 

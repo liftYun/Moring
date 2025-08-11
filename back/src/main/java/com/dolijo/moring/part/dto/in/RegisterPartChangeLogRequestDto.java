@@ -3,12 +3,13 @@ package com.dolijo.moring.part.dto.in;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
 @Builder
 public class RegisterPartChangeLogRequestDto {
     private String vin;
-    private Long partId;
-    private LocalDateTime changedAt;// 교환일시
+    private LocalDateTime changedAt;
+    private List<Long> partIdList;
 }

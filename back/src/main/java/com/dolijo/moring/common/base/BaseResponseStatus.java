@@ -71,7 +71,14 @@ public enum BaseResponseStatus {
     /**
      * Part
      */
-    NO_EXIST_PART(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 부품입니다.");
+    NO_EXIST_PART(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 부품입니다."),
+
+    /**
+     * OCR
+     */
+    IMAGE_FILE_EMPTY(HttpStatus.BAD_REQUEST, false, 400, "이미지 파일이 비어있습니다."),
+    IMAGE_FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, false, 400, "이미지 크기는 2MB 이하만 허용됩니다."),
+    IMAGE_FILE_TYPE_INVALID(HttpStatus.BAD_REQUEST, false, 400, "이미지 형식만 업로드할 수 있습니다.");
 
 
 
