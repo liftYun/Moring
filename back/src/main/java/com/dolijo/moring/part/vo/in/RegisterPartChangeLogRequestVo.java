@@ -5,27 +5,30 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
 @Builder
 @Schema(description = "부품 교환 이력")
 public class RegisterPartChangeLogRequestVo {
-
     @Schema(description = "차대번호(VIN)", required = true, example = "KNMK5C2HMLP000437", maxLength = 60)
     private String vin;
-
-    @Schema(description = "부품 ID", required = true, example = "1")
-    private Long partId;
 
     @Schema(description = "부품 교환 일시", required = true, example = "2025-07-30T14:55:00")
     private LocalDateTime changedAt;
 
-    public RegisterPartChangeLogRequestDto toDto() {
+    @Schema(description = "부품 ID 리스트", required = true)
+    private List<Long> partIdList;
+
+    public static RegisterPartChangeLogRequestDto from(RegisterPartChangeLogRequestVo vo) {
         return RegisterPartChangeLogRequestDto.builder()
-                .vin(this.vin)
-                .partId(this.partId)
-                .changedAt(this.changedAt)   // createdAt도 dto로 넘김
+                .vin(vo.vin)
+                .changedAt(vo.changedAt)
+                .partIdList(vo.partIdList)
                 .build();
     }
+
+
 }
