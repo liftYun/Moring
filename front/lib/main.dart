@@ -19,8 +19,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/fcm_provider.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'services/local_notification_service.dart';
+// 주행 로그 백그라운드 서비스 추가
+import 'package:moring/screens/navigation/services/daily_log_backup_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// 🆕 RouteObserver 추가 - 네비게이션 화면 생명주기 추적용
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -44,6 +49,15 @@ Future<void> main() async {
 
   } catch (e) {
     debugPrint('Firebase/FCM 초기화 실패: $e');
+  }
+
+  // 🆕 주행 로그 백그라운드 서비스 초기화
+  try {
+    debugPrint('🔄 주행 로그 백그라운드 서비스 초기화 중...');
+    await DailyLogBackupService.initialize();
+    debugPrint('✅ 주행 로그 백그라운드 서비스 초기화 완료');
+  } catch (e) {
+    debugPrint('❌ 주행 로그 백그라운드 서비스 초기화 실패: $e');
   }
 
   runApp(
@@ -70,6 +84,7 @@ class MyApp extends ConsumerWidget {
         title: 'Moring App',
         theme: AppTheme, // utils/app_theme.dart 에 정의
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         home: authAsync.when(
           loading: () => const SplashScreen(),
           error: (_, __) => const LoginPage(),
