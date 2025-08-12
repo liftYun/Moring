@@ -74,6 +74,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// MQTT
+	implementation 'org.springframework.integration:spring-integration-mqtt'
+	implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+
+
 }
 
 tasks.named('test') {
