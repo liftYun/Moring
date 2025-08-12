@@ -9,7 +9,7 @@ import 'package:moring/screens/car/car_selection_page.dart';
 import 'package:moring/screens/car/no_car.dart';
 import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/car/registration_complete.dart';
-import 'package:moring/screens/ocr.dart';
+import 'package:moring/screens/car_regist_ocr.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'package:moring/models/car.dart';
 import 'providers/auth_provider.dart';
@@ -81,7 +81,7 @@ class MyApp extends ConsumerWidget {
           '/nocar': (context) => const CarNotRegisteredPage(),
 	        '/root': (context) => const RootPage(),
           '/registration': (context) => const CarRegistrationPage(),
-          '/ocr': (context) => const OcrRegistrationPage(),
+          '/car_ocr': (context) => const CarOcrRegistrationPage(),
           '/registration_complete': (context) => const RegistrationCompletePage(),
         },
       ),
