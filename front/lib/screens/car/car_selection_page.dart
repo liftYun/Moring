@@ -11,7 +11,10 @@ class CarSelectionContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1) 전역 FutureProvider로 차량 목록 읽기
+    // 1) 저장된 VIN 복원 (백그라운드에서 실행)
+    ref.watch(restoreVinProvider);
+    
+    // 2) 전역 FutureProvider로 차량 목록 읽기
     final carsAsync = ref.watch(carListProvider);
 
     return carsAsync.when(

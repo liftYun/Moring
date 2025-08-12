@@ -5,10 +5,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Google Services plugin for Firebase
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") // map
 }
 android {
     namespace = "com.example.moring"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
+//    compileSdk = flutter.compileSdkVersion
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
