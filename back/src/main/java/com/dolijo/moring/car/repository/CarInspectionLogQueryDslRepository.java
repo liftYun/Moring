@@ -25,11 +25,7 @@ public class CarInspectionLogQueryDslRepository {
         List<CarInspectionLogResponseDto> fetch = queryFactory
                 .select(new QCarInspectionLogResponseDto(
                         carInspectionLog.updatedAt, // 대기에서 완료로 변경된 시점
-                        carInspectionLog.inspectionStatus,
-                        carInspectionLog.inadequateDetails,
-                        carInspectionLog.recommendationDetails,
-                        carInspectionLog.selfDiagnosis,
-                        carInspectionLog.specialNotes
+                        carInspectionLog.inspectionStatus
                 ))
                 .from(carInspectionLog)
                 .join(carInspectionLog.car, car)

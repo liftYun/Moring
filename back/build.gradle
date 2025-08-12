@@ -54,7 +54,9 @@ dependencies {
 	implementation "org.springframework.ai:spring-ai-starter-model-openai"
 	// (이미 있는 것들은 유지)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
+	// sms
+	//implementation group: 'net.nurigo', name: 'javaSDK', version: '2.2'
+	implementation 'net.nurigo:sdk:4.3.0'
 
 	// spring batch
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
