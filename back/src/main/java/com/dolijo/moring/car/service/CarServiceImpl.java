@@ -127,11 +127,11 @@ public class CarServiceImpl implements CarService{
         long updatedCount = carInspectionLogDslRepository.updateStatusAndDetailsByCarAndDate(
                 car,
                 inspectionDate,
-                InspectionStatus.COMPLETED,
-                dto.getInadequateDetails(),
-                dto.getRecommendationDetails(),
-                dto.getSelfDiagnosis(),
-                dto.getSpecialNotes()
+                InspectionStatus.COMPLETED
+                //dto.getInadequateDetails(),
+                //dto.getRecommendationDetails(),
+                //dto.getSelfDiagnosis(),
+                //dto.getSpecialNotes()
         );
 
         // 3. 업데이트된 레코드가 정확히 1개인지 확인

@@ -32,8 +32,8 @@ public class PartDslRepository {
         return queryFactory
                 .select(new QPartStatusListDto(
                         part.id,
-                        part.nameEn,
-                        partChangeLog.createdAt,
+                        part.nameKo,
+                        partChangeLog.changedAt,
                         part.recommendedCycleMonths
                 ))
                 .from(part)
@@ -41,11 +41,12 @@ public class PartDslRepository {
                 .on(partChangeLog.part.id.eq(part.id)
                         .and(partChangeLog.car.id.eq(carId))
                         .and(partChangeLog.createdAt.eq(
-                                // 각 부품별 최신 교체 이력 찾기
                                 JPAExpressions.select(subChangeLog.createdAt.max())
                                         .from(subChangeLog)
-                                        .where(subChangeLog.part.id.eq(part.id)
-                                                .and(subChangeLog.car.id.eq(carId)))
+                                        .where(
+                                                subChangeLog.part.id.eq(part.id)
+                                                        .and(subChangeLog.car.id.eq(carId))
+                                        )
                         ))
                 )
                 .orderBy(part.id.asc())

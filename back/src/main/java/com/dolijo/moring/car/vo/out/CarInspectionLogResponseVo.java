@@ -11,20 +11,18 @@ import java.time.LocalDateTime;
 public class CarInspectionLogResponseVo {
     private final LocalDateTime inspectionDateTime;
     private final String inspectionStatus; // enum의 description을 String으로 반환
-    private final String inadequateDetails;
-    private final String recommendationDetails;
-    private final String selfDiagnosis;
-    private final String specialNotes;
+//    private final String inadequateDetails;
+//    private final String recommendationDetails;
+//    private final String selfDiagnosis;
+//    private final String specialNotes;
 
     @Builder
-    public CarInspectionLogResponseVo(LocalDateTime inspectionDateTime, String inspectionStatus,
-                                        String inadequateDetails, String recommendationDetails,
-                                        String selfDiagnosis, String specialNotes) {
+    public CarInspectionLogResponseVo(LocalDateTime inspectionDateTime, String inspectionStatus) {
         this.inspectionDateTime = inspectionDateTime;
         this.inspectionStatus = inspectionStatus;
-        this.inadequateDetails = inadequateDetails;
-        this.recommendationDetails = recommendationDetails;
-        this.selfDiagnosis = selfDiagnosis;
-        this.specialNotes = specialNotes;
+//        this.inadequateDetails = inadequateDetails;
+//        this.recommendationDetails = recommendationDetails;
+//        this.selfDiagnosis = selfDiagnosis;
+//        this.specialNotes = specialNotes;
     }
 }
