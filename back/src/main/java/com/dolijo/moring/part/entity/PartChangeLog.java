@@ -43,9 +43,7 @@ public class PartChangeLog {
     @Column(name = "changed_at", nullable = false)
     @Comment("부품 교환일시")
     private LocalDateTime changedAt;
-
-
-
+    
     @PrePersist // 저장 전에 동작
     public void prePersist() {
         createdAt = LocalDateTime.now();

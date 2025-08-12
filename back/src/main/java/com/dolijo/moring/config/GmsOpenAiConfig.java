@@ -39,6 +39,7 @@ public class GmsOpenAiConfig {
             }
             return exec.execute(req, body);
         };
+        // RestClient 빌더 생성 (위의 로깅 인터셉터 적용)
         RestClient.Builder restClientBuilder = RestClient.builder()
                 .requestInterceptor(logInterceptor);
 
@@ -50,12 +51,12 @@ public class GmsOpenAiConfig {
         });
         WebClient.Builder webClientBuilder = WebClient.builder().filter(webLogFilter);
 
-        // --- OpenAI API
+        // OpenAiApi 객체 생성
         OpenAiApi api = OpenAiApi.builder()
-                .apiKey(gmsKey)                                    // 반드시 GMS_KEY!
-                .baseUrl("https://gms.ssafy.io/gmsapi/")           // 끝에 슬래시 O
-                .completionsPath("api.openai.com/v1/chat/completions") // 앞 슬래시 X
-                .embeddingsPath("api.openai.com/v1/embeddings")        // 필요 시 동일 규칙
+                .apiKey(gmsKey)
+                .baseUrl("https://gms.ssafy.io/gmsapi/")
+                .completionsPath("api.openai.com/v1/chat/completions")
+                .embeddingsPath("api.openai.com/v1/embeddings")
                 .restClientBuilder(restClientBuilder)
                 .webClientBuilder(webClientBuilder)
                 .build();
