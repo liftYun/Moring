@@ -43,14 +43,15 @@ dependencies {
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
-	// Spring AI BOM (안정판)
+	// Spring AI
 	implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
-	// OpenAI 스타터 (ChatClient 자동구성)
 	implementation "org.springframework.ai:spring-ai-starter-model-openai"
+	implementation "org.springframework.ai:spring-ai-pdf-document-reader:1.0.1"
 	// (이미 있는 것들은 유지)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation "org.springframework.ai:spring-ai-starter-vector-store-redis"
-
+	implementation "org.springframework.ai:spring-ai-advisors-vector-store" // QuestionAnswerAdvisor 등
+	implementation "org.springframework.ai:spring-ai-rag"                  // RetrievalAugmentationAdvisor, VectorStoreDocumentRetriever 등
 
 	// sms
 	implementation 'net.nurigo:sdk:4.3.0'
