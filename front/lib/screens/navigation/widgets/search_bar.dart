@@ -26,7 +26,7 @@ class _DestinationSearchBarState extends State<DestinationSearchBar> {
   void initState() {
     super.initState();
     _focusNode.addListener(() {
-      debugPrint('🎹 검색바 포커스 상태: ${_focusNode.hasFocus}');
+      // debugPrint('🎹 검색바 포커스 상태: ${_focusNode.hasFocus}');
       widget.onFocusChanged?.call(_focusNode.hasFocus);
     });
   }

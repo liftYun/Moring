@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/navigation/services/daily_log_backup_service.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
@@ -19,12 +20,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/fcm_provider.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'services/local_notification_service.dart';
-// 주행 로그 백그라운드 서비스 추가
-import 'package:moring/screens/navigation/services/daily_log_backup_service.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// 🆕 RouteObserver 추가 - 네비게이션 화면 생명주기 추적용
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 @pragma('vm:entry-point')
@@ -51,13 +50,13 @@ Future<void> main() async {
     debugPrint('Firebase/FCM 초기화 실패: $e');
   }
 
-  // 🆕 주행 로그 백그라운드 서비스 초기화
+  // 🆕 주행 로그 백그라운드 서비스 초기화 (기존 - 일일 백업)
   try {
-    debugPrint('🔄 주행 로그 백그라운드 서비스 초기화 중...');
+    // debugPrint('🔄 4시간 백업 서비스 초기화 중...');
     await DailyLogBackupService.initialize();
-    debugPrint('✅ 주행 로그 백그라운드 서비스 초기화 완료');
+    debugPrint('✅ 4시간 백업 서비스 초기화 완료');
   } catch (e) {
-    debugPrint('❌ 주행 로그 백그라운드 서비스 초기화 실패: $e');
+    debugPrint('❌ 4시간 백업 서비스 초기화 실패: $e');
   }
 
   runApp(

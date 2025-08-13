@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:workmanager/workmanager.dart'; // ✅ 추가: OneOff 트리거용
 
 class BackupSettingsPage extends StatefulWidget {
   const BackupSettingsPage({super.key});
@@ -53,14 +54,14 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
 
     try {
       List<String> debugLines = [];
-      
+
       // 1. 로그 상태 확인
       debugLines.add('=== 로그 상태 확인 ===');
       final logStatus = await DailyLogBackupService.getLogStatus();
       debugPrint('📊 로그 상태: $logStatus');
       debugLines.add('총 로그 개수: ${logStatus['totalLogs']}');
       debugLines.add('총 주행거리: ${logStatus['totalDistanceKm']}km');
-      
+
       if (logStatus['oldestLogDate'] != null) {
         debugLines.add('가장 오래된 로그: ${logStatus['oldestLogDate']}');
       }
@@ -73,19 +74,19 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
       const secureStorage = FlutterSecureStorage();
       final vin = await secureStorage.read(key: 'currentVin');
       final accessToken = await secureStorage.read(key: 'accessToken');
-      
+
       debugPrint('🔑 VIN: $vin');
       debugPrint('🔑 토큰 존재: ${accessToken != null ? "있음" : "없음"}');
-      
+
       debugLines.add('VIN: ${vin ?? "없음"}');
       debugLines.add('액세스 토큰: ${accessToken != null ? "있음 (${accessToken.length}자)" : "없음"}');
 
       // 3. 어제 로그 상세 확인
       debugLines.add('\n=== 어제 로그 확인 ===');
       final logs = await _loadDrivingLogsForDebug();
-      final yesterday = DateTime.now().subtract(Duration(days: 1));
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
       final yesterdayDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
-      
+
       final yesterdayLogs = logs.where((log) {
         try {
           final startTime = DateTime.parse(log['startTime']);
@@ -98,19 +99,21 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
 
       debugPrint('📋 어제 로그 개수: ${yesterdayLogs.length}');
       debugLines.add('어제(${yesterdayDate.month}/${yesterdayDate.day}) 로그: ${yesterdayLogs.length}개');
-      
+
       if (yesterdayLogs.isNotEmpty) {
-        final totalDistance = yesterdayLogs.fold(0.0, (sum, log) => 
-            sum + ((log['totalDistance'] as num?)?.toDouble() ?? 0.0)) / 1000.0;
+        final totalDistance = yesterdayLogs.fold<double>(
+          0.0,
+              (sum, log) => sum + ((log['totalDistance'] as num?)?.toDouble() ?? 0.0),
+        ) /
+            1000.0;
         debugPrint('📏 어제 총 거리: ${totalDistance.toStringAsFixed(2)}km');
         debugLines.add('어제 총 주행거리: ${totalDistance.toStringAsFixed(2)}km');
-        
-        // 어제 로그 상세 정보
+
         for (int i = 0; i < yesterdayLogs.length; i++) {
           final log = yesterdayLogs[i];
           final distance = ((log['totalDistance'] as num?)?.toDouble() ?? 0.0) / 1000.0;
           final startTime = log['startTime'] ?? '알 수 없음';
-          debugLines.add('  로그 ${i+1}: ${distance.toStringAsFixed(2)}km, $startTime');
+          debugLines.add('  로그 ${i + 1}: ${distance.toStringAsFixed(2)}km, $startTime');
         }
       } else {
         debugLines.add('어제 주행 로그가 없습니다.');
@@ -120,7 +123,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
       debugLines.add('\n=== 오늘 로그 확인 ===');
       final today = DateTime.now();
       final todayDate = DateTime(today.year, today.month, today.day);
-      
+
       final todayLogs = logs.where((log) {
         try {
           final startTime = DateTime.parse(log['startTime']);
@@ -130,12 +133,15 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
           return false;
         }
       }).toList();
-      
+
       debugLines.add('오늘(${todayDate.month}/${todayDate.day}) 로그: ${todayLogs.length}개');
-      
+
       if (todayLogs.isNotEmpty) {
-        final todayDistance = todayLogs.fold(0.0, (sum, log) => 
-            sum + ((log['totalDistance'] as num?)?.toDouble() ?? 0.0)) / 1000.0;
+        final todayDistance = todayLogs.fold<double>(
+          0.0,
+              (sum, log) => sum + ((log['totalDistance'] as num?)?.toDouble() ?? 0.0),
+        ) /
+            1000.0;
         debugLines.add('오늘 총 주행거리: ${todayDistance.toStringAsFixed(2)}km');
       }
 
@@ -202,7 +208,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
 
     try {
       await DailyLogBackupService.testServerConnection();
-      
+
       setState(() {
         debugInfo = '서버 연결 테스트 완료! 로그를 확인하세요.';
       });
@@ -240,8 +246,8 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
         title: const Text('⚠️ 주의', style: TextStyle(color: Colors.white)),
         content: const Text(
           '이 테스트는 실제로 0.01km를 서버에 전송합니다.\n'
-          '서버에 실제 데이터가 추가됩니다.\n\n'
-          '정말 진행하시겠습니까?',
+              '서버에 실제 데이터가 추가됩니다.\n\n'
+              '정말 진행하시겠습니까?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -268,7 +274,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
 
     try {
       await DailyLogBackupService.testActualDataSending();
-      
+
       setState(() {
         debugInfo = '실제 데이터 전송 테스트 완료! 로그를 확인하세요.';
       });
@@ -293,6 +299,34 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
       setState(() {
         isDebugging = false;
       });
+    }
+  }
+
+  // ✅ 디버그: 백그라운드 워커 즉시 트리거 (네트워크 조건 없음)
+  Future<void> _debugTriggerWorkNow() async {
+    debugPrint('🧪 디버그: OneOff 즉시 트리거');
+    await Workmanager().registerOneOffTask(
+      'debug_now_${DateTime.now().millisecondsSinceEpoch}',
+      DailyLogBackupService.ONEOFF_WARMUP_TASK,
+      initialDelay: Duration.zero,
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+      constraints: Constraints(
+        networkType: NetworkType.notRequired,
+        requiresBatteryNotLow: false,
+        requiresCharging: false,
+        requiresDeviceIdle: false,
+        requiresStorageNotLow: false,
+      ),
+    );
+
+    // UI 피드백
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🧪 워커 트리거 요청 보냄. 로그캣에서 콜백을 확인하세요.'),
+          backgroundColor: Colors.purple,
+        ),
+      );
     }
   }
 
@@ -334,7 +368,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(Icons.schedule, color: Colors.green, size: 20),
+                      const Icon(Icons.schedule, color: Colors.green, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         '다음 백업: 내일 새벽 6:00',
@@ -489,6 +523,21 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  // ✅ 디버그: 워커 즉시 실행 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _debugTriggerWorkNow,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('백그라운드 워커 즉시 실행'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
                 ],
               ),

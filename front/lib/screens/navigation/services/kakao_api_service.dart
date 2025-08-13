@@ -10,13 +10,13 @@ class KakaoApiService {
   // 카카오 로컬 API - 주소 검색
   static Future<List<Map<String, dynamic>>> searchAddress(String query) async {
     try {
-      debugPrint('🔍 주소 검색 시작: $query');
-      debugPrint('🔑 REST API 키: $_restApiKey');
-      
+      // debugPrint('🔍 주소 검색 시작: $query');
+      // debugPrint('🔑 REST API 키: $_restApiKey');
+
       // API URL 구성 (키워드 검색으로 변경)
       final url = 'https://dapi.kakao.com/v2/local/search/keyword.json?query=${Uri.encodeComponent(query)}';
-      debugPrint('🌐 API URL: $url');
-      
+      // debugPrint('🌐 API URL: $url');
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -25,15 +25,15 @@ class KakaoApiService {
         },
       );
 
-      debugPrint('📡 API 응답 상태: ${response.statusCode}');
-      debugPrint('📄 응답 내용: ${response.body}');
+      // debugPrint('📡 API 응답 상태: ${response.statusCode}');
+      // debugPrint('📄 응답 내용: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final documents = data['documents'] as List;
 
-        debugPrint('✅ 검색 결과: ${documents.length}개');
-        
+        // debugPrint('✅ 검색 결과: ${documents.length}개');
+
         return documents.map((doc) => {
           'placeName': doc['place_name'] ?? '알 수 없는 장소',
           'address': doc['address_name'] ?? '알 수 없는 주소',
@@ -76,7 +76,7 @@ class KakaoApiService {
         },
       );
 
-      debugPrint('kakao 길찾기 api response : ${response}');
+      // debugPrint('kakao 길찾기 api response : ${response}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -105,11 +105,11 @@ class KakaoApiService {
           String trafficInfo = '보통';
           int duration = 0;
           double distance = 0.0;
-          
+
           for (var section in sections) {
             final sectionDuration = section['duration'];
             final sectionDistance = section['distance'];
-            
+
             if (sectionDuration != null) {
               if (sectionDuration is int) {
                 duration += sectionDuration;
@@ -117,7 +117,7 @@ class KakaoApiService {
                 duration += sectionDuration.round();
               }
             }
-            
+
             if (sectionDistance != null) {
               if (sectionDistance is double) {
                 distance += sectionDistance;
@@ -125,13 +125,13 @@ class KakaoApiService {
                 distance += sectionDistance.toDouble();
               }
             }
-            
-            // 교통 상황 확인 (간단한 로직)
+
+            // 교통 상황 확인
             if (section['traffic'] != null) {
               trafficInfo = '혼잡';
             }
           }
-          
+
           return {
             'coordinates': coordinates,
             'duration': duration, // 초 단위

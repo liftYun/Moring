@@ -377,4 +377,7 @@ hs_err_pid*
 
 !/gradle/wrapper/gradle-wrapper.jar
 
+## config file
+lib/config/
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,flutter,androidstudio,intellij,xcode
