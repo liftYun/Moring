@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/navigation/services/daily_log_backup_service.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
@@ -10,7 +11,7 @@ import 'package:moring/screens/car/car_selection_page.dart';
 import 'package:moring/screens/car/no_car.dart';
 import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/car/registration_complete.dart';
-import 'package:moring/screens/ocr.dart';
+import 'package:moring/screens/car_regist_ocr.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'package:moring/models/car.dart';
 import 'providers/auth_provider.dart';
@@ -26,6 +27,8 @@ import 'services/local_notification_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -50,6 +53,15 @@ Future<void> main() async {
     await LocalNotificationService.init();
   } catch (e) {
     debugPrint('Firebase/FCM 초기화 실패: $e');
+  }
+
+  // 🆕 주행 로그 백그라운드 서비스 초기화 (기존 - 일일 백업)
+  try {
+    // debugPrint('🔄 4시간 백업 서비스 초기화 중...');
+    await DailyLogBackupService.initialize();
+    debugPrint('✅ 4시간 백업 서비스 초기화 완료');
+  } catch (e) {
+    debugPrint('❌ 4시간 백업 서비스 초기화 실패: $e');
   }
 
   runApp(
@@ -78,6 +90,7 @@ class MyApp extends ConsumerWidget {
         title: 'Moring App',
         theme: AppTheme,
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         home: authAsync.when(
           loading: () => const SplashScreen(),
           error: (_, __) => const LoginPage(),
@@ -89,7 +102,7 @@ class MyApp extends ConsumerWidget {
           '/nocar': (context) => const CarNotRegisteredPage(),
           '/root': (context) => const RootPage(),
           '/registration': (context) => const CarRegistrationPage(),
-          '/ocr': (context) => const OcrRegistrationPage(),
+          '/car_ocr': (context) => const CarOcrRegistrationPage(),
           '/registration_complete': (context) => const RegistrationCompletePage(),
         },
       ),

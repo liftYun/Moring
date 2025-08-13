@@ -17,6 +17,19 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     -->
 
+=======
+    
+    <!-- 네비게이션 관련 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- 포그라운드 서비스 권한 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOC" />
+    
     <application
         android:label="moring"
         android:name="${applicationName}"
@@ -32,6 +45,11 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
+
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
@@ -70,9 +88,27 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="kakaob0c6ed29bed9644abb543aac61d3e0d6" android:host="oauth"/>
+                <data android:scheme="${kakaoOAuthScheme}" android:host="oauth"/>
             </intent-filter>
         </activity>
+        
+        <!-- 네이티브 카카오맵 설정 -->
+        <meta-data
+            android:name="com.kakao.sdk.map.app.key"
+            android:value="${kakaoNativeAppKey}" />
+            
+        <!-- Google Maps API 키 -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapsApiKey}" />
+
+        <!-- 위치 서비스 등록 -->
+        <service
+            android:name="com.baseflow.geolocator.GeolocatorLocationService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+
     </application>
 
     <!-- Flutter 엔진에서 사용하는 PROCESS_TEXT 질의 -->

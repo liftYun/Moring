@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/api_client.dart';
-import 'package:moring/screens/ocr.dart'; // OCR import
+import 'package:moring/screens/car_regist_ocr.dart'; // OCR import
 
 class ConsumablePartsScreen extends ConsumerStatefulWidget {
   final List<Consumable> consumables;
@@ -248,7 +248,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => OcrRegistrationPage()),
+                MaterialPageRoute(builder: (context) => CarOcrRegistrationPage()),
               );
             },
           ),

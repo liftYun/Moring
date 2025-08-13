@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// local.properties에서 API 키 읽어오기
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,10 +14,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Google Services plugin for Firebase
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") // map
 }
 android {
     namespace = "com.example.moring"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
+//    compileSdk = flutter.compileSdkVersion
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
@@ -30,6 +41,13 @@ android {
         versionName = flutter.versionName
         multiDexEnabled = true
 
+
+
+        manifestPlaceholders += mapOf(
+            "googleMapsApiKey" to (localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "default_key"),
+            "kakaoNativeAppKey" to (localProperties.getProperty("KAKAO_NATIVE_APP_KEY") ?: "default_key"),
+            "kakaoOAuthScheme" to (localProperties.getProperty("KAKAO_OAUTH_SCHEME") ?: "default_scheme")
+        )
     }
     buildTypes {
         release {

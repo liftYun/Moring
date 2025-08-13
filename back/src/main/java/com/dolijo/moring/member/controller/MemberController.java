@@ -96,9 +96,9 @@ public class MemberController {
                     required = true,
                     example = "KAKAO",
                     schema = @Schema(
-                            description = "소셜타입 : KAKAO, NAVER, GOOGLE, APPLE",
+                            description = "소셜타입 : LOCAL, KAKAO, NAVER, GOOGLE, APPLE",
                             required = true,
-                            allowableValues = {"KAKAO", "NAVER", "GOOGLE", "APPLE"}
+                            allowableValues = {"LOCAL", "KAKAO", "NAVER", "GOOGLE", "APPLE"}
                     )
             )
             @RequestParam("socialType") SocialType socialType,
