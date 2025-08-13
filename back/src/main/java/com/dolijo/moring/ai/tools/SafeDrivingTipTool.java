@@ -19,12 +19,6 @@ import java.util.stream.Collectors;
 @Log4j2
 public class SafeDrivingTipTool {
 
-//    @Qualifier("moringVectorStore")
-//    private VectorStore vectorStore;
-//
-//    private static final int LIMIT_TOKEN_SIZE = 5000; // 최대 토큰 크기 설정
-
-
     private final VectorStore vectorStore;
 
     // ★★ 반드시 생성자 주입 + Qualifier로 주입을 “고정”합니다.
@@ -41,11 +35,12 @@ public class SafeDrivingTipTool {
                     + "일반 지식/기타 질문에는 호출하지 마세요. 한 요청당 한 번만 호출하세요."
     )
     public String getSafeDrivingTip(
-            @ToolParam(description = "사용자의 한국어 또는 영어 질문 원문") String prompt
+            @ToolParam(description = "사용자의 한국어 또는 영어 질문 원문의 RAG에 검색될 교통/운전 안전 관련 핵심 단어") String searchTerm
     ) {
+        log.info("[RAG] called with prompt: {}", searchTerm);
         try {
             SearchRequest sr = SearchRequest.builder()
-                    .query(prompt)
+                    .query(searchTerm)
                     .topK(3)
                     .similarityThreshold(0.5)
                     .filterExpression("collection == 'safety_rag'")
@@ -54,9 +49,9 @@ public class SafeDrivingTipTool {
             List<Document> hits = vectorStore.similaritySearch(sr);
 
             if (hits == null || hits.isEmpty()) {
+                log.info("RAG 매칭되는 내용 없음: {}", searchTerm);
                 return "NO_HITS";
             }
-
             String context = hits.stream()
                     .map(d -> d.getText() != null ? d.getText() : d.getFormattedContent())
                     .collect(Collectors.joining("\n---\n"));
@@ -64,6 +59,7 @@ public class SafeDrivingTipTool {
             if (context.length() > LIMIT_TOKEN_SIZE) {
                 context = context.substring(0, LIMIT_TOKEN_SIZE);
             }
+            //log.info("context for   {}", context);
             return context;
 
         } catch (Exception e) {

@@ -35,7 +35,7 @@ public class SafetyAskService {
         return chatBuilder.build()
                 .prompt()
                 .system(safetyPrompt)
-                .tools(safeDrivingTipTool)
+                .tools(safeDrivingTipTool) // 안전 운전 관련 RAG 툴을 사용! 유저 질문에 따라 필요할때만 자동 호출
                 .user(userInput)
                 .call()
                 .content();
