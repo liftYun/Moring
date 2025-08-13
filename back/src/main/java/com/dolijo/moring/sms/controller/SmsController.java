@@ -1,4 +1,4 @@
-package com.dolijo.moring.sms;
+package com.dolijo.moring.sms.controller;
 
 import com.dolijo.moring.sms.dto.SmsSendRequestDto;
 import com.dolijo.moring.sms.service.SmsService;

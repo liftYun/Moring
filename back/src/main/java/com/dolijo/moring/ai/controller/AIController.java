@@ -13,9 +13,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +33,10 @@ public class AIController {
     private final OcrService ocrService;
     private final PartChangeResolveService partChangeResolveService;
     private final SafetyAskService safetyAskService;
+    @Qualifier("moringVectorStore")
+    private final VectorStore vectorStore;
+
+    private static final int LIMIT_TOKEN_SIZE = 5000;
 
     private static final int MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 최대 이미지 크기 (MB)
 
@@ -63,6 +74,36 @@ public class AIController {
     @Operation(summary = "AI 안전 질문", description = "AI에게 안전 관련 질문을 합니다. 프롬프트를 입력하면 AI가 답변을 반환합니다.")
     public BaseResponse<String> ask(@RequestBody String userInput) {
         return BaseResponse.of(safetyAskService.ask(userInput));
+    }
+
+    @GetMapping("/test")
+    @Operation(summary = "AI 테스트", description = "AI 기능 테스트용 엔드포인트입니다. 프롬프트를 입력하면 AI가 답변을 반환합니다.")
+    public BaseResponse<Void> test(@RequestParam("prompt") String prompt) {
+       // safetyAskService.ask(prompt);
+
+        SearchRequest sr = SearchRequest.builder()
+                .query(prompt)
+                .topK(3)
+                .similarityThreshold(0.5)
+                .filterExpression("collection == 'safety_rag'")
+                .build();
+
+        List<Document> hits = vectorStore.similaritySearch(sr);
+        if (hits == null || hits.isEmpty()) {
+            log.info("NO_HITS: 검색 결과가 없습니다.");
+        }
+
+        // 간단한 소스 표기를 포함한 컨텍스트 문자열 생성
+        String context = hits.stream()
+                .map(d -> d.getText() != null ? d.getText() : d.getFormattedContent())
+                .collect(Collectors.joining("\n---\n"));
+        // 너무 길면 잘라서 반환 (모델 토큰 보호)
+        if (context.length() > LIMIT_TOKEN_SIZE) {
+            context = context.substring(0, LIMIT_TOKEN_SIZE);
+        }
+        log.info("context: {}", context);
+
+        return BaseResponse.ok();
     }
 
 
