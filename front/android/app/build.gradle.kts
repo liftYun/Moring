@@ -28,6 +28,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
+
     }
     buildTypes {
         release {
@@ -44,5 +46,5 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-analytics")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // desugaring 라이브러리 추가
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4") // desugaring 라이브러리 추가
 }
