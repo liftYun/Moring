@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// local.properties에서 API 키 읽어오기
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -30,6 +39,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        manifestPlaceholders += mapOf(
+            "googleMapsApiKey" to (localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "default_key"),
+            "kakaoNativeAppKey" to (localProperties.getProperty("KAKAO_NATIVE_APP_KEY") ?: "default_key"),
+            "kakaoOAuthScheme" to (localProperties.getProperty("KAKAO_OAUTH_SCHEME") ?: "default_scheme")
+        )
     }
     buildTypes {
         release {

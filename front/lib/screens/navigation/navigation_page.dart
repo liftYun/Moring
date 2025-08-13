@@ -96,7 +96,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
       routeObserver.subscribe(this, route);
-      debugPrint('🔄 NavigationPage RouteObserver 등록 완료');
+      // debugPrint('🔄 NavigationPage RouteObserver 등록 완료');
     }
   }
 
@@ -165,7 +165,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     if (_isKeyboardVisible != isKeyboardNowVisible) {
       setState(() {
         _isKeyboardVisible = isKeyboardNowVisible;
-        debugPrint('⌨️ 키보드 상태 변경: $_isKeyboardVisible');
+        // debugPrint('⌨️ 키보드 상태 변경: $_isKeyboardVisible');
       });
     }
   }
@@ -204,12 +204,11 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
       _autoSpeedHistory.clear();
       _autoLastPosition = _state.currentPosition;
 
-      debugPrint('🚗 자동 주행 측정 시작!');
+      // debugPrint('🚗 자동 주행 측정 시작!');
 
-      // 🆕 실시간 시간 업데이트 타이머 시작
+      // 실시간 시간 업데이트 타이머 시작
       _startTimeUpdateTimer();
 
-      // 사용자에게 알림
       if (mounted) {
         _showSnackBarSafe(SnackBar(
           content: Row(
@@ -230,7 +229,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
   /// 🆕 자동 측정 저장
   void _saveAutoMeasurement() {
     if (_isAutoMeasuring && _autoStartTime != null) {
-      debugPrint('💾 자동 주행 기록 저장!');
+      // debugPrint('💾 자동 주행 기록 저장!');
 
       // 주행 로그 저장
       _saveAutoMeasurementLog();
@@ -288,7 +287,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     await drivingLogService.saveDrivingLog(drivingData);
   }
 
-  /// 🆕 자동 측정 주행거리 업데이트
+  /// 자동 측정 주행거리 업데이트
   void _updateAutoMeasurement(Position position) {
     if (!_isAutoMeasuring || _autoLastPosition == null) return;
 
@@ -330,14 +329,14 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
   void _startTimeUpdateTimer() {
     _timeUpdateTimer?.cancel(); // 기존 타이머가 있으면 취소
 
-    // _timeUpdateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   if (_isAutoMeasuring && mounted) {
-    //     setState(() {
-    //       // 1초마다 UI 업데이트 (시간 표시를 위해)
-    //       debugPrint('⏰ 실시간 시간 업데이트: ${_formattedAutoDrivingTime}');
-    //     });
-    //   }
-    // });
+    _timeUpdateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isAutoMeasuring && mounted) {
+        setState(() {
+          // 1초마다 UI 업데이트 (시간 표시를 위해)
+          // debugPrint('⏰ 실시간 시간 업데이트: ${_formattedAutoDrivingTime}');
+        });
+      }
+    });
     //
     // debugPrint('⏰ 실시간 시간 업데이트 타이머 시작');
   }
@@ -357,11 +356,11 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
 
     setState(() {
       _isRouteGuiding = true;
-      // 🆕 경로 시작 시간 기록 (버튼 클릭 시점)
+      // 경로 시작 시간 기록 (버튼 클릭 시점)
       _routeStartTime = DateTime.now();
     });
 
-    // 🆕 경로 안내 시작할 때도 실시간 시간 업데이트 시작
+    // 경로 안내 시작할 때도 실시간 시간 업데이트 시작
     if (_isAutoMeasuring) {
       _startTimeUpdateTimer();
     }
@@ -374,23 +373,23 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
       _startRouteRecalculationTimer();
     }
 
-    debugPrint('🚗 경로 시작 - _isRouteGuiding: $_isRouteGuiding, 시작시간: $_routeStartTime');
+    // debugPrint('🚗 경로 시작 - _isRouteGuiding: $_isRouteGuiding, 시작시간: $_routeStartTime');
   }
 
-  /// 🆕 경로 안내 종료
+  /// 경로 안내 종료
   void _stopRouteGuiding() {
     if (!_isRouteGuiding) return;
 
-    // 🆕 경로 초기화 전에 목적지 여부를 미리 저장
+    //  경로 초기화 전에 목적지 여부를 미리 저장
     final bool hadDestination = _state.hasDestination;
 
     setState(() {
       _isRouteGuiding = false;
-      // 🆕 경로 시간 초기화
+      //  경로 시간 초기화
       _routeStartTime = null;
     });
 
-    // 🆕 경로 안내 종료할 때는 시간 업데이트 타이머만 정지 (자동 측정은 계속)
+    //  경로 안내 종료할 때는 시간 업데이트 타이머만 정지 (자동 측정은 계속)
     _stopTimeUpdateTimer();
 
     _stopRouteRecalculationTimer();
@@ -415,7 +414,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
       ));
     }
 
-    debugPrint('🛑 경로/안전 운전 종료 - _isRouteGuiding: $_isRouteGuiding');
+    // debugPrint('🛑 경로/안전 운전 종료 - _isRouteGuiding: $_isRouteGuiding');
   }
 
   // ==================== 초기화 함수들 ====================
@@ -740,10 +739,10 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
       (_state.currentPosition?.accuracy ?? 0) * 1.5,
     );
 
-    debugPrint('📍 경로와의 거리: ${distanceToRoute.toStringAsFixed(1)}m');
+    // debugPrint('📍 경로와의 거리: ${distanceToRoute.toStringAsFixed(1)}m');
 
     if (distanceToRoute > _routeDeviationThreshold) {
-      debugPrint('🚨 경로 이탈 감지! ${distanceToRoute.toStringAsFixed(1)}m > ${_routeDeviationThreshold}m');
+      // debugPrint('🚨 경로 이탈 감지! ${distanceToRoute.toStringAsFixed(1)}m > ${_routeDeviationThreshold}m');
       _handleRouteDeviation();
     }
   }
@@ -794,7 +793,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     try {
       await _calculateRoute();
 
-      debugPrint('✅ 경로 재계산 완료');
+      // debugPrint('✅ 경로 재계산 완료');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

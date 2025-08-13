@@ -137,7 +137,7 @@ class LocationService {
     final prevAcc = prev.accuracy.isFinite ? prev.accuracy : double.infinity;
     final currAcc = curr.accuracy.isFinite ? curr.accuracy : double.infinity;
     if (prevAcc > maxHAccMeters || currAcc > maxHAccMeters) {
-      debugPrint('🚫 GPS 정확도 부족: prev=${prevAcc.toStringAsFixed(1)}m, curr=${currAcc.toStringAsFixed(1)}m');
+      // debugPrint('🚫 GPS 정확도 부족: prev=${prevAcc.toStringAsFixed(1)}m, curr=${currAcc.toStringAsFixed(1)}m');
       return 0.0;
     }
 
@@ -202,7 +202,7 @@ class LocationService {
       return 0.0;
     }
 
-    debugPrint('✅ 유효한 이동: ${d.toStringAsFixed(1)}m, 속도: ${(observedV * 3.6).toStringAsFixed(1)}km/h');
+    // debugPrint('✅ 유효한 이동: ${d.toStringAsFixed(1)}m, 속도: ${(observedV * 3.6).toStringAsFixed(1)}km/h');
     return d;
   }
 
@@ -222,7 +222,7 @@ class LocationService {
     _smoother.reset();
     _lastPos = null;
     _lastTsOverride = null;
-    debugPrint('🔄 속도 필터 초기화');
+    // debugPrint('🔄 속도 필터 초기화');
   }
 
   // ====== 경로 라인까지 최단거리(미터) ======
