@@ -277,8 +277,8 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 child: ElevatedButton(
                   onPressed: _onRegister,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF50C878),
+                    foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),

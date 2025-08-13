@@ -23,8 +23,8 @@ Dio authDio(AuthDioRef ref) {
     //     ? 'http://10.0.2.2:8080'
     //     : 'http://localhost:8080',
     baseUrl: 'http://i13e101.p.ssafy.io:8080',
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 5),
+    connectTimeout: const Duration(seconds: 20),
+    receiveTimeout: const Duration(seconds: 20),
   );
   final dio = Dio(options);
   bool isRefreshing = false;

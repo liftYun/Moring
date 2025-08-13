@@ -8,9 +8,10 @@ import 'package:moring/widgets/consumables_section.dart';
 import 'package:moring/screens/information/driving_record.dart';
 import 'package:moring/screens/car/car_info.dart';
 import 'package:moring/screens/information/inspection_detail_page.dart';
-import 'package:moring/screens/navigation/alerts_sse_page.dart'; //이거는 난중에 네비로 갈거임
+import 'package:moring/screens/navigation/alerts_sse_page.dart';
 
 import '../providers/current_car_provider.dart';
+// import 'package:moring/widgets/auto_car_viewer_section.dart';
 
 class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({Key? key}) : super(key: key);
@@ -112,7 +113,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     }
   }
 
-  // ✅ 점검로그 API 연동
   Future<void> _fetchInspectionLogs() async {
     setState(() {
       _inspectionLoading = true;
@@ -146,6 +146,11 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         _inspectionLoading = false;
       });
     }
+  }
+
+  // ✅ InspectionDetailPage에 전달할 새로고침 함수
+  Future<void> _refreshInspectionLogs() async {
+    _fetchInspectionLogs();
   }
 
   void _setCarImages(String carName) {
@@ -243,56 +248,56 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                   },
                 ),
               )
-          else
-            SizedBox(
-              height: 150,
-              child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: _mileageLogs.length,
-                itemBuilder: (context, idx) {
-                  final log = _mileageLogs[idx];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DrivingRecordPage(logs: _mileageLogs),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      color: const Color(0xFF232326),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.place, color: Colors.white54, size: 20),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    log['distance'] ?? '',
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    log['date'] ?? '',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                                  ),
-                                ],
+            else
+              SizedBox(
+                height: 150,
+                child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemCount: _mileageLogs.length,
+                  itemBuilder: (context, idx) {
+                    final log = _mileageLogs[idx];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DrivingRecordPage(logs: _mileageLogs),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        color: const Color(0xFF232326),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.place, color: Colors.white54, size: 20),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      log['distance'] ?? '',
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      log['date'] ?? '',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
           const SizedBox(height: 24),
           // 🛠️ 점검로그 Section (점검 완료만 보이게)
           Text(
@@ -329,6 +334,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                             builder: (_) => InspectionDetailPage(
                               inspectionLogs: _inspectionLogs,
                               vin: _carVin!,
+                              onRefresh: _refreshInspectionLogs, // ✅ onRefresh 추가
                             ),
                           ),
                         );
@@ -353,6 +359,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                               builder: (_) => InspectionDetailPage(
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs, // ✅ onRefresh 추가
                               ),
                             ),
                           );

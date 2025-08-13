@@ -85,8 +85,9 @@ class _ConsumableCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ 좌우 정렬을 위해 추가
           children: [
             icon,
             const SizedBox(width: 15),
@@ -125,10 +126,14 @@ class _ConsumableCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '${(progress * 100).toInt()}%',
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
+                const SizedBox(width: 8), // ✅ 간격 유지를 위해 추가
+                SizedBox(
+                  width: 35, // ✅ 고정 너비 지정
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    textAlign: TextAlign.end, // ✅ 텍스트 우측 정렬
+                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
+                  ),
                 ),
               ],
             ),

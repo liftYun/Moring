@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/screens/information/driving_record.dart';
+import 'package:moring/utils/base_scaffold.dart';
 
 class DrivingRecordContainerPage extends ConsumerStatefulWidget {
   const DrivingRecordContainerPage({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class DrivingRecordContainerPage extends ConsumerStatefulWidget {
 class _DrivingRecordContainerPageState extends ConsumerState<DrivingRecordContainerPage> {
   bool _loading = true;
   String? _error;
-  List<Map<String, dynamic>> _logs = [];
+  List<Map<String, dynamic>> _allLogs = [];
 
   @override
   void initState() {
@@ -38,12 +39,15 @@ class _DrivingRecordContainerPageState extends ConsumerState<DrivingRecordContai
           '/api/v1/cars/$vin/mileage-logs-paging?page=0&size=50');
       if (resp.statusCode == 200 && resp.data['isSuccess'] == true) {
         final List content = resp.data['result']['content'] ?? [];
-        _logs = content.map<Map<String, dynamic>>((e) =>
+        _allLogs = content.map<Map<String, dynamic>>((e) =>
         {
           'distance': '${e['mileageKm']} km',
           'date': e['recordedDate'] ?? '',
         }).toList();
-        setState(() => _loading = false);
+
+        setState(() {
+          _loading = false;
+        });
       } else {
         setState(() {
           _error = '주행 로그를 불러오지 못했습니다 (${resp.statusCode}).';
@@ -61,20 +65,20 @@ class _DrivingRecordContainerPageState extends ConsumerState<DrivingRecordContai
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('주행 로그 전체 보기')),
-        body: const Center(child: CircularProgressIndicator()),
+      return const BaseScaffold(
+        title: '주행 로그 전체 보기',
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('주행 로그 전체 보기')),
+      return BaseScaffold(
+        title: '주행 로그 전체 보기',
         body: Center(child: Text(_error!)),
       );
     }
 
-    // ✅ 기존 페이지 그대로 재사용
-    return DrivingRecordPage(logs: _logs);
+    // 데이터 로딩 성공 시, 모든 로그를 `DrivingRecordPage`에 전달
+    return DrivingRecordPage(logs: _allLogs);
   }
 }

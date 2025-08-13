@@ -4,6 +4,7 @@ import 'package:moring/models/car.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 import '../root.dart';
+import 'package:moring/providers/current_car_provider.dart';
 
 /// 차량 선택 화면
 class CarSelectionContainer extends ConsumerWidget {
@@ -11,7 +12,6 @@ class CarSelectionContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1) 전역 FutureProvider로 차량 목록 읽기
     final carsAsync = ref.watch(carListProvider);
 
     return carsAsync.when(
@@ -21,28 +21,28 @@ class CarSelectionContainer extends ConsumerWidget {
           Scaffold(body: Center(child: Text('차량 정보를 가져올 수 없습니다.\n$err'))),
 
       data: (cars) {
-        // 2) 차량이 없으면 No Car 페이지로
         if (cars.isEmpty) {
           Future.microtask(() =>
               Navigator.pushReplacementNamed(context, '/nocar'));
-          return const Scaffold(); // 빈 화면
+          return const Scaffold();
         }
 
         return BaseScaffold(
           title: '보유 차량',
           showNotificationButton: false,
           body: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: cars.length + 1, // +1을 해서 플러스 버튼 추가
+            padding: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).size.height * 0.02,
+            ),
+            itemCount: cars.length + 1,
             itemBuilder: (ctx, index) {
               if (index < cars.length) {
                 final car = cars[index];
                 return _CarCard(car: car, index: index);
               } else {
-                // 마지막 인덱스에 플러스 버튼 추가
                 return Center(
                   child: IconButton(
-                    iconSize: 40,
+                    iconSize: MediaQuery.of(context).size.width * 0.1,
                     icon: const Icon(Icons.add, color: Colors.white24),
                     tooltip: '차량 등록',
                     onPressed: () {
@@ -70,43 +70,55 @@ class _CarCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final carName = car.modelName.toLowerCase();
     final demoCarImage = 'assets/$carName/3.png';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // ✅ 이미지의 위치와 크기를 동적으로 설정하여, 화면 크기에 비례하여 커지도록 합니다.
+    final topPosition = -screenHeight * 0.06;
+    final rightPosition = -screenWidth * 0.1;
+    final imageWidth = screenWidth * 0.6;
+    final imageHeight = screenHeight * 0.2;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: screenHeight * 0.025,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF23262B),
         borderRadius: BorderRadius.circular(18),
       ),
-      height: 160,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           // 텍스트 + 버튼
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   car.nickname,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 18, // ✅ 폰트 크기를 고정값으로 변경
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: screenHeight * 0.01),
                 Text(
                   car.modelName,
-                  style: const TextStyle(color: Colors.white70, fontSize: 15),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 15, // ✅ 폰트 크기를 고정값으로 변경
+                  ),
                 ),
-                const Spacer(),
+                SizedBox(height: screenHeight * 0.03),
                 Center(
                   child: OutlinedButton(
                     onPressed: () {
-                      // 3) 선택 인덱스를 전역 상태에 저장
                       ref.read(selectedCarIndexProvider.notifier).state = index;
-                      // 4) RootPage 로 넘어가기 (currentVinProvider 가 pick up)
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const RootPage()),
@@ -118,8 +130,10 @@ class _CarCard extends ConsumerWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 24),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenHeight * 0.015,
+                        horizontal: screenWidth * 0.06,
+                      ),
                     ),
                     child: const Text('선택하기'),
                   ),
@@ -129,11 +143,11 @@ class _CarCard extends ConsumerWidget {
           ),
           // 이미지
           Positioned(
-            top: -50,
-            right: -40,
+            top: topPosition,
+            right: rightPosition,
             child: SizedBox(
-              width: 200,
-              height: 120,
+              width: imageWidth,
+              height: imageHeight,
               child: Image.asset(demoCarImage, fit: BoxFit.contain),
             ),
           ),

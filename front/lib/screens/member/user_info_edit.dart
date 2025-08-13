@@ -234,7 +234,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   // 닉네임
-                  _buildSectionHeader('Nickname'),
+                  _buildSectionHeader('닉네임'),
                   TextFormField(
                     controller: _nicknameController,
                     decoration: InputDecoration(
@@ -252,7 +252,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   ),
 
                   // 이메일
-                  _buildSectionHeader('Email'),
+                  _buildSectionHeader('이메일'),
                   TextFormField(
                     controller: _emailController,
                     readOnly: true,
@@ -308,16 +308,16 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                        backgroundColor: const Color(0xFF50C878), // ✅ 색상 변경
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(10), // ✅ 각진 네모로 변경 (반경 10)
                         ),
                       ),
                       onPressed: _saveChanges,
                       child: const Text(
                         '저장',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black, // ✅ 글씨 색상 검정색으로 변경
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),

@@ -9,12 +9,20 @@ import 'package:moring/utils/custom_app_bar.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 List<CameraDescription>? cameras;
 
 class CarOcrRegistrationPage extends ConsumerStatefulWidget {
   const CarOcrRegistrationPage({Key? key}) : super(key: key);
-
+  Future<bool> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+    if (status.isGranted) {
+      return true;
+    }
+    return false;
+  }
   @override
   ConsumerState<CarOcrRegistrationPage> createState() => _CarOcrRegistrationPageState();
 }
@@ -54,8 +62,56 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
     super.dispose();
   }
 
-  // context를 매개변수로 받도록 수정
+  Future<bool> _requestCameraPermissionWithCustomUI(BuildContext context) async {
+    final status = await Permission.camera.status;
+
+    // 이미 허용된 경우 바로 true 반환
+    if (status.isGranted) {
+      return true;
+    }
+
+    // 권한 요청 전 커스텀 팝업 띄우기
+    final bool? userAgreed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('카메라 권한 요청'),
+          content: const Text('OCR 기능을 사용하려면 카메라 접근 권한이 필요합니다. 사진을 촬영하여 차량 정보를 자동으로 등록할 수 있습니다.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // 사용자가 '확인'을 누른 경우에만 시스템 권한 요청
+    if (userAgreed == true) {
+      final permissionStatus = await Permission.camera.request();
+      return permissionStatus.isGranted;
+    }
+
+    return false;
+  }
+
   Future<void> _takePicture(BuildContext context) async {
+    // 기존의 _requestPermission 대신 새로운 커스텀 함수를 호출
+    final hasPermission = await _requestCameraPermissionWithCustomUI(context);
+
+    if (!hasPermission) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('카메라 권한이 허용되지 않았습니다.')),
+      );
+      return;
+    }
+
+    // 권한이 허용된 후의 기존 사진 촬영 로직
     if (!_cameraController.value.isInitialized || _isTakingPicture) return;
     setState(() => _isTakingPicture = true);
 
@@ -177,15 +233,15 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
                     child: ElevatedButton(
                       onPressed: _isTakingPicture ? null : () => _takePicture(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2196F3),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF50C878),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                         elevation: 0,
                       ),
                       child: _isTakingPicture
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const CircularProgressIndicator(color: Colors.black)
                           : const Text(
                         '카메라로 촬영하기',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

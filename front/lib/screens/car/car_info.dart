@@ -51,14 +51,17 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
               // 블러 처리 모달 바닥에만 적용
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                child: Container(
-                  color: Colors.transparent,
-                  height: 220,
+                                 child: Container(
+                   color: Colors.transparent,
+                   height: MediaQuery.of(context).size.height * 0.275, // 화면 높이의 27.5%
                 ),
               ),
               Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
+                                 margin: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // 화면 너비의 4%
+                 padding: EdgeInsets.symmetric(
+                   vertical: MediaQuery.of(context).size.height * 0.035, // 화면 높이의 3.5%
+                   horizontal: MediaQuery.of(context).size.width * 0.045, // 화면 너비의 4.5%
+                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF23262B),
                   borderRadius: BorderRadius.circular(20),
@@ -81,7 +84,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                         fontSize: 20,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                                         SizedBox(height: MediaQuery.of(context).size.height * 0.01), // 화면 높이의 1%
                     const Text(
                       '삭제 시 입력된 모든 정보가 삭제됩니다.',
                       style: TextStyle(
@@ -89,7 +92,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                                         SizedBox(height: MediaQuery.of(context).size.height * 0.03), // 화면 높이의 3%
                     Row(
                       children: [
                         Expanded(
@@ -97,7 +100,9 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white54),
-                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              padding: EdgeInsets.symmetric(
+                                vertical: MediaQuery.of(context).size.height * 0.016, // 화면 높이의 1.6%
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -108,13 +113,15 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             child: const Text('아니요'),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                                                 SizedBox(width: MediaQuery.of(context).size.width * 0.04), // 화면 너비의 4%
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              padding: EdgeInsets.symmetric(
+                                vertical: MediaQuery.of(context).size.height * 0.016, // 화면 높이의 1.6%
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -181,13 +188,13 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
       onItemTapped: _onItemTapped,
       body: Column(
         children: [
-          const SizedBox(height: 30),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 화면 높이의 4%
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
             child: Container(
               color: Colors.white,
               width: double.infinity,
-              height: 170,
+                             height: MediaQuery.of(context).size.height * 0.2, // 화면 높이의 20%
               child: Image.asset(
                 'assets/${car.modelName.toLowerCase()}/10.png',
                 fit: BoxFit.contain,
@@ -198,7 +205,10 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
             child: Container(
               color: cardDark,
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 26),
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
+                vertical: MediaQuery.of(context).size.height * 0.03, // 화면 높이의 3%
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -210,7 +220,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.022), // 화면 높이의 2.2%
                   Row(
                     children: [
                       Expanded(
@@ -221,7 +231,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                               'VIN',
                               style: TextStyle(color: Colors.white54, fontSize: 13),
                             ),
-                            const SizedBox(height: 3),
+                            SizedBox(height: MediaQuery.of(context).size.height * 0.004), // 화면 높이의 0.4%
                             Text(
                               car.vin,
                               style: const TextStyle(
@@ -235,9 +245,9 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.012), // 화면 높이의 1.2%
                   const Divider(color: Colors.white10, thickness: 1),
-                  const SizedBox(height: 10),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.012), // 화면 높이의 1.2%
                   const Text(
                     'Model',
                     style: TextStyle(
@@ -245,7 +255,7 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.004), // 화면 높이의 0.4%
                   Text(
                     car.modelName,
                     style: const TextStyle(
@@ -254,6 +264,25 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.012), // 화면 높이의 1.2%
+                  const Divider(color: Colors.white10, thickness: 1),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.012), // 화면 높이의 1.2%
+                  const Text(
+                    '등록일',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 13,
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.004), // 화면 높이의 0.4%
+                  // Text(
+                  //   car.registeredAt ?? '등록일 없음',
+                  //   style: const TextStyle(
+                  //     color: Colors.white,
+                  //     fontSize: 15,
+                  //     fontWeight: FontWeight.w600,
+                  //   ),
+                  // ),
                   const Spacer(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -267,7 +296,9 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Color(0xFF4A4A4A), width: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(
+                              vertical: MediaQuery.of(context).size.height * 0.017, // 화면 높이의 1.7%
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),

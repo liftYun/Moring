@@ -8,7 +8,7 @@ plugins {
 }
 android {
     namespace = "com.example.moring"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
