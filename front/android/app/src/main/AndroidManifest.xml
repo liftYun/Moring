@@ -5,6 +5,17 @@
     <!-- [firebase] 알림 권한 (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
+    <!-- 네비게이션 관련 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- 포그라운드 서비스 권한 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOC" />
+    
     <application
         android:label="moring"
         android:name="${applicationName}"
@@ -56,9 +67,27 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="kakaob0c6ed29bed9644abb543aac61d3e0d6" android:host="oauth"/>
+                <data android:scheme="${kakaoOAuthScheme}" android:host="oauth"/>
             </intent-filter>
         </activity>
+        
+        <!-- 네이티브 카카오맵 설정 -->
+        <meta-data
+            android:name="com.kakao.sdk.map.app.key"
+            android:value="${kakaoNativeAppKey}" />
+            
+        <!-- Google Maps API 키 -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapsApiKey}" />
+
+        <!-- 위치 서비스 등록 -->
+        <service
+            android:name="com.baseflow.geolocator.GeolocatorLocationService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
