@@ -381,3 +381,4 @@ hs_err_pid*
 lib/config/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,flutter,androidstudio,intellij,xcode
+.env
