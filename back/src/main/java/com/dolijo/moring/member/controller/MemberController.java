@@ -31,7 +31,7 @@ public class MemberController {
     private final CustomUserDetailsService customUserDetailsService;
     private final JWTUtil jwtUtil;
 
-    @Operation(summary = "mypage 조회", description = "mypage 조회", tags = {"마이페이지"})
+    @Operation(summary = "mypage 조회", description = "mypage 조회")
     @GetMapping("/mypage")
     public BaseResponse<MemberDetailResponseVo> list(
             @Parameter(description = "memberUuid", example = "63f912c8-2b04-11f0-a5b7-0242ac110002")
