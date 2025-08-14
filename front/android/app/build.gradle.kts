@@ -1,5 +1,11 @@
-import java.io.FileInputStream
 import java.util.Properties
+
+// local.properties에서 API 키 읽어오기
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
 
 plugins {
     id("com.android.application")
@@ -8,18 +14,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Google Services plugin for Firebase
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") // map
 }
-
-val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
-val hasReleaseSigning = keystorePropertiesFile.exists()
-if (hasReleaseSigning) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
-
 android {
     namespace = "com.example.moring"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
+//    compileSdk = flutter.compileSdkVersion
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
@@ -39,41 +39,24 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-    }
+        multiDexEnabled = true
 
-    signingConfigs {
-        if (hasReleaseSigning) {
-            create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
-            }
-        }
-    }
 
+
+        manifestPlaceholders += mapOf(
+            "googleMapsApiKey" to (localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "default_key"),
+            "kakaoNativeAppKey" to (localProperties.getProperty("KAKAO_NATIVE_APP_KEY") ?: "default_key"),
+            "kakaoOAuthScheme" to (localProperties.getProperty("KAKAO_OAUTH_SCHEME") ?: "default_scheme")
+        )
+    }
     buildTypes {
-        getByName("release") {
-            // key.properties가 있으면 release 서명, 없으면 임시로 debug 서명
-            signingConfig = if (hasReleaseSigning)
-                signingConfigs.getByName("release")
-            else
-                signingConfigs.getByName("debug")
-
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-        getByName("debug") {
-            // 기본 debug 서명 사용
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
-
 }
-
 flutter {
     source = "../.."
 }
@@ -81,5 +64,5 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-analytics")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // desugaring 라이브러리 추가
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4") // desugaring 라이브러리 추가
 }

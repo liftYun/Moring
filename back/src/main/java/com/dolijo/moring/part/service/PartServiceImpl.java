@@ -100,7 +100,7 @@ public class PartServiceImpl implements PartService {
             dto의 lastChange은 null 이다.
          */
         for (PartStatusListDto dto : dtos) {
-            String nameEn = dto.getNameEn();
+            String nameKo = dto.getNameEn();
             // 차량의 각 부품 교체일
             LocalDateTime lastChange = dto.getLastChange();
             // 각 부품의 권장 교체주기
@@ -110,7 +110,7 @@ public class PartServiceImpl implements PartService {
                 result.add(
                         PartStatusListResponseDto.builder()
                                 .partId(dto.getPartId())
-                                .nameEn(nameEn)
+                                .nameKo(nameKo)
                                 .percentUsed(0)
                                 .dueDate(null)
                                 .build()
@@ -133,7 +133,7 @@ public class PartServiceImpl implements PartService {
             result.add(
                     PartStatusListResponseDto.builder()
                             .partId(dto.getPartId())
-                            .nameEn(nameEn)
+                            .nameKo(nameKo)
                             .percentUsed(percent)
                             .dueDate(dueDate)
                             .build()
