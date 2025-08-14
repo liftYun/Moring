@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -6,6 +9,14 @@ plugins {
     // Google Services plugin for Firebase
     id("com.google.gms.google-services")
 }
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.example.moring"
     compileSdk = flutter.compileSdkVersion
@@ -29,14 +40,40 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
+
+    buildTypes {
+        getByName("release") {
+            // key.properties가 있으면 release 서명, 없으면 임시로 debug 서명
+            signingConfig = if (hasReleaseSigning)
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
+
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        getByName("debug") {
+            // 기본 debug 서명 사용
+        }
+    }
+
 }
+
 flutter {
     source = "../.."
 }
