@@ -1,3 +1,4 @@
+//lib/screens/navigation/navigation_page.dart
 import 'dart:math' as math;
 import 'dart:async';
 
@@ -28,6 +29,10 @@ import 'widgets/driving_controls.dart';
 import 'widgets/search_results_dialog.dart';
 import 'widgets/my_location_button.dart';
 import 'widgets/heading_follow_button.dart';
+
+//sse랑 챗봇
+import 'package:moring/screens/navigation/sse_with_voice.dart';
+
 
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
@@ -400,9 +405,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
         content: Row(
           children: [
             Icon(
-              hadDestination ? Icons.navigation_outlined : Icons.directions_car, 
-              color: Colors.white, 
-              size: 16
+                hadDestination ? Icons.navigation_outlined : Icons.directions_car,
+                color: Colors.white,
+                size: 16
             ),
             SizedBox(width: 8),
             Text(hadDestination ? '경로 안내가 종료되었습니다.' : '안전 운전이 종료되었습니다.'),
@@ -1099,6 +1104,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
                 });
               },
             ),
+          const NavWithVoicePage(),
         ],
       ),
     );
