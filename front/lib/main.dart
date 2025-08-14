@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:moring/screens/home_page.dart';
+import 'package:moring/screens/navigation/services/daily_log_backup_service.dart';
 import 'package:moring/screens/root.dart';
 import 'package:moring/screens/splash_screen.dart';
 import 'package:moring/screens/member/login.dart';
@@ -20,7 +21,10 @@ import 'providers/fcm_provider.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'services/local_notification_service.dart';
 
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -44,6 +48,15 @@ Future<void> main() async {
 
   } catch (e) {
     debugPrint('Firebase/FCM 초기화 실패: $e');
+  }
+
+  // 🆕 주행 로그 백그라운드 서비스 초기화 (기존 - 일일 백업)
+  try {
+    // debugPrint('🔄 4시간 백업 서비스 초기화 중...');
+    await DailyLogBackupService.initialize();
+    debugPrint('✅ 4시간 백업 서비스 초기화 완료');
+  } catch (e) {
+    debugPrint('❌ 4시간 백업 서비스 초기화 실패: $e');
   }
 
   runApp(
@@ -70,6 +83,7 @@ class MyApp extends ConsumerWidget {
         title: 'Moring App',
         theme: AppTheme, // utils/app_theme.dart 에 정의
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         home: authAsync.when(
           loading: () => const SplashScreen(),
           error: (_, __) => const LoginPage(),

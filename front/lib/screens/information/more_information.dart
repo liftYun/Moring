@@ -10,6 +10,7 @@ import 'package:moring/screens/member/user_info_edit.dart';
 import 'package:moring/screens/car/car_registration.dart';
 import 'package:moring/screens/information/inspection_detail_container.dart';
 import 'package:moring/screens/information/notification_log.dart';
+import 'package:moring/screens/navigation/information/backup_settings.dart';
 
 // 로그아웃 관련 import (추가)
 import 'package:moring/providers/auth_provider.dart';
@@ -209,6 +210,17 @@ class MorePage extends ConsumerWidget {
 
             // --- 기타 설정 섹션 ---
             _buildSectionHeader(context, ref, ''),
+            _buildTile(
+              icon: Icons.backup,
+              title: '백업 설정',
+              subtitle: '주행 로그 백업을 관리하세요.',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BackupSettingsPage()),
+                );
+              },
+            ),
             _buildTile(
               icon: Icons.event_note,
               title: '점검 로그',

@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:path/path.dart';
+import 'dart:typed_data';
+import 'package:path/path.dart' as p;
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,20 +10,14 @@ import 'package:moring/utils/custom_app_bar.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 List<CameraDescription>? cameras;
 
 class CarOcrRegistrationPage extends ConsumerStatefulWidget {
   const CarOcrRegistrationPage({Key? key}) : super(key: key);
-  Future<bool> _requestPermission(Permission permission) async {
-    final status = await permission.request();
-    if (status.isGranted) {
-      return true;
-    }
-    return false;
-  }
+
   @override
   ConsumerState<CarOcrRegistrationPage> createState() => _CarOcrRegistrationPageState();
 }
@@ -35,6 +30,11 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
   bool _isLoading = false;
 
   final ImagePicker _picker = ImagePicker();
+
+  Future<bool> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+    return status.isGranted;
+  }
 
   @override
   void initState() {
@@ -65,12 +65,10 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
   Future<bool> _requestCameraPermissionWithCustomUI(BuildContext context) async {
     final status = await Permission.camera.status;
 
-    // 이미 허용된 경우 바로 true 반환
     if (status.isGranted) {
       return true;
     }
 
-    // 권한 요청 전 커스텀 팝업 띄우기
     final bool? userAgreed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -91,7 +89,6 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
       },
     );
 
-    // 사용자가 '확인'을 누른 경우에만 시스템 권한 요청
     if (userAgreed == true) {
       final permissionStatus = await Permission.camera.request();
       return permissionStatus.isGranted;
@@ -101,7 +98,6 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
   }
 
   Future<void> _takePicture(BuildContext context) async {
-    // 기존의 _requestPermission 대신 새로운 커스텀 함수를 호출
     final hasPermission = await _requestCameraPermissionWithCustomUI(context);
 
     if (!hasPermission) {
@@ -111,7 +107,6 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
       return;
     }
 
-    // 권한이 허용된 후의 기존 사진 촬영 로직
     if (!_cameraController.value.isInitialized || _isTakingPicture) return;
     setState(() => _isTakingPicture = true);
 
@@ -129,7 +124,16 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
   }
 
   Future<void> _pickImageFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final hasPermission = await _requestPermission(Permission.photos);
+    if (!hasPermission) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('갤러리 접근 권한이 허용되지 않았습니다.')),
+      );
+      return;
+    }
+
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     if (image != null) {
       setState(() => _capturedImage = image);
     }
@@ -139,14 +143,25 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
     final dio = ref.read(authDioProvider);
     print('[_sendOcrImage] 함수 실행됨. API 요청 시작.');
 
-    // MIME 타입 자동 감지
+    final Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
+      imageFile.path,
+      quality: 50,
+    );
+
+    if (compressedBytes == null) {
+      throw Exception('이미지 압축에 실패했습니다.');
+    }
+
+    print('[_sendOcrImage] 원본 이미지 크기: ${await imageFile.length()} bytes');
+    print('[_sendOcrImage] 압축된 이미지 크기: ${compressedBytes.length} bytes');
+
     final mimeType = lookupMimeType(imageFile.path) ?? 'application/octet-stream';
     final mimeParts = mimeType.split('/');
 
     final formData = FormData.fromMap({
-      'image': await MultipartFile.fromFile(
-        imageFile.path,
-        filename: 'ocr_image${extension(imageFile.path)}',
+      'image': MultipartFile.fromBytes(
+        compressedBytes,
+        filename: 'ocr_image${p.extension(imageFile.path)}',
         contentType: MediaType(mimeParts[0], mimeParts[1]),
       ),
     });
@@ -166,7 +181,6 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
     return Map<String, dynamic>.from(response.data['result'] ?? {});
   }
 
-  // context를 매개변수로 받도록 수정
   Future<void> _onRegister(BuildContext context) async {
     if (_isLoading) return;
     if (_capturedImage == null) {
@@ -182,10 +196,11 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
       final ocrResult = await _sendOcrImage(_capturedImage!);
       if (!mounted) return;
       setState(() => _isLoading = false);
-      Navigator.pop(context, ocrResult); // 결과를 이전 페이지로 반환
-    } catch (e) {
+      Navigator.pop(context, ocrResult);
+    } catch (e, stackTrace) {
       setState(() => _isLoading = false);
       print('[_onRegister] 오류 발생: $e');
+      print('[_onRegister] 스택 트레이스: $stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('OCR 요청 실패: $e')),
       );
@@ -205,20 +220,25 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 미리보기 영역
             Container(
               width: double.infinity,
               height: 400,
               decoration: BoxDecoration(color: cameraBoxColor, borderRadius: BorderRadius.circular(12)),
               child: _capturedImage != null
-                  ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
+                  ? AspectRatio( // ✅ AspectRatio 위젯으로 감싸기
+                aspectRatio: _cameraController.value.aspectRatio, // ✅ 카메라의 실제 종횡비 사용
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
+                ),
               )
-                  : _isCameraInitialized
-                  ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CameraPreview(_cameraController),
+                  : _isCameraInitialized && _cameraController.value.isInitialized
+                  ? AspectRatio(
+                aspectRatio: _cameraController.value.aspectRatio,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CameraPreview(_cameraController),
+                ),
               )
                   : const Center(child: CircularProgressIndicator()),
             ),

@@ -4,6 +4,7 @@ package com.dolijo.moring.part.controller;
 import com.dolijo.moring.common.base.BaseResponse;
 import com.dolijo.moring.part.dto.out.PartResponseDto;
 import com.dolijo.moring.part.dto.out.PartStatusListResponseDto;
+import com.dolijo.moring.part.dto.out.PartStatusListResponseVo;
 import com.dolijo.moring.part.service.PartService;
 import com.dolijo.moring.part.vo.in.RegisterPartChangeLogRequestVo;
 import com.dolijo.moring.part.vo.in.RegisterPartRequestVo;
@@ -81,11 +82,16 @@ public class PartController {
     """
     )
     @GetMapping("/status/{vin}")
-    public BaseResponse<List<PartStatusListResponseDto>> getPartStatusList(
+    public BaseResponse<List<PartStatusListResponseVo>> getPartStatusList(
             @Parameter(example = "KNMK5C2HMLP000437", description = "차대번호")
             @PathVariable("vin") String vin)
     {
-        return BaseResponse.of(partService.getPartStatusList(vin));
+        List<PartStatusListResponseDto> dtoList = partService.getPartStatusList(vin);
+        return  BaseResponse.of(
+                    dtoList.stream()
+                            .map(PartStatusListResponseVo::from)
+                            .collect(Collectors.toList())
+                );
     }
 
 }

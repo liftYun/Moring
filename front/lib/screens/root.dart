@@ -16,6 +16,7 @@ import '../providers/car_provider.dart';
 import '../providers/notification_api_provider.dart';
 import 'information/notification_panel.dart';
 import 'package:moring/screens/information/driving_record_container.dart'; // ✅ 추가
+import 'navigation/navigation_page.dart';
 
 class RootPage extends ConsumerStatefulWidget {
   final Car? initialCar;
@@ -86,15 +87,33 @@ class _RootPageState extends ConsumerState<RootPage>
     super.dispose();
   }
 
+  // List<Widget> get _pages => <Widget>[
+  //   // HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
+  //   const HomePage(),
+  //   const NavigationPage(),
+  //   const HomePage(),
+  //   const MorePage(),
+  // ];
+
+  // 🎯 하이브리드 방식: 네비게이션(1번)만 Container로 대체, 주행로그(2번)는 이미 Lazy Loading
   List<Widget> get _pages => <Widget>[
-    // HomePage(car: widget.initialCar),    // ← 여기서 전달된 car 사용
-    const HomePage(),
-    const HomePage(),
-    const HomePage(),
-    const MorePage(),
+    const HomePage(),           // 0번 탭 (홈) - IndexedStack
+    Container(),                // 1번 탭 (네비게이션) - 빈 컨테이너 (Lazy Loading으로 변경)
+    Container(),                // 2번 탭 (주행로그) - 빈 컨테이너 (이미 Lazy Loading 사용중)
+    const MorePage(),           // 3번 탭 (더보기) - IndexedStack
   ];
 
   void _onItemTapped(int index) {
+    // 1 = 네비게이션 탭: 별도 화면으로 push
+    if (index == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const NavigationPage(),
+        ),
+      );
+      return; // 현재 탭 인덱스는 변경하지 않음
+    }
+
     // 2 = Driving Log 탭
     if (index == 2) {
       Navigator.of(context, rootNavigator: true).push(
