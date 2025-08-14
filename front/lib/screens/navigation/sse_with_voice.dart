@@ -22,14 +22,14 @@ import 'package:moring/providers/current_car_provider.dart';
 import 'package:moring/providers/token_repository.dart';
 
 ////////////////////////////////////////////////////////////////////////////////
-//                     .env 키 Getter (런타임 안전하게 읽기)
+// .env 키 Getter
 ////////////////////////////////////////////////////////////////////////////////
 String get _gmsKey => dotenv.maybeGet('GMS_KEY') ?? '';
 String get _clovaClientId => dotenv.maybeGet('CLOVA_CLIENT_ID') ?? '';
 String get _clovaClientSecret => dotenv.maybeGet('CLOVA_CLIENT_SECRET') ?? '';
 
 ////////////////////////////////////////////////////////////////////////////////
-//                                공통 상수
+// 공통 상수
 ////////////////////////////////////////////////////////////////////////////////
 
 /// OpenAI(GMS 프록시) TTS
@@ -68,17 +68,17 @@ const int _emptyTurnsToExit = 2;
 enum VoiceState { idle, listening, processing, speaking }
 
 ////////////////////////////////////////////////////////////////////////////////
-//                      🔊 음성 비서 패널 (Clova STT + GMS TTS)
+// 🔊 음성 비서 패널 (Clova STT + GMS TTS) — 화면엔 안 보이도록 구성 가능
 ////////////////////////////////////////////////////////////////////////////////
 
 class VoiceAssistantPanel extends ConsumerStatefulWidget {
-  final bool showDebugPanel;
+  final bool showDebugPanel; // false면 UI 렌더 안 함(로직만 동작)
   final bool autoStart;
   final bool requireWakeWord;
 
   const VoiceAssistantPanel({
     super.key,
-    this.showDebugPanel = true,
+    this.showDebugPanel = false, // 기본값: 숨김
     this.autoStart = true,
     this.requireWakeWord = true,
   });
@@ -118,15 +118,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   String _lastReply = '';
 
   final List<Map<String, String>> _history = [];
-  final List<String> _logs = [];
-
-  final _wakeWords = [
-    '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
-    '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아',
-    '오리가','모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
-    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나',
-  ];
-  final _llmExitWords = ['모링 종료','모링종료','대화 끝','그만','종료','끝'];
 
   @override
   void initState() {
@@ -134,7 +125,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     WidgetsBinding.instance.addObserver(this);
     _isLlmActive = !widget.requireWakeWord;
 
-    // Android 전용 오디오 컨텍스트
+    // Android 오디오 포커스
     if (Platform.isAndroid) {
       _player.setAudioContext(
         AudioContext(
@@ -151,15 +142,9 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     // TTS 상태 변화
     _player.onPlayerStateChanged.listen((event) {
       if (_state != VoiceState.speaking) return;
-
-      if (event == PlayerState.completed) {
-        _log('TTS 재생 완료. 다음 턴으로.');
+      if (event == PlayerState.completed || event == PlayerState.stopped) {
         _setState(VoiceState.idle);
         if (_isLlmActive) _armIdle(_llmIdle);
-        _processNextTurn();
-      } else if (event == PlayerState.stopped) {
-        _log('TTS 중단됨. 다음 턴으로.');
-        _setState(VoiceState.idle);
         _processNextTurn();
       }
     });
@@ -181,13 +166,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _appResumed = (state == AppLifecycleState.resumed);
-    if (!_appResumed) {
-      _log('APP → background, stop loop');
-      _stopLoop();
-    } else {
-      _log('APP → resumed');
-      if (widget.autoStart && _shouldRun()) _startLoop();
-    }
+    if (!_appResumed) _stopLoop();
+    if (_appResumed && widget.autoStart && _shouldRun()) _startLoop();
   }
 
   bool _shouldRun() => _pageVisible && _appResumed;
@@ -206,13 +186,11 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   Future<void> _startLoop() async {
     if (_looping) return;
     _looping = true;
-    _log('LOOP ▶ start');
     _processNextTurn();
   }
 
   void _stopLoop() {
     if (_looping) {
-      _log('LOOP ■ stop');
       _looping = false;
       _recorder.stop();
       _player.stop();
@@ -226,23 +204,18 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   void _setState(VoiceState newState) {
     if (_state == newState) return;
     _state = newState;
-    if (mounted) setState(() {});
+    if (mounted && widget.showDebugPanel) setState(() {});
   }
 
   Future<void> _cooldown() async =>
       Future.delayed(const Duration(milliseconds: _cooldownMs));
 
   void _processNextTurn() {
-    if (!_looping ||
-        !_shouldRun() ||
-        _state == VoiceState.processing ||
-        _state == VoiceState.listening) {
-      _log('Next turn skipped. loop=$_looping, run=${_shouldRun()}, state=$_state');
+    if (!_looping || !_shouldRun() || _state == VoiceState.processing || _state == VoiceState.listening) {
       return;
     }
     _setStatus(_isLlmActive ? '대화 대기 중…' : '녹음 준비…');
-    _startListening(
-        maxMs: _isLlmActive ? _llmMaxListenMs : _defaultTurnMax.inMilliseconds);
+    _startListening(maxMs: _isLlmActive ? _llmMaxListenMs : _defaultTurnMax.inMilliseconds);
   }
 
   Future<void> _startListening({required int maxMs}) async {
@@ -252,7 +225,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       final ok = await _recorder.hasPermission();
       if (!ok) {
         _setStatus('마이크 권한 필요');
-        _log('권한없음: RECORD_AUDIO');
         _setState(VoiceState.idle);
         await _cooldown();
         _processNextTurn();
@@ -260,7 +232,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
 
       if (_state == VoiceState.speaking) {
-        _log('BARGE-IN: 녹음 시작으로 TTS 중단');
         await _player.stop();
       }
 
@@ -284,9 +255,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       _speechActive = false;
       _didBumpThisTurn = false;
 
-      _setStatus(_isLlmActive ? '대화 녹음 중…' : '녹음 중…');
-      _log('REC ▶ $path');
-
       await Future.delayed(const Duration(milliseconds: _warmupMs));
 
       _ampSub?.cancel();
@@ -295,9 +263,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           .listen((amp) {
         if (!mounted) return;
 
-        // TTS 중 사용자 발화 → 중단 (barge-in)
         if (_state == VoiceState.speaking && amp.current > _vadDb) {
-          _log('BARGE-IN 감지! TTS 중단.');
           _ampSub?.cancel();
           _player.stop();
           return;
@@ -335,20 +301,16 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final minOk = elapsed >= _minListenMs;
         final silentAfterSpeech = _speechActive && sinceLoud >= _silenceTimeoutMs;
         final overMax = elapsed >= maxMs;
-        final noSpeechTimeoutHit =
-            _isLlmActive && !_speechActive && elapsed >= _noSpeechTimeoutLlmMs;
+        final noSpeechTimeoutHit = _isLlmActive && !_speechActive && elapsed >= _noSpeechTimeoutLlmMs;
 
-        if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) {
-          break;
-        }
+        if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) break;
       }
 
       if (mounted && _state == VoiceState.listening) {
         await _stopAndProcess(filePath: path);
       }
-    } catch (e, stacktrace) {
+    } catch (_) {
       _setStatus('녹음 시작 오류');
-      _log('녹음 시작 오류: $e\n$stacktrace');
       if (mounted) {
         _setState(VoiceState.idle);
         await _cooldown();
@@ -364,12 +326,9 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _ampSub?.cancel();
     _setState(VoiceState.processing);
 
-    _log('REC ■ stop (speechActive=$_speechActive, voicedMs=$_voicedMs ms)');
-
     final wasSpeech = _speechActive && _voicedMs >= _minVoicedMs;
 
     if (!wasSpeech || filePath == null) {
-      _log('무음/짧은 발화 → STT SKIP');
       _handleEmptyTurn();
       return;
     }
@@ -378,7 +337,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       final f = File(filePath);
       final size = await f.length();
       if (size < _minFileBytes) {
-        _log('파일 너무 짧음($size bytes) → STT SKIP');
         _handleEmptyTurn();
         return;
       }
@@ -388,13 +346,11 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       _lastHeard = heard.trim();
 
       if (_lastHeard.isEmpty || _lastHeard.startsWith('[STT')) {
-        _log('STT 결과 없음 또는 오류 → 빈 턴으로 처리');
         _handleEmptyTurn();
         return;
       }
 
       _emptyTurns = 0;
-      _log('STT ← "$_lastHeard"');
 
       if (!_isLlmActive) {
         await _checkForWakeWord(_lastHeard);
@@ -407,9 +363,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         await _cooldown();
         _processNextTurn();
       }
-    } catch (e, stacktrace) {
+    } catch (_) {
       _setStatus('처리 오류');
-      _log('처리 오류: $e\n$stacktrace');
       if (mounted) {
         _setState(VoiceState.idle);
         await _cooldown();
@@ -443,12 +398,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   Future<void> _checkForWakeWord(String heardText) async {
     final userText = _extractAfterWakeWord(heardText);
     if (userText != null) {
-      _log('웨이크워드 감지 → LLM 활성화');
       _isLlmActive = true;
       _disarmIdle();
 
       if (userText.trim().isEmpty) {
-        // 빠른 반응은 내고, 본문은 최종 전사로 처리(다음 턴)
         await _speakOpenAiTts('네, 말씀하세요.');
         return;
       }
@@ -457,30 +410,53 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   Future<void> _handleLlmConversation(String heardText) async {
-    final resetText = _extractAfterWakeWord(heardText);
-    if (resetText != null && resetText.isNotEmpty) {
-      _log('BARGE-IN: 대화 중 웨이크워드 재감지 → 턴 리셋');
-      _disarmIdle();
-      await _speakOpenAiTts('네, 다시 말씀해 주세요.');
-      return;
+    // 1) 원문/웨이크워드 처리
+    final raw = heardText.trim();
+    final afterWake = _extractAfterWakeWord(raw); // 웨이크워드가 포함되면 나머지 텍스트 반환, 없으면 null
+    String userSaid;
+
+    if (afterWake != null) {
+      // 웨이크워드가 들어온 턴: 바로 해당 내용으로 이어서 대화
+      _isLlmActive = true;       // 웨이크워드가 들렸으니 LLM 모드 온
+      _disarmIdle();             // idle 타이머 해제
+      userSaid = afterWake.trim();
+
+      if (kDebugMode) {
+        debugPrint('[Voice] heard(wake): "$raw" -> use("$userSaid")');
+      }
+
+      // 웨이크워드만 말했을 때(내용 없음)
+      if (userSaid.isEmpty) {
+        await _speakOpenAiTts('네, 말씀하세요.');
+        return;
+      }
+    } else {
+      // 웨이크워드 없이 바로 질문
+      userSaid = raw;
+      if (kDebugMode) {
+        debugPrint('[Voice] heard: "$userSaid"');
+      }
     }
 
-    if (_llmExitWords.any((w) => heardText.contains(w))) {
-      _log('LLM 종료 명령어 감지 → 비활성화');
+    // 2) 종료/중단 명령 처리 (원문 기준으로 체크)
+    if (['모링 종료','모링종료','대화 끝','그만','종료','끝'].any((w) => raw.contains(w))) {
       _isLlmActive = false;
       _disarmIdle();
       await _speakOpenAiTts('대화를 종료합니다.');
+      if (kDebugMode) debugPrint('[Voice] exit requested.');
       return;
     }
 
-    final userSaid = heardText.trim();
+    // 3) 빈 문자열 가드
     if (userSaid.isEmpty) {
-      _log('침묵 → 다음 턴');
+      if (kDebugMode) debugPrint('[Voice] empty user text after processing.');
       return;
     }
 
+    // 4) LLM 호출
     _disarmIdle();
     _setStatus('LLM 요청 중…');
+    if (kDebugMode) debugPrint('[Voice] calling LLM with: "$userSaid"');
 
     final prompt = _buildConversationalQuestion(userSaid);
     final answer = await _callLlm(prompt);
@@ -489,9 +465,12 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _pushHistory('user', userSaid);
     if (_lastReply.isNotEmpty) _pushHistory('assistant', _lastReply);
 
+    // 5) 응답 TTS
     if (_lastReply.isNotEmpty) {
+      if (kDebugMode) debugPrint('[Voice] TTS speak: "${_lastReply.substring(0, _lastReply.length.clamp(0, 80))}..."');
       await _speakOpenAiTts(_lastReply);
     } else {
+      if (kDebugMode) debugPrint('[Voice] empty LLM reply.');
       _setState(VoiceState.idle);
       await _cooldown();
       _processNextTurn();
@@ -507,27 +486,30 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _llmIdleTimer?.cancel();
     _llmIdleTimer = Timer(d, () async {
       if (!mounted || myGen != _idleGen) return;
-      _log('LLM 대기 시간 초과 → 비활성화');
       if (_state == VoiceState.speaking) {
         await _player.stop();
       }
       _isLlmActive = false;
       await _speakOpenAiTts('응답이 없어 대화를 종료할게요.');
     });
-    _log('LLM idle 타이머 재설정: ${d.inMilliseconds}ms (gen=$myGen)');
   }
 
   void _disarmIdle() {
     _idleGen++;
     _llmIdleTimer?.cancel();
     _llmIdleTimer = null;
-    _log('LLM idle 타이머 취소 (gen=$_idleGen)');
   }
 
   String? _extractAfterWakeWord(String text) {
     if (text.isEmpty) return null;
     final noSpace = text.replaceAll(RegExp(r'\s+'), '');
-    for (final w in _wakeWords) {
+    // 일부 오타 포함 웨이크워드
+    for (final w in const [
+      '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
+      '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아',
+      '오리가','모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
+      '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나',
+    ]) {
       if (noSpace.startsWith(w)) {
         final originalIndex = text.toLowerCase().indexOf(w);
         if (originalIndex != -1) {
@@ -542,8 +524,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (_history.isEmpty) return userText;
     final buf = StringBuffer();
     buf.writeln('다음은 지금까지의 대화 맥락입니다:');
-    final start =
-    _history.length > _maxTurnsMemory ? _history.length - _maxTurnsMemory : 0;
+    final start = _history.length > _maxTurnsMemory ? _history.length - _maxTurnsMemory : 0;
     for (int i = start; i < _history.length; i++) {
       final h = _history[i];
       if (h['role'] == 'user') {
@@ -565,9 +546,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   Future<String> _callClovaStt(File wavFile) async {
-    // .env 키 체크
     if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) {
-      _log('[STT 오류] CLOVA_CLIENT_ID/SECRET 미설정 (dotenv.load? .env 키?)');
+      if (kDebugMode) debugPrint('[STT] CLOVA 키 미설정');
       return '';
     }
     try {
@@ -589,7 +569,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           validateStatus: (s) => s != null && s < 500,
         ),
       );
-      _log('STT status=${res.statusCode}, body=${res.data}');
       if (res.statusCode == 200) {
         try {
           final parsed = json.decode(res.data);
@@ -597,9 +576,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
             return parsed['text'] as String;
           }
         } catch (_) {}
-        return (res.data is String && (res.data as String).isNotEmpty)
-            ? (res.data as String)
-            : '';
+        return (res.data is String && (res.data as String).isNotEmpty) ? (res.data as String) : '';
       }
       return '';
     } catch (e) {
@@ -619,10 +596,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         _llmPath,
         data: {'question': prompt},
         options: Options(
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
+          headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
         ),
@@ -630,15 +604,11 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       String? ans = _extractLlmResult(res);
       if (ans != null) return ans;
 
-      // fallback: raw string
       res = await apiClient.post(
         _llmPath,
         data: prompt,
         options: Options(
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
+          headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
         ),
@@ -651,7 +621,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   String? _extractLlmResult(Response res) {
-    _log('LLM status=${res.statusCode}, type=${res.data.runtimeType}, data=${res.data}');
     if (res.statusCode == 200) {
       final data = res.data;
       if (data is Map && data.containsKey('result') && data['result'] is String) {
@@ -665,10 +634,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   Future<void> _speakOpenAiTts(String text) async {
     if (text.trim().isEmpty) return;
     if (!mounted) return;
-
-    // .env 키 체크
     if (_gmsKey.isEmpty) {
-      _log('[TTS 오류] GMS_KEY 미설정 (dotenv.load? .env 키?)');
+      if (kDebugMode) debugPrint('[TTS] GMS_KEY 미설정');
       return;
     }
 
@@ -702,12 +669,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final bytes = Uint8List.fromList(res.data as List<int>);
         await _player.play(BytesSource(bytes));
       } else {
-        _log('TTS 실패: ${res.statusCode}, ${res.data}');
         _setState(VoiceState.idle);
         _processNextTurn();
       }
-    } catch (e) {
-      _log('TTS 오류: $e');
+    } catch (_) {
       if (mounted) {
         _setState(VoiceState.idle);
         _processNextTurn();
@@ -716,164 +681,20 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   void _setStatus(String s) {
-    if (mounted) setState(() => _status = s);
-  }
-
-  void _log(String m) {
-    if (kDebugMode) debugPrint('[VOICE] $m');
-    if (mounted && widget.showDebugPanel) {
-      setState(() {
-        _logs.add(m);
-        if (_logs.length > 160) _logs.removeRange(0, _logs.length - 160);
-      });
-    }
+    if (mounted && widget.showDebugPanel) setState(() => _status = s);
   }
 
   @override
   Widget build(BuildContext context) {
-    _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
-    if (!widget.showDebugPanel) return const SizedBox.shrink();
-
-    IconData iconData;
-    Color iconColor;
-
-    switch (_state) {
-      case VoiceState.listening:
-        iconData = Icons.mic;
-        iconColor = Colors.redAccent;
-        break;
-      case VoiceState.speaking:
-        iconData = Icons.volume_up;
-        iconColor = Colors.lightBlueAccent;
-        break;
-      case VoiceState.processing:
-        iconData = Icons.sync;
-        iconColor = Colors.orangeAccent;
-        break;
-      default:
-        iconData = Icons.mic_none;
-        iconColor = Colors.white70;
-        break;
-    }
-
-    if (_isLlmActive) {
-      iconData = _state == VoiceState.listening ? Icons.chat : Icons.chat_bubble_outline;
-      iconColor = Colors.greenAccent;
-    }
-
-    return Card(
-      color: const Color(0xFF1D1F22),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Icon(iconData, color: iconColor),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('상태: $_status',
-                      style: const TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _looping ? 'ACTIVE' : 'INACTIVE',
-                  style: TextStyle(
-                    color:
-                    _looping ? Colors.lightGreenAccent : Colors.orangeAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _infoRow('인식', _lastHeard),
-            const SizedBox(height: 6),
-            _infoRow('응답', _lastReply, highlight: true),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ElevatedButton(
-                    onPressed: _looping ? null : _startLoop,
-                    child: const Text('자동 시작')),
-                OutlinedButton(
-                    onPressed: _looping ? _stopLoop : null,
-                    child: const Text('자동 중지')),
-                OutlinedButton(
-                  onPressed: () async {
-                    final ans = await _callLlm('테스트 문장입니다. 대답 가능합니까?');
-                    if (mounted) {
-                      setState(() {
-                        _lastReply = ans;
-                        _pushHistory('user', '테스트 문장입니다. 대답 가능합니까?');
-                        if (_lastReply.isNotEmpty) {
-                          _pushHistory('assistant', _lastReply);
-                        }
-                      });
-                    }
-                  },
-                  child: const Text('LLM 테스트'),
-                ),
-                OutlinedButton(
-                  onPressed: () async {
-                    await _player.stop();
-                    await _speakOpenAiTts('오디오 장치 테스트입니다.');
-                  },
-                  child: const Text('TTS 테스트'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text('로그', style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 6),
-            Container(
-              height: 180,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF141517),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: ListView.builder(
-                reverse: true,
-                itemCount: _logs.length,
-                itemBuilder: (_, i) => Text(
-                  _logs.reversed.toList()[i],
-                  style: const TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _infoRow(String label, String value, {bool highlight = false}) {
-    final color = highlight ? Colors.lightBlueAccent : Colors.white;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-            width: 36,
-            child:
-            Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13))),
-        const SizedBox(width: 8),
-        Expanded(
-            child: Text(value.isEmpty ? '—' : value,
-                style: TextStyle(color: color, fontSize: 14))),
-      ],
-    );
+    // showDebugPanel=false 이면 UI 없음(로직은 동작)
+    return widget.showDebugPanel
+        ? const SizedBox.shrink() // 필요하면 디버그 UI를 여기에 붙일 수 있음
+        : const SizedBox.shrink();
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//                      🚗 네비 + SSE + 모달 + 음성 패널
+// 🚗 네비 + SSE + “반투명 자동 닫힘(5초)” 모달 + (보이지 않는) 음성 패널
 ////////////////////////////////////////////////////////////////////////////////
 
 class NavWithVoicePage extends ConsumerStatefulWidget {
@@ -887,7 +708,6 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
   StreamSubscription<SSEModel>? _sub;
   Timer? _renewTimer;
 
-  bool _connected = false;
   String? _vin;
   String? _connectUrl;
   Map<String, String> _headers = const {};
@@ -900,8 +720,7 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _prepareConnectionInfo();
       _connect();
-      _renewTimer =
-          Timer.periodic(const Duration(minutes: 25), (_) => _reconnect());
+      _renewTimer = Timer.periodic(const Duration(minutes: 25), (_) => _reconnect());
     });
   }
 
@@ -931,9 +750,6 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
       'Connection': 'keep-alive',
       'Accept-Encoding': 'identity',
     };
-
-    debugPrint('SSE URL: $_connectUrl');
-    debugPrint('SSE Headers: $_headers');
   }
 
   void _connect() {
@@ -945,7 +761,6 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
       header: _headers,
       method: SSERequestType.GET,
     ).listen((event) {
-      setState(() => _connected = true);
       final dataStr = event.data ?? '';
       if (dataStr.isEmpty) return;
       try {
@@ -954,13 +769,9 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
       } catch (_) {
         _handleRaw(dataStr);
       }
-    }, onError: (err) {
-      debugPrint('SSE ERROR: $err');
-      setState(() => _connected = false);
+    }, onError: (_) {
       Future.delayed(const Duration(seconds: 3), _reconnect);
     }, onDone: () {
-      debugPrint('SSE DONE');
-      setState(() => _connected = false);
       Future.delayed(const Duration(seconds: 1), _reconnect);
     });
   }
@@ -1009,28 +820,69 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
     }
 
     _dialogOpen = true;
-    await showDialog(
+
+    // 반투명 + 자동 닫힘 5초
+    final autoClose = Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && _dialogOpen) {
+        Navigator.of(context, rootNavigator: true).pop('auto');
+      }
+    });
+
+    await showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF232326),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Row(
-          children: [
-            Icon(icon, color: Colors.lightBlueAccent),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(color: Colors.white)),
-          ],
-        ),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
+      barrierColor: Colors.black.withOpacity(0.3), // 화면 전체 반투명
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (_, __, ___) {
+        return Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 64.0, left: 16, right: 16),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF232326).withOpacity(0.92), // 카드 자체 반투명
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white10),
+                  boxShadow: const [
+                    BoxShadow(blurRadius: 16, color: Colors.black26, offset: Offset(0, 6)),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: Colors.lightBlueAccent, size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 6),
+                          Text(message,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
+
+    await autoClose; // 이미 닫혔으면 noop
     _dialogOpen = false;
   }
 
@@ -1043,93 +895,25 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
 
   @override
   Widget build(BuildContext context) {
-    final dio = ref.watch(authDioProvider);
+    // 이 페이지는 "네비 화면 위에서 조용히 동작"하는 게 목표이므로
+    // 시각적인 요소 없이, 보이지 않는 음성 패널만 올려둔다.
+    return const Stack(
+      children: [
+        // 여기에 지도 위젯을 올려두면 됨 (외부에서 이 페이지를 감싸는 쪽에서 지도 구성)
+        // ex) GoogleMap(...)
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_connected ? 'SSE 연결됨' : 'SSE 연결 안 됨'),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            tooltip: '연결 상태 확인',
-            icon: const Icon(Icons.task_alt),
-            onPressed: () async {
-              final vin = _vin ?? ref.read(currentCarProvider)?.vin;
-              if (vin == null) return;
-              try {
-                final r =
-                await dio.get('/api/v1/notifications/status/$vin');
-                final ok =
-                    r.data is Map && (r.data['result'] == true);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(
-                          'status: ${ok ? "connected" : "disconnected"}')),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('status error: $e')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      backgroundColor: const Color(0xFF0F0F10),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(
-                  _connected ? Icons.wifi_tethering : Icons.wifi_tethering_off,
-                  color: _connected
-                      ? Colors.lightGreenAccent
-                      : Colors.redAccent,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _connectUrl ?? '(URL 준비 중)',
-                    style: const TextStyle(color: Colors.white70),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                    onPressed: _reconnect, child: const Text('재연결')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: [
-                OutlinedButton(
-                  onPressed: () => _handleAlert('FRONT_ALERT'),
-                  child: const Text('TEST FRONT_ALERT'),
-                ),
-                OutlinedButton(
-                  onPressed: () => _handleAlert('OXYGEN_ALERT'),
-                  child: const Text('TEST OXYGEN_ALERT'),
-                ),
-                OutlinedButton(
-                  onPressed: () => _handleAlert('DISTRACTION_ALERT'),
-                  child: const Text('TEST DISTRACTION_ALERT'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const VoiceAssistantPanel(
-              showDebugPanel: true,
+        // 보이지 않지만 로직은 동작하는 음성 패널
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: true, // 터치 막지 않도록
+            child: const VoiceAssistantPanel(
+              showDebugPanel: false, // UI 렌더 X
               autoStart: true,
               requireWakeWord: true,
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
