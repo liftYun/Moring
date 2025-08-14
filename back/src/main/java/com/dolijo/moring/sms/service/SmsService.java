@@ -1,7 +1,9 @@
 package com.dolijo.moring.sms.service;
 
-import com.dolijo.moring.sms.dto.SmsSendRequestDto;
+import com.dolijo.moring.sms.dto.EmergencyRequestDto;
+import com.dolijo.moring.sms.dto.UnauthorizedUserAlertLmsRequestDto;
 
 public interface SmsService {
-    void sendSms(SmsSendRequestDto dto);
+    void sendEmergencySms(EmergencyRequestDto dto);
+    void sendUnauthorizedUserAlertSms(UnauthorizedUserAlertLmsRequestDto dto);
 }

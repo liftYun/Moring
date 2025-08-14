@@ -30,7 +30,9 @@ public class NotificationController {
     private final SseService sseService;
     private final NotificationService notificationService;
 
-    // SSE 연결 API - 차량용
+    /**
+     * SSE
+     */
     @Operation(summary = "차량 SSE 연결", description = """
             차량의 실시간 알림을 위한 SSE 연결을 생성합니다.
             한 회원이 여러 차량을 보유할 수 있으므로 차량 VIN으로만 연결을 관리합니다.
@@ -132,5 +134,16 @@ public class NotificationController {
         long updatedCount = notificationService.readAllNotificationsByVin(vin);
         return BaseResponse.of(updatedCount);
     }
+
+    @Operation(summary = "비등록 운전자 인식 알림 전송", description = "비등록 운전자 인식 시 프론트에 모달 트리거 전송")
+    @PostMapping("/send/unauthorized-user/{carVin}")
+    public BaseResponse<Void> sendUnauthorizedUserDetected(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("carVin") String carVin){
+        sseService.sendUnauthorizedUserDetected(carVin);
+        return BaseResponse.ok();
+    }
+
+
 
 }
