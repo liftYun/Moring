@@ -75,7 +75,7 @@ public class SecurityConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration cfg = new CorsConfiguration();
-                cfg.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                cfg.setAllowedOrigins(Collections.singletonList("https://i13e101.p.ssafy.io/"));
                 cfg.setAllowedMethods(Collections.singletonList("*"));
                 cfg.setAllowCredentials(true);
                 cfg.setAllowedHeaders(Collections.singletonList("*"));
@@ -92,32 +92,33 @@ public class SecurityConfig {
 
         // 3) 경로별 인가 설정
         http.authorizeHttpRequests(auth -> auth
-                // 카카오 인가코드를 받아 처리하는 엔드포인트
-                // OAuth2 요청 진입점 허용
-                .requestMatchers(HttpMethod.GET, "/oauth2/authorization/kakao").permitAll()
-                // OAuth2 로그인 콜백 URI 허용
-                .requestMatchers(HttpMethod.GET, "/login/oauth2/code/kakao").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/kakao/redirect").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/kakao/login").permitAll()
-                .requestMatchers(HttpMethod.POST,"/api/v1/auth/refresh").permitAll()
-                        .requestMatchers("/api/v1/health/**", "/api/v1/auth/login/test").permitAll()
-                // AI 엔드포인트 비로그인 허용
-                .requestMatchers(HttpMethod.POST, "/api/v1/AI/**").permitAll()
-                // 기존 로그인(username/password) 엔드포인트
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout/rToken").permitAll()
-                // Swagger, 공용 API
-                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                // 토큰 보유자
-                .requestMatchers("/api/v1/**").authenticated()
-                // 역할별 접근 제어
+                        // 카카오 인가코드를 받아 처리하는 엔드포인트
+                        // OAuth2 요청 진입점 허용
+                        // OAuth2 로그인 콜백 URI 허용
+                        .requestMatchers(HttpMethod.GET,
+                                "/oauth2/authorization/kakao",
+                                "/login/oauth2/code/kakao",
+                                "/api/kakao/redirect",
+                                "/api/kakao/login",
+                                "/api/kakao/login",
+                                "/api/v1/auth/login/test",
+                                "/api/v1/health/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/refresh",
+                                "/api/v1/auth/logout/rToken").permitAll()
+                        // Swagger, 공용 API
+                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 토큰 보유자
+                        .requestMatchers("/api/v1/**").authenticated()
+                        // 역할별 접근 제어
 //                .requestMatchers("/admin/**").hasRole("ADMIN")
 //                .requestMatchers("/user/**").hasRole("USER")
-                .anyRequest().authenticated()
+                        .anyRequest().authenticated()
         );
         // 인증 실패 시 리다이렉트 대신 401 응답만
         http.exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                );
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+        );
 
         // 4) JWT 필터 등록 (모든 요청 앞에서 검사)
 //        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
