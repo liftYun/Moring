@@ -28,6 +28,7 @@ public class SseService {
 
     private final CarRepository carRepository;
     private final NotificationRepository notificationRepository;
+    private static final String UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME = "UNAUTHORIZED_USER_DETECTED"; // SSE 이벤트 이름
 
     private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30분
 
@@ -106,6 +107,33 @@ public class SseService {
             } catch (IOException e) {
                 log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, notificationDetailType.name(), e);
                 // 전송 실패 시 연결 정리
+                carConnections.remove(carVin);
+                emitter.completeWithError(e);
+            }
+        } else {
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
+        }
+    }
+
+    /**
+     * 비등록 운전자 인식 알림 전송 (SSE 모달 트리거)
+     * @param carVin 차량 VIN
+     */
+    @Transactional
+    public void sendUnauthorizedUserDetected(String carVin) {
+        Car car = carRepository.findByVin(carVin)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
+
+        SseEmitter emitter = carConnections.get(carVin);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)
+                        .data(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)); // 데이터에도 동일 문자열 전송
+                log.info("비등록 운전자 인식 SSE 알림 전송 성공: {}", carVin);
+            } catch (IOException e) {
+                log.error("비등록 운전자 인식 SSE 알림 전송 실패: {}", carVin, e);
                 carConnections.remove(carVin);
                 emitter.completeWithError(e);
             }
