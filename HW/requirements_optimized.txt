@@ -1,0 +1,29 @@
+# Optimized Driver Monitoring System Requirements
+# GPU 가속을 위한 PyTorch (CUDA 지원)
+torch>=2.0.0
+torchvision>=0.15.0
+
+# 컴퓨터 비전 라이브러리
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+face-recognition>=1.3.0
+
+# YOLO 모델
+ultralytics>=8.0.0
+
+# 수치 계산
+numpy>=1.24.0
+scipy>=1.10.0
+
+# 로깅 및 유틸리티
+logging
+argparse
+json
+os
+time
+threading
+collections
+
+# 추가 최적화 라이브러리 (선택사항)
+# tensorrt  # NVIDIA GPU 최적화 (Jetson용)
+# onnxruntime-gpu  # ONNX 런타임 GPU 가속

@@ -1,0 +1,1101 @@
+2025-08-14 09:16:46,226 - ERROR - 시스템 실행 중 오류 발생: name 'args' is not defined
+2025-08-14 09:17:07,434 - ERROR - 시스템 실행 중 오류 발생: name 'args' is not defined
+2025-08-14 09:20:10,448 - INFO - 설정 파일 로드 완료
+2025-08-14 09:20:10,499 - INFO - FaceProcessor 초기화 완료
+2025-08-14 09:20:10,661 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 09:20:10,662 - INFO - YOLO 감지 스레드 시작
+2025-08-14 09:20:10,662 - INFO - YOLODetector 초기화 완료
+2025-08-14 09:20:10,663 - INFO - DetectionManager 초기화 완료
+2025-08-14 09:20:10,663 - INFO - DriverMonitor 초기화 완료
+2025-08-14 09:20:13,336 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 09:20:13,336 - INFO - 카메라 초기화 완료
+2025-08-14 09:20:13,337 - INFO - 운전자 베이스라인 로드 완료: 2명
+2025-08-14 09:20:13,338 - INFO - 화면 해상도: 640x480
+2025-08-14 09:20:14,392 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,466 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,469 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:14,537 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,608 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,772 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,834 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,904 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:14,993 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,073 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,134 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,204 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,254 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,348 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:15,454 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,287 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:16,288 - WARNING - 불확실한 매치: 이기태 (거리: 0.369, 신뢰도: 63.1%)
+2025-08-14 09:20:16,290 - INFO - 새로운 운전자 감지: Uncertain
+2025-08-14 09:20:16,290 - INFO - 개인별 임계치 없음: Uncertain
+2025-08-14 09:20:16,293 - INFO - 개인별 베이스라인 없음: Uncertain
+2025-08-14 09:20:16,312 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,374 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,435 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,521 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,604 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,677 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,744 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,815 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:16,910 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,015 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,109 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,214 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,281 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,370 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:17,469 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,251 - WARNING - 불확실한 매치: 이기태 (거리: 0.356, 신뢰도: 64.4%)
+2025-08-14 09:20:18,282 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,364 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,464 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,568 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,690 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,768 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,830 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,897 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,901 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:18,963 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,026 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,094 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,150 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,214 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,270 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:19,340 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,096 - WARNING - 불확실한 매치: 이기태 (거리: 0.386, 신뢰도: 61.4%)
+2025-08-14 09:20:20,112 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,114 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:20,157 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,213 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,275 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,334 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,394 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,460 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,521 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,584 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,646 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,713 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,770 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,834 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,896 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:20,958 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:21,705 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:21,706 - WARNING - 불확실한 매치: 이기태 (거리: 0.372, 신뢰도: 62.8%)
+2025-08-14 09:20:21,721 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:21,794 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:21,861 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:21,926 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:21,998 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,063 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,135 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,190 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,244 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,313 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,379 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:22,447 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:24,658 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:24,731 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:24,810 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,578 - WARNING - 불확실한 매치: 이기태 (거리: 0.379, 신뢰도: 62.1%)
+2025-08-14 09:20:25,591 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,594 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:25,665 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,669 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,732 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,802 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,870 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:25,949 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,016 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,072 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,140 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,217 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,290 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,356 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,413 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,485 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:26,555 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,292 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:27,292 - WARNING - 불확실한 매치: 이기태 (거리: 0.381, 신뢰도: 61.9%)
+2025-08-14 09:20:27,302 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,379 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,456 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,508 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,568 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,647 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,712 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,778 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,838 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,916 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:27,990 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:28,046 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:28,122 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:28,182 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:28,252 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:29,006 - WARNING - 불확실한 매치: 이기태 (거리: 0.383, 신뢰도: 61.7%)
+2025-08-14 09:20:29,016 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,338 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,342 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:32,416 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,524 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,633 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,723 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,791 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,851 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:32,932 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,020 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,087 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,152 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,217 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,315 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,402 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:33,404 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,183 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:34,183 - WARNING - 불확실한 매치: 이기태 (거리: 0.395, 신뢰도: 60.5%)
+2025-08-14 09:20:34,194 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,197 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,317 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,383 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,456 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,526 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,609 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,681 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,756 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,814 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,887 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:34,952 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:35,015 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:35,097 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:35,163 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:35,943 - WARNING - 불확실한 매치: 이기태 (거리: 0.380, 신뢰도: 62.0%)
+2025-08-14 09:20:35,956 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,022 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,077 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,147 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,209 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,290 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,360 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,540 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,597 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,661 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,738 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,800 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,871 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,923 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:36,989 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:37,745 - WARNING - 불확실한 매치: 이기태 (거리: 0.393, 신뢰도: 60.7%)
+2025-08-14 09:20:37,761 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:37,766 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:37,827 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:37,898 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:39,417 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:39,418 - WARNING - 불확실한 매치: 이기태 (거리: 0.385, 신뢰도: 61.5%)
+2025-08-14 09:20:41,143 - WARNING - 불확실한 매치: 이기태 (거리: 0.383, 신뢰도: 61.7%)
+2025-08-14 09:20:42,821 - WARNING - 불확실한 매치: 이기태 (거리: 0.404, 신뢰도: 59.6%)
+2025-08-14 09:20:43,556 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:43,620 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:43,623 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:43,760 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,534 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:44,535 - WARNING - 불확실한 매치: 이기태 (거리: 0.385, 신뢰도: 61.5%)
+2025-08-14 09:20:44,545 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,607 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,673 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,739 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,809 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,887 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:44,951 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,019 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,078 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,147 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,222 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,277 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,339 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,406 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,410 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,472 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:45,476 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,234 - WARNING - 불확실한 매치: 이기태 (거리: 0.437, 신뢰도: 56.3%)
+2025-08-14 09:20:46,245 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,248 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,305 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,308 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,370 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,434 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,498 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,570 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,633 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,694 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,761 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,820 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,894 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:46,962 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:47,021 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:47,084 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:47,155 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:47,927 - WARNING - 불확실한 매치: 이기태 (거리: 0.396, 신뢰도: 60.4%)
+2025-08-14 09:20:47,939 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:47,999 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,064 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,143 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,206 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,270 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,332 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,387 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,452 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,825 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,829 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:48,905 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:48,984 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:49,047 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:49,116 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:49,175 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:49,953 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:49,954 - WARNING - 불확실한 매치: 이기태 (거리: 0.393, 신뢰도: 60.7%)
+2025-08-14 09:20:49,964 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,042 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,119 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,192 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,255 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,314 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,376 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,438 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,505 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,569 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,635 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,736 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,801 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,805 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,865 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,869 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:50,930 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:51,785 - WARNING - 불확실한 매치: 이기태 (거리: 0.391, 신뢰도: 60.9%)
+2025-08-14 09:20:51,796 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:51,852 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:51,914 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:51,989 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,044 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,109 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,169 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,236 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,297 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,371 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,445 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,500 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,571 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,635 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:52,701 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,486 - WARNING - 불확실한 매치: 이기태 (거리: 0.388, 신뢰도: 61.2%)
+2025-08-14 09:20:53,499 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,557 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,619 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,692 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,763 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,831 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,834 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:53,895 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:53,958 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,027 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,095 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,171 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,227 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,296 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,359 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:54,437 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:55,187 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:20:55,187 - WARNING - 불확실한 매치: 이기태 (거리: 0.376, 신뢰도: 62.4%)
+2025-08-14 09:20:55,196 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:55,838 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:55,916 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:55,996 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,064 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,140 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,202 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,272 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,344 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,406 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,478 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,543 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,609 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,678 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:56,743 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,480 - WARNING - 불확실한 매치: 이기태 (거리: 0.368, 신뢰도: 63.2%)
+2025-08-14 09:20:57,491 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,567 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,626 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,695 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,774 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,866 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,933 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:57,998 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,061 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,143 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,206 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,262 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,325 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,388 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:58,456 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,195 - WARNING - 불확실한 매치: 이기태 (거리: 0.387, 신뢰도: 61.3%)
+2025-08-14 09:20:59,207 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,211 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:20:59,447 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,595 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,678 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,738 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,803 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,863 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,923 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:20:59,988 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,131 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,295 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,359 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,452 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,525 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:00,585 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:01,303 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:21:01,303 - WARNING - 불확실한 매치: 이기태 (거리: 0.382, 신뢰도: 61.8%)
+2025-08-14 09:21:01,318 - INFO - 한글 폰트 로드 성공: C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:21:01,797 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:21:01,848 - INFO - 리소스 정리 완료
+2025-08-14 09:21:01,848 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:21:01,850 - ERROR - 리소스 정리 실패: 'DriverMonitor' object has no attribute 'face_processor'
+2025-08-14 09:22:49,134 - INFO - 설정 파일 로드 완료
+2025-08-14 09:22:49,155 - INFO - FaceProcessor 초기화 완료
+2025-08-14 09:22:49,332 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 09:22:49,334 - INFO - YOLO 감지 스레드 시작
+2025-08-14 09:22:49,335 - INFO - YOLODetector 초기화 완료
+2025-08-14 09:22:49,335 - INFO - DetectionManager 초기화 완료
+2025-08-14 09:22:49,335 - INFO - DriverMonitor 초기화 완료
+2025-08-14 09:22:52,032 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 09:22:52,033 - INFO - 카메라 초기화 완료
+2025-08-14 09:22:52,033 - INFO - 운전자 베이스라인 로드 완료: 2명
+2025-08-14 09:22:52,034 - INFO - 화면 해상도: 640x480
+2025-08-14 09:22:53,181 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:22:53,237 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:22:54,972 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:22:54,973 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.370, 신뢰도: 63.0%)
+2025-08-14 09:22:54,974 - INFO - 새로운 운전자 감지: 이기태
+2025-08-14 09:22:54,975 - INFO - 개인별 임계치 없음: 이기태
+2025-08-14 09:22:54,975 - INFO - 개인별 베이스라인 없음: 이기태
+2025-08-14 09:22:56,980 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.374, 신뢰도: 62.6%)
+2025-08-14 09:22:58,274 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:22:59,825 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.371, 신뢰도: 62.9%)
+2025-08-14 09:23:01,442 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:01,442 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.356, 신뢰도: 64.4%)
+2025-08-14 09:23:03,397 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.365, 신뢰도: 63.5%)
+2025-08-14 09:23:03,414 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:05,145 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.378, 신뢰도: 62.2%)
+2025-08-14 09:23:06,869 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:06,869 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.372, 신뢰도: 62.8%)
+2025-08-14 09:23:08,622 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.376, 신뢰도: 62.4%)
+2025-08-14 09:23:08,636 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:10,442 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.371, 신뢰도: 62.9%)
+2025-08-14 09:23:12,153 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:12,154 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.397, 신뢰도: 60.3%)
+2025-08-14 09:23:13,882 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.378, 신뢰도: 62.2%)
+2025-08-14 09:23:13,893 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:15,535 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.374, 신뢰도: 62.6%)
+2025-08-14 09:23:17,268 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:17,268 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.388, 신뢰도: 61.2%)
+2025-08-14 09:23:18,925 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.375, 신뢰도: 62.5%)
+2025-08-14 09:23:18,940 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:20,533 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.382, 신뢰도: 61.8%)
+2025-08-14 09:23:22,240 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.384, 신뢰도: 61.6%)
+2025-08-14 09:23:23,948 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:26,484 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:26,485 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.367, 신뢰도: 63.3%)
+2025-08-14 09:23:28,250 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.387, 신뢰도: 61.3%)
+2025-08-14 09:23:28,963 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:29,924 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.377, 신뢰도: 62.3%)
+2025-08-14 09:23:31,656 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:31,657 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.381, 신뢰도: 61.9%)
+2025-08-14 09:23:34,685 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.375, 신뢰도: 62.5%)
+2025-08-14 09:23:34,696 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:36,406 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.384, 신뢰도: 61.6%)
+2025-08-14 09:23:38,001 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:38,002 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.391, 신뢰도: 60.9%)
+2025-08-14 09:23:39,653 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.385, 신뢰도: 61.5%)
+2025-08-14 09:23:39,728 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:41,358 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.414, 신뢰도: 58.6%)
+2025-08-14 09:23:41,664 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:23:41,670 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:23:43,059 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:43,060 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.386, 신뢰도: 61.4%)
+2025-08-14 09:23:44,726 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.384, 신뢰도: 61.6%)
+2025-08-14 09:23:44,742 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:46,475 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.405, 신뢰도: 59.5%)
+2025-08-14 09:23:48,219 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:48,220 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.385, 신뢰도: 61.5%)
+2025-08-14 09:23:49,882 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.397, 신뢰도: 60.3%)
+2025-08-14 09:23:49,896 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:51,596 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.395, 신뢰도: 60.5%)
+2025-08-14 09:23:53,276 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:53,276 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.411, 신뢰도: 58.9%)
+2025-08-14 09:23:54,933 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.395, 신뢰도: 60.5%)
+2025-08-14 09:23:54,946 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:23:58,005 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.371, 신뢰도: 62.9%)
+2025-08-14 09:23:59,652 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:23:59,653 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.336, 신뢰도: 66.4%)
+2025-08-14 09:24:00,142 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:05,005 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:24:05,005 - WARNING - 불확실한 매치: 이기태 (거리: 0.550, 신뢰도: 45.0%)
+2025-08-14 09:24:05,006 - INFO - 새로운 운전자 감지: Uncertain
+2025-08-14 09:24:05,006 - INFO - 개인별 임계치 없음: Uncertain
+2025-08-14 09:24:05,006 - INFO - 개인별 베이스라인 없음: Uncertain
+2025-08-14 09:24:05,214 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:06,656 - WARNING - 불확실한 매치: 이기태 (거리: 0.540, 신뢰도: 46.0%)
+2025-08-14 09:24:08,340 - WARNING - 불확실한 매치: 이기태 (거리: 0.545, 신뢰도: 45.5%)
+2025-08-14 09:24:10,066 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:24:10,068 - WARNING - 불확실한 매치: 이기태 (거리: 0.530, 신뢰도: 47.0%)
+2025-08-14 09:24:10,272 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:11,783 - WARNING - 불확실한 매치: 이기태 (거리: 0.539, 신뢰도: 46.1%)
+2025-08-14 09:24:13,430 - INFO - 알 수 없는 운전자 (최소 거리: 0.572)
+2025-08-14 09:24:15,284 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:16,481 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:24:16,481 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.397, 신뢰도: 60.3%)
+2025-08-14 09:24:16,483 - INFO - 새로운 운전자 감지: 이기태
+2025-08-14 09:24:16,483 - INFO - 개인별 임계치 없음: 이기태
+2025-08-14 09:24:16,483 - INFO - 개인별 베이스라인 없음: 이기태
+2025-08-14 09:24:18,227 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.382, 신뢰도: 61.8%)
+2025-08-14 09:24:19,829 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.365, 신뢰도: 63.5%)
+2025-08-14 09:24:20,314 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:21,535 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:24:21,536 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.361, 신뢰도: 63.9%)
+2025-08-14 09:24:23,262 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.371, 신뢰도: 62.9%)
+2025-08-14 09:24:24,976 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.360, 신뢰도: 64.0%)
+2025-08-14 09:24:25,360 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:24:26,669 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:24:26,669 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.347, 신뢰도: 65.3%)
+2025-08-14 09:24:28,333 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.344, 신뢰도: 65.6%)
+2025-08-14 09:24:30,421 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:24:30,459 - INFO - 리소스 정리 완료
+2025-08-14 09:24:30,459 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:24:30,462 - INFO - 리소스 정리 완료
+2025-08-14 09:25:44,532 - INFO - 설정 파일 로드 완료
+2025-08-14 09:25:44,552 - INFO - FaceProcessor 초기화 완료
+2025-08-14 09:25:44,733 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 09:25:44,735 - INFO - YOLO 감지 스레드 시작
+2025-08-14 09:25:44,735 - INFO - YOLODetector 초기화 완료
+2025-08-14 09:25:44,736 - INFO - DetectionManager 초기화 완료
+2025-08-14 09:25:44,736 - INFO - DriverMonitor 초기화 완료
+2025-08-14 09:25:47,406 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 09:25:47,406 - INFO - 카메라 초기화 완료
+2025-08-14 09:25:47,407 - INFO - 운전자 베이스라인 로드 완료: 2명
+2025-08-14 09:25:47,407 - INFO - 화면 해상도: 640x480
+2025-08-14 09:25:48,429 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:25:48,511 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:25:49,502 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:25:49,514 - INFO - 한글 폰트 로드 성공 (캐시됨): C:/Windows/Fonts/malgun.ttf
+2025-08-14 09:25:50,536 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:25:50,537 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.398, 신뢰도: 60.2%)
+2025-08-14 09:25:50,537 - INFO - 새로운 운전자 감지: 이기태
+2025-08-14 09:25:50,538 - INFO - 개인별 임계치 없음: 이기태
+2025-08-14 09:25:50,540 - INFO - 개인별 베이스라인 없음: 이기태
+2025-08-14 09:25:52,782 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.392, 신뢰도: 60.8%)
+2025-08-14 09:25:53,525 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:25:55,240 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.395, 신뢰도: 60.5%)
+2025-08-14 09:25:57,578 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:25:57,578 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.383, 신뢰도: 61.7%)
+2025-08-14 09:25:58,572 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:26:00,075 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.405, 신뢰도: 59.5%)
+2025-08-14 09:26:02,563 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.381, 신뢰도: 61.9%)
+2025-08-14 09:26:03,621 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 09:26:05,046 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:26:05,046 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.386, 신뢰도: 61.4%)
+2025-08-14 09:26:07,441 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.421, 신뢰도: 57.9%)
+2025-08-14 09:26:08,662 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 09:26:10,011 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.409, 신뢰도: 59.1%)
+2025-08-14 09:26:12,485 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:26:12,486 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.415, 신뢰도: 58.5%)
+2025-08-14 09:26:13,685 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 09:26:15,270 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.412, 신뢰도: 58.8%)
+2025-08-14 09:26:17,756 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:26:17,756 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.410, 신뢰도: 59.0%)
+2025-08-14 09:26:18,768 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 09:26:20,359 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.404, 신뢰도: 59.6%)
+2025-08-14 09:26:22,885 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 09:26:22,886 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.408, 신뢰도: 59.2%)
+2025-08-14 09:26:23,811 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 09:26:25,336 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.400, 신뢰도: 60.0%)
+2025-08-14 09:26:27,418 - INFO - 운전자 식별 (엄격): 이기태 (거리: 0.378, 신뢰도: 62.2%)
+2025-08-14 09:26:29,297 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:26:29,368 - INFO - 리소스 정리 완료
+2025-08-14 09:26:29,371 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:26:29,371 - INFO - 리소스 정리 완료
+2025-08-14 09:36:10,255 - INFO - 설정 파일 로드 완료
+2025-08-14 09:36:10,275 - INFO - FaceProcessor 초기화 완료
+2025-08-14 09:36:10,276 - ERROR - 시스템 실행 중 오류 발생: 'ConfigManager' object has no attribute 'model_dir'
+2025-08-14 09:36:10,318 - INFO - 리소스 정리 완료
+2025-08-14 09:37:50,986 - INFO - 설정 파일 로드 완료
+2025-08-14 09:37:51,010 - INFO - FaceProcessor 초기화 완료
+2025-08-14 09:37:51,176 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 09:37:51,177 - INFO - YOLO 감지 스레드 시작
+2025-08-14 09:37:51,177 - INFO - YOLODetector 초기화 완료
+2025-08-14 09:37:51,178 - INFO - DetectionManager 초기화 완료
+2025-08-14 09:37:51,178 - INFO - DriverMonitor 초기화 완료
+2025-08-14 09:37:53,823 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 09:37:53,823 - INFO - 카메라 초기화 완료
+2025-08-14 09:37:53,824 - INFO - 등록된 얼굴 데이터베이스가 없습니다
+2025-08-14 09:37:53,825 - INFO - 자동 얼굴 등록 시작: DriverA (60초)
+2025-08-14 09:37:53,825 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 09:37:53,825 - INFO - 화면 해상도: 640x480
+2025-08-14 09:37:55,498 - INFO - 운전자 'DriverA' 다중 각도 등록 완료: 1/3
+2025-08-14 09:37:56,662 - INFO - 얼굴 데이터 로드 완료: 1개 (캐시됨)
+2025-08-14 09:37:56,666 - INFO - 운전자 'DriverA' 다중 각도 등록 완료: 2/3
+2025-08-14 09:37:57,475 - WARNING - 얼굴 데이터 로드 실패 (DriverA): setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.
+2025-08-14 09:37:57,485 - INFO - 운전자 'DriverA' 다중 각도 등록 완료: 1/3
+2025-08-14 09:38:10,357 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:38:24,482 - INFO - 설정 파일 로드 완료
+2025-08-14 09:38:28,201 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 09:38:36,316 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:38:36,388 - INFO - 리소스 정리 완료
+2025-08-14 09:38:36,390 - INFO - YOLO 감지 스레드 중지
+2025-08-14 09:38:36,390 - INFO - 리소스 정리 완료
+2025-08-14 12:44:54,670 - INFO - 설정 파일 로드 완료
+2025-08-14 12:44:54,699 - INFO - FaceProcessor 초기화 완료
+2025-08-14 12:44:55,177 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 12:44:55,178 - INFO - YOLO 감지 스레드 시작
+2025-08-14 12:44:55,179 - INFO - YOLODetector 초기화 완료
+2025-08-14 12:44:55,179 - INFO - DetectionManager 초기화 완료
+2025-08-14 12:44:55,179 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 12:44:55,179 - INFO - DriverMonitor 초기화 완료
+2025-08-14 12:44:56,910 - INFO - CUDA 사용 가능: True
+2025-08-14 12:44:56,914 - INFO - GPU 메모리: 6.0GB
+2025-08-14 12:44:56,915 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 12:44:56,915 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 12:44:56,915 - INFO - GPU 가속 활성화
+2025-08-14 12:44:56,915 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 12:44:57,731 - INFO - USB 카메라 초기화 시도
+2025-08-14 12:44:57,745 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 12:44:57,745 - INFO - 카메라 초기화 완료
+2025-08-14 12:44:57,746 - INFO - 얼굴 데이터 로드 완료: 1개 (캐시됨)
+2025-08-14 12:44:57,746 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 12:44:57,747 - INFO - 화면 해상도: 640x480
+2025-08-14 12:44:58,632 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 12:45:06,791 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 12:45:11,821 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 12:45:16,873 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 12:45:26,535 - INFO - 얼굴 데이터 로드 완료: 1개 (캐시됨)
+2025-08-14 12:45:26,537 - INFO - 운전자 'lxo' 다중 각도 등록 완료: 1/3
+2025-08-14 12:45:28,227 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 12:45:28,227 - WARNING - 얼굴 비교 실패 (DriverA): The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-08-14 12:45:28,227 - WARNING - 얼굴 비교 실패 (lxo): The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-08-14 12:45:28,229 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 12:45:30,195 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 12:45:31,594 - WARNING - 얼굴 비교 실패 (DriverA): The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-08-14 12:45:31,594 - WARNING - 얼굴 비교 실패 (lxo): The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-08-14 12:45:31,594 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 12:45:39,175 - INFO - YOLO 감지 스레드 중지
+2025-08-14 12:45:39,193 - INFO - 리소스 정리 완료
+2025-08-14 12:45:39,193 - INFO - YOLO 감지 스레드 중지
+2025-08-14 12:45:39,193 - INFO - 리소스 정리 완료
+2025-08-14 13:28:58,382 - INFO - 설정 파일 로드 완료
+2025-08-14 13:28:58,394 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:28:58,517 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 13:28:58,518 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:28:58,518 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:28:58,519 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:28:58,519 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:28:58,519 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:29:00,188 - INFO - CUDA 사용 가능: True
+2025-08-14 13:29:00,192 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:29:00,192 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:29:00,192 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:29:00,193 - INFO - GPU 가속 활성화
+2025-08-14 13:29:00,193 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:29:00,839 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:29:00,854 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:29:00,855 - INFO - 카메라 초기화 완료
+2025-08-14 13:29:00,856 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 13:29:00,856 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:29:00,856 - INFO - 화면 해상도: 640x480
+2025-08-14 13:29:03,953 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:29:10,247 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:29:17,554 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:29:18,823 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 13:29:18,825 - INFO - 운전자 'owne' 다중 각도 등록 완료: 1/3
+2025-08-14 13:29:21,438 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:29:21,438 - WARNING - 얼굴 비교 실패 (DriverA): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:21,439 - WARNING - 얼굴 비교 실패 (lxo): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:21,439 - WARNING - 얼굴 비교 실패 (owne): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:21,439 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:29:22,711 - WARNING - 얼굴 비교 실패 (DriverA): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:22,711 - WARNING - 얼굴 비교 실패 (lxo): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:22,711 - WARNING - 얼굴 비교 실패 (owne): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:22,712 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:29:23,692 - WARNING - 얼굴 비교 실패 (DriverA): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:23,692 - WARNING - 얼굴 비교 실패 (lxo): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:23,693 - WARNING - 얼굴 비교 실패 (owne): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:23,693 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:29:24,479 - WARNING - 얼굴 비교 실패 (DriverA): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:24,486 - WARNING - 얼굴 비교 실패 (lxo): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:24,486 - WARNING - 얼굴 비교 실패 (owne): only length-1 arrays can be converted to Python scalars
+2025-08-14 13:29:24,486 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:29:26,446 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:29:26,531 - INFO - 리소스 정리 완료
+2025-08-14 13:29:26,537 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:29:26,537 - INFO - 리소스 정리 완료
+2025-08-14 13:30:11,157 - INFO - 설정 파일 로드 완료
+2025-08-14 13:30:11,170 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:30:11,389 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 13:30:11,396 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:30:11,397 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:30:11,397 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:30:11,398 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:30:11,399 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:30:13,079 - INFO - CUDA 사용 가능: True
+2025-08-14 13:30:13,082 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:30:13,083 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:30:13,083 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:30:13,083 - INFO - GPU 가속 활성화
+2025-08-14 13:30:13,083 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:30:13,736 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:30:13,748 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:30:13,748 - INFO - 카메라 초기화 완료
+2025-08-14 13:30:13,749 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:30:13,749 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:30:13,750 - INFO - 화면 해상도: 640x480
+2025-08-14 13:30:19,528 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:30:41,867 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:30:41,871 - INFO - 운전자 'owne' 다중 각도 등록 완료: 2/3
+2025-08-14 13:30:42,959 - WARNING - 얼굴 데이터 로드 실패 (owne): setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.
+2025-08-14 13:30:42,960 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 13:30:42,960 - WARNING - 얼굴 비교 실패 (DriverA): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:42,961 - WARNING - 얼굴 비교 실패 (lxo): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:42,961 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:30:44,309 - WARNING - 얼굴 비교 실패 (DriverA): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:44,310 - WARNING - 얼굴 비교 실패 (lxo): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:44,310 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:30:45,246 - WARNING - 얼굴 비교 실패 (DriverA): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:45,246 - WARNING - 얼굴 비교 실패 (lxo): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:45,246 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:30:46,225 - WARNING - 얼굴 비교 실패 (DriverA): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:46,225 - WARNING - 얼굴 비교 실패 (lxo): can only convert an array of size 1 to a Python scalar
+2025-08-14 13:30:46,226 - INFO - 알 수 없는 운전자 (최소 거리: inf)
+2025-08-14 13:30:47,821 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:30:47,862 - INFO - 리소스 정리 완료
+2025-08-14 13:30:47,863 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:30:47,863 - INFO - 리소스 정리 완료
+2025-08-14 13:31:27,926 - INFO - 설정 파일 로드 완료
+2025-08-14 13:31:27,936 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:31:28,053 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 13:31:28,054 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:31:28,055 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:31:28,055 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:31:28,055 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:31:28,055 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:31:29,693 - INFO - CUDA 사용 가능: True
+2025-08-14 13:31:29,696 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:31:29,697 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:31:29,697 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:31:29,697 - INFO - GPU 가속 활성화
+2025-08-14 13:31:29,697 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:31:30,285 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:31:30,296 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:31:30,297 - INFO - 카메라 초기화 완료
+2025-08-14 13:31:30,298 - WARNING - 얼굴 데이터 로드 실패 (owne): setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.
+2025-08-14 13:31:30,298 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 13:31:30,298 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:31:30,298 - INFO - 화면 해상도: 640x480
+2025-08-14 13:31:31,346 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:31:35,528 - WARNING - 얼굴 데이터 로드 실패 (owne): setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.
+2025-08-14 13:31:35,529 - INFO - 얼굴 데이터 로드 완료: 2개 (캐시됨)
+2025-08-14 13:31:35,530 - INFO - 운전자 'i' 다중 각도 등록 완료: 1/3
+2025-08-14 13:31:37,361 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:31:37,362 - INFO - 운전자 식별 (엄격): i (거리: 0.101, 신뢰도: 89.9%)
+2025-08-14 13:31:38,458 - INFO - 운전자 식별 (엄격): i (거리: 0.093, 신뢰도: 90.7%)
+2025-08-14 13:31:39,298 - INFO - 운전자 식별 (엄격): i (거리: 0.096, 신뢰도: 90.4%)
+2025-08-14 13:31:39,806 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:31:44,733 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:31:44,733 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.431, 신뢰도: 56.9%)
+2025-08-14 13:31:46,103 - WARNING - 불확실한 매치: DriverA (거리: 0.454, 신뢰도: 54.6%)
+2025-08-14 13:31:47,466 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:31:54,004 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:31:54,005 - WARNING - 불확실한 매치: DriverA (거리: 0.487, 신뢰도: 51.3%)
+2025-08-14 13:31:54,737 - WARNING - 불확실한 매치: DriverA (거리: 0.454, 신뢰도: 54.6%)
+2025-08-14 13:31:54,953 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:31:55,474 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.443, 신뢰도: 55.7%)
+2025-08-14 13:31:56,218 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.446, 신뢰도: 55.4%)
+2025-08-14 13:31:56,972 - WARNING - 불확실한 매치: DriverA (거리: 0.451, 신뢰도: 54.9%)
+2025-08-14 13:31:57,822 - WARNING - 불확실한 매치: DriverA (거리: 0.461, 신뢰도: 53.9%)
+2025-08-14 13:31:58,586 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.449, 신뢰도: 55.1%)
+2025-08-14 13:31:59,427 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:31:59,428 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.449, 신뢰도: 55.1%)
+2025-08-14 13:32:00,006 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:32:00,527 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.447, 신뢰도: 55.3%)
+2025-08-14 13:32:01,488 - WARNING - 불확실한 매치: DriverA (거리: 0.450, 신뢰도: 55.0%)
+2025-08-14 13:32:02,421 - WARNING - 불확실한 매치: DriverA (거리: 0.469, 신뢰도: 53.1%)
+2025-08-14 13:32:05,661 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:32:08,588 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:32:08,615 - INFO - 리소스 정리 완료
+2025-08-14 13:32:08,621 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:32:08,622 - INFO - 리소스 정리 완료
+2025-08-14 13:32:52,367 - INFO - 설정 파일 로드 완료
+2025-08-14 13:32:52,383 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:32:52,514 - INFO - YOLO 모델을 CPU에서 실행합니다
+2025-08-14 13:32:52,516 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:32:52,516 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:32:52,516 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:32:52,516 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:32:52,517 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:32:54,186 - INFO - CUDA 사용 가능: True
+2025-08-14 13:32:54,190 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:32:54,190 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:32:54,190 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:32:54,190 - INFO - GPU 가속 활성화
+2025-08-14 13:32:54,190 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:32:54,931 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:32:54,944 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:32:54,944 - INFO - 카메라 초기화 완료
+2025-08-14 13:32:54,945 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:32:54,945 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:32:54,945 - INFO - 화면 해상도: 640x480
+2025-08-14 13:32:57,227 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:33:02,259 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:33:07,312 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:33:18,050 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:33:23,176 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:33:30,189 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:33:36,103 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:33:36,159 - INFO - 리소스 정리 완료
+2025-08-14 13:33:36,159 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:33:36,159 - INFO - 리소스 정리 완료
+2025-08-14 13:39:28,628 - INFO - 설정 파일 로드 완료
+2025-08-14 13:39:28,643 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:39:30,535 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:39:30,537 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:39:30,537 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:39:30,537 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:39:30,537 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:39:30,537 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:39:30,537 - INFO - CUDA 사용 가능: True
+2025-08-14 13:39:30,538 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:39:30,538 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:39:30,538 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:39:30,538 - INFO - GPU 가속 활성화
+2025-08-14 13:39:30,538 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:39:31,066 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:39:31,079 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:39:31,079 - INFO - 카메라 초기화 완료
+2025-08-14 13:39:31,080 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:39:31,081 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:39:31,081 - INFO - 화면 해상도: 640x480
+2025-08-14 13:39:38,565 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:39:43,627 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 13:39:48,717 - WARNING - 🚨 [AUTO ALERT] DANGER DETECTED! - Drowsiness detected! Stop driving immediately!
+2025-08-14 13:39:53,941 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:40:01,230 - INFO - 얼굴 데이터 로드 완료: 3개 (캐시됨)
+2025-08-14 13:40:01,235 - INFO - 운전자 '1' 다중 각도 등록 완료: 1/3
+2025-08-14 13:40:02,386 - INFO - 얼굴 데이터 로드 완료: 4개 (캐시됨)
+2025-08-14 13:40:02,388 - INFO - 운전자 식별 (엄격): 1 (거리: 0.067, 신뢰도: 93.3%)
+2025-08-14 13:40:03,345 - INFO - 운전자 식별 (엄격): 1 (거리: 0.063, 신뢰도: 93.7%)
+2025-08-14 13:40:06,435 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:40:07,292 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:40:07,363 - INFO - 리소스 정리 완료
+2025-08-14 13:40:07,364 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:40:07,364 - INFO - 리소스 정리 완료
+2025-08-14 13:43:33,660 - INFO - 설정 파일 로드 완료
+2025-08-14 13:43:33,680 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:43:35,553 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:43:35,554 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:43:35,554 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:43:35,555 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:43:35,555 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:43:35,555 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:43:35,555 - INFO - CUDA 사용 가능: True
+2025-08-14 13:43:35,557 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:43:35,557 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:43:35,557 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:43:35,557 - INFO - GPU 가속 활성화
+2025-08-14 13:43:35,557 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:43:36,221 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:43:36,235 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:43:36,236 - INFO - 카메라 초기화 완료
+2025-08-14 13:43:36,237 - INFO - 얼굴 데이터 로드 완료: 4개 (캐시됨)
+2025-08-14 13:43:36,238 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:43:36,239 - INFO - 화면 해상도: 640x480
+2025-08-14 13:43:37,191 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:43:45,530 - INFO - 얼굴 데이터 로드 완료: 4개 (캐시됨)
+2025-08-14 13:43:45,533 - INFO - 운전자 '12]' 다중 각도 등록 완료: 1/3
+2025-08-14 13:43:45,763 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:43:47,134 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:43:47,135 - INFO - 운전자 식별 (엄격): 12] (거리: 0.071, 신뢰도: 92.9%)
+2025-08-14 13:43:48,949 - INFO - 운전자 식별 (엄격): 12] (거리: 0.065, 신뢰도: 93.5%)
+2025-08-14 13:43:54,073 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:43:56,957 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:43:57,036 - INFO - 리소스 정리 완료
+2025-08-14 13:43:57,036 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:43:57,036 - INFO - 리소스 정리 완료
+2025-08-14 13:44:54,094 - INFO - 설정 파일 로드 완료
+2025-08-14 13:44:54,105 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:44:55,916 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:44:55,917 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:44:55,918 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:44:55,918 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:44:55,918 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:44:55,918 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:44:55,918 - INFO - CUDA 사용 가능: True
+2025-08-14 13:44:55,919 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:44:55,919 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:44:55,919 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:44:55,919 - INFO - GPU 가속 활성화
+2025-08-14 13:44:55,919 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:44:56,393 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:44:56,406 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:44:56,406 - INFO - 카메라 초기화 완료
+2025-08-14 13:44:56,408 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:44:56,408 - INFO - 베이스라인 측정 시작: DriverA (300초)
+2025-08-14 13:44:56,408 - INFO - 화면 해상도: 640x480
+2025-08-14 13:44:57,487 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:45:05,132 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:45:07,046 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:45:07,047 - INFO - 운전자 식별 (엄격): lxo (거리: 0.233, 신뢰도: 76.7%)
+2025-08-14 13:45:08,935 - INFO - 운전자 식별 (엄격): 1 (거리: 0.180, 신뢰도: 82.0%)
+2025-08-14 13:45:10,028 - INFO - 운전자 식별 (엄격): 1 (거리: 0.201, 신뢰도: 79.9%)
+2025-08-14 13:45:11,010 - INFO - 운전자 식별 (엄격): 1 (거리: 0.135, 신뢰도: 86.5%)
+2025-08-14 13:45:13,746 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:45:13,747 - INFO - 운전자 식별 (엄격): 1 (거리: 0.158, 신뢰도: 84.2%)
+2025-08-14 13:45:15,425 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:45:15,503 - INFO - 리소스 정리 완료
+2025-08-14 13:45:15,506 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:45:15,507 - INFO - 리소스 정리 완료
+2025-08-14 13:47:01,586 - INFO - 설정 파일 로드 완료
+2025-08-14 13:47:01,596 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:47:03,423 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:47:03,424 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:47:03,424 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:47:03,424 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:47:03,424 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:47:03,424 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:47:03,424 - INFO - CUDA 사용 가능: True
+2025-08-14 13:47:03,425 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:47:03,425 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:47:03,425 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:47:03,425 - INFO - GPU 가속 활성화
+2025-08-14 13:47:03,425 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:47:03,881 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:47:03,894 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:47:03,895 - INFO - 카메라 초기화 완료
+2025-08-14 13:47:03,896 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:47:03,897 - INFO - 화면 해상도: 640x480
+2025-08-14 13:47:06,086 - INFO - 운전자 식별 (엄격): 12] (거리: 0.144, 신뢰도: 85.6%)
+2025-08-14 13:47:06,086 - INFO - 새로운 운전자 감지: 12]
+2025-08-14 13:47:06,087 - INFO - 개인별 임계치 없음: 12]
+2025-08-14 13:47:06,087 - INFO - 개인별 베이스라인 없음: 12]
+2025-08-14 13:47:06,091 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:47:06,092 - INFO - 베이스라인 측정 시작: 12] (300초)
+2025-08-14 13:47:06,934 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:47:11,965 - WARNING - ⚠️ [AUTO ALERT] CAUTION - Distraction detected! Look forward!
+2025-08-14 13:47:17,817 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:47:23,267 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:47:26,373 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:47:26,394 - INFO - 리소스 정리 완료
+2025-08-14 13:47:26,398 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:47:26,398 - INFO - 리소스 정리 완료
+2025-08-14 13:47:48,546 - INFO - 설정 파일 로드 완료
+2025-08-14 13:47:48,556 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:47:50,343 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:47:50,345 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:47:50,345 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:47:50,345 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:47:50,345 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:47:50,345 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:47:50,345 - INFO - CUDA 사용 가능: True
+2025-08-14 13:47:50,346 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:47:50,346 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:47:50,346 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:47:50,346 - INFO - GPU 가속 활성화
+2025-08-14 13:47:50,346 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:47:50,660 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:47:50,674 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:47:50,674 - INFO - 카메라 초기화 완료
+2025-08-14 13:47:50,675 - INFO - 운전자 임계치 로드 완료: 0명
+2025-08-14 13:47:50,675 - INFO - 운전자 베이스라인 로드 완료: 0명
+2025-08-14 13:47:50,676 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:47:50,677 - INFO - 화면 해상도: 640x480
+2025-08-14 13:47:57,728 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:47:57,729 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.430, 신뢰도: 57.0%)
+2025-08-14 13:47:57,729 - INFO - 새로운 운전자 감지: DriverA
+2025-08-14 13:47:57,729 - INFO - 개인별 임계치 없음: DriverA
+2025-08-14 13:47:57,731 - INFO - 개인별 베이스라인 없음: DriverA
+2025-08-14 13:47:57,732 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:47:59,358 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.436, 신뢰도: 56.4%)
+2025-08-14 13:48:00,776 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.431, 신뢰도: 56.9%)
+2025-08-14 13:48:01,647 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:48:02,363 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.428, 신뢰도: 57.2%)
+2025-08-14 13:48:03,748 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:48:03,748 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.443, 신뢰도: 55.7%)
+2025-08-14 13:48:06,581 - INFO - 운전자 식별 (엄격): i (거리: 0.327, 신뢰도: 67.3%)
+2025-08-14 13:48:06,582 - INFO - 새로운 운전자 감지: i
+2025-08-14 13:48:06,582 - INFO - 개인별 임계치 없음: i
+2025-08-14 13:48:06,582 - INFO - 개인별 베이스라인 없음: i
+2025-08-14 13:48:06,584 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:48:08,169 - INFO - 운전자 식별 (엄격): i (거리: 0.224, 신뢰도: 77.6%)
+2025-08-14 13:48:09,887 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:48:09,887 - INFO - 운전자 식별 (엄격): i (거리: 0.163, 신뢰도: 83.7%)
+2025-08-14 13:48:11,502 - INFO - 운전자 식별 (엄격): i (거리: 0.179, 신뢰도: 82.1%)
+2025-08-14 13:48:13,155 - INFO - 운전자 식별 (엄격): i (거리: 0.176, 신뢰도: 82.4%)
+2025-08-14 13:48:13,721 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:48:14,772 - INFO - 운전자 식별 (엄격): i (거리: 0.158, 신뢰도: 84.2%)
+2025-08-14 13:48:16,322 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:48:16,322 - INFO - 운전자 식별 (엄격): lxo (거리: 0.234, 신뢰도: 76.6%)
+2025-08-14 13:48:16,323 - INFO - 새로운 운전자 감지: lxo
+2025-08-14 13:48:16,323 - INFO - 개인별 임계치 없음: lxo
+2025-08-14 13:48:16,323 - INFO - 개인별 베이스라인 없음: lxo
+2025-08-14 13:48:16,325 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:48:17,717 - INFO - 운전자 식별 (엄격): i (거리: 0.149, 신뢰도: 85.1%)
+2025-08-14 13:48:17,718 - INFO - 새로운 운전자 감지: i
+2025-08-14 13:48:17,718 - INFO - 개인별 임계치 없음: i
+2025-08-14 13:48:17,718 - INFO - 개인별 베이스라인 없음: i
+2025-08-14 13:48:17,720 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:48:19,270 - INFO - 운전자 식별 (엄격): i (거리: 0.142, 신뢰도: 85.8%)
+2025-08-14 13:48:20,637 - INFO - 운전자 식별 (엄격): i (거리: 0.155, 신뢰도: 84.5%)
+2025-08-14 13:48:22,407 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:48:22,408 - INFO - 운전자 식별 (엄격): i (거리: 0.159, 신뢰도: 84.1%)
+2025-08-14 13:48:24,122 - INFO - 운전자 식별 (엄격): i (거리: 0.136, 신뢰도: 86.4%)
+2025-08-14 13:48:25,880 - INFO - 운전자 식별 (엄격): i (거리: 0.142, 신뢰도: 85.8%)
+2025-08-14 13:49:11,765 - INFO - 설정 파일 로드 완료
+2025-08-14 13:49:11,783 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:49:13,647 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:49:13,648 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:49:13,649 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:49:13,649 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:49:13,649 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:49:13,649 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:49:13,649 - INFO - CUDA 사용 가능: True
+2025-08-14 13:49:13,650 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:49:13,650 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:49:13,650 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:49:13,650 - INFO - GPU 가속 활성화
+2025-08-14 13:49:13,650 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:49:14,198 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:49:14,210 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:49:14,211 - INFO - 카메라 초기화 완료
+2025-08-14 13:49:14,211 - INFO - 운전자 임계치 로드 완료: 0명
+2025-08-14 13:49:14,212 - INFO - 운전자 베이스라인 로드 완료: 0명
+2025-08-14 13:49:14,213 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:49:14,213 - INFO - 화면 해상도: 640x480
+2025-08-14 13:49:16,457 - INFO - 운전자 식별 (엄격): 1 (거리: 0.187, 신뢰도: 81.3%)
+2025-08-14 13:49:16,458 - INFO - 새로운 운전자 감지: 1
+2025-08-14 13:49:16,458 - INFO - 개인별 임계치 없음: 1
+2025-08-14 13:49:16,464 - INFO - 개인별 베이스라인 없음: 1
+2025-08-14 13:49:16,468 - INFO - 베이스라인 측정 시작: 1 (300초)
+2025-08-14 13:49:16,471 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:49:22,162 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:49:27,668 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:49:30,228 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:49:30,228 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.425, 신뢰도: 57.5%)
+2025-08-14 13:49:32,702 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:49:34,482 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:49:34,555 - INFO - 리소스 정리 완료
+2025-08-14 13:49:34,556 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:49:34,556 - INFO - 리소스 정리 완료
+2025-08-14 13:50:36,338 - INFO - 설정 파일 로드 완료
+2025-08-14 13:50:36,355 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:50:38,230 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:50:38,232 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:50:38,232 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:50:38,232 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:50:38,232 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:50:38,233 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:50:38,233 - INFO - CUDA 사용 가능: True
+2025-08-14 13:50:38,234 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:50:38,235 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:50:38,235 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:50:38,235 - INFO - GPU 가속 활성화
+2025-08-14 13:50:38,235 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:50:38,803 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:50:38,823 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:50:38,823 - INFO - 카메라 초기화 완료
+2025-08-14 13:50:38,825 - INFO - 운전자 임계치 로드 완료: 0명
+2025-08-14 13:50:38,826 - INFO - 운전자 베이스라인 로드 완료: 0명
+2025-08-14 13:50:38,828 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:50:38,829 - INFO - 화면 해상도: 640x480
+2025-08-14 13:50:42,240 - INFO - 운전자 식별 (엄격): 12] (거리: 0.244, 신뢰도: 75.6%)
+2025-08-14 13:50:42,240 - INFO - 새로운 운전자 감지: 12]
+2025-08-14 13:50:42,240 - INFO - 개인별 임계치 없음: 12]
+2025-08-14 13:50:42,241 - INFO - 개인별 베이스라인 없음: 12]
+2025-08-14 13:50:42,241 - INFO - 베이스라인 측정 시작: 12] (300초)
+2025-08-14 13:50:42,243 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:50:43,656 - INFO - 운전자 식별 (엄격): 1 (거리: 0.207, 신뢰도: 79.3%)
+2025-08-14 13:50:43,656 - INFO - 새로운 운전자 감지: 1
+2025-08-14 13:50:43,656 - INFO - 개인별 임계치 없음: 1
+2025-08-14 13:50:43,656 - INFO - 개인별 베이스라인 없음: 1
+2025-08-14 13:50:43,658 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:50:45,314 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:50:45,315 - INFO - 운전자 식별 (엄격): lxo (거리: 0.303, 신뢰도: 69.7%)
+2025-08-14 13:50:45,315 - INFO - 새로운 운전자 감지: lxo
+2025-08-14 13:50:45,316 - INFO - 개인별 임계치 없음: lxo
+2025-08-14 13:50:45,317 - INFO - 개인별 베이스라인 없음: lxo
+2025-08-14 13:50:45,320 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:50:48,478 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.445, 신뢰도: 55.5%)
+2025-08-14 13:50:48,478 - INFO - 새로운 운전자 감지: DriverA
+2025-08-14 13:50:48,478 - INFO - 개인별 임계치 없음: DriverA
+2025-08-14 13:50:48,479 - INFO - 개인별 베이스라인 없음: DriverA
+2025-08-14 13:50:48,480 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:50:50,279 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.448, 신뢰도: 55.2%)
+2025-08-14 13:50:51,939 - INFO - 얼굴 데이터 로드 완료: 5개 (캐시됨)
+2025-08-14 13:50:51,939 - INFO - 운전자 식별 (엄격): DriverA (거리: 0.447, 신뢰도: 55.3%)
+2025-08-14 13:50:52,502 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:50:53,366 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:50:53,442 - INFO - 리소스 정리 완료
+2025-08-14 13:50:53,444 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:50:53,445 - INFO - 리소스 정리 완료
+2025-08-14 13:53:41,616 - INFO - 설정 파일 로드 완료
+2025-08-14 13:53:41,634 - INFO - FaceProcessor 초기화 완료
+2025-08-14 13:53:43,498 - INFO - YOLO 모델을 GPU에서 실행합니다
+2025-08-14 13:53:43,500 - INFO - YOLO 감지 스레드 시작
+2025-08-14 13:53:43,501 - INFO - YOLODetector 초기화 완료
+2025-08-14 13:53:43,501 - INFO - DetectionManager 초기화 완료
+2025-08-14 13:53:43,501 - ERROR - MQTT 클라이언트 초기화 실패: Unsupported callback API version: version 2.0 added a callback_api_version, see docs/migrations.rst for details
+2025-08-14 13:53:43,501 - INFO - DriverMonitor 초기화 완료
+2025-08-14 13:53:43,501 - INFO - CUDA 사용 가능: True
+2025-08-14 13:53:43,502 - INFO - GPU 메모리: 6.0GB
+2025-08-14 13:53:43,502 - INFO - Jetson 전력 모드 설정: 2
+2025-08-14 13:53:43,502 - INFO - 실행 명령어: sudo nvpmodel -m 2 && sudo jetson_clocks
+2025-08-14 13:53:43,502 - INFO - GPU 가속 활성화
+2025-08-14 13:53:43,503 - INFO - Jetson 최적화 초기화 완료
+2025-08-14 13:53:44,094 - INFO - USB 카메라 초기화 시도
+2025-08-14 13:53:44,113 - INFO - 성능 모드: 해상도 640x480
+2025-08-14 13:53:44,113 - INFO - 카메라 초기화 완료
+2025-08-14 13:53:44,113 - INFO - 등록된 얼굴 데이터베이스가 없습니다
+2025-08-14 13:53:44,114 - INFO - 화면 해상도: 640x480
+2025-08-14 13:53:45,050 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:53:46,501 - INFO - 등록된 사용자가 없음 - 첫 사용자를 Owner로 자동 등록
+2025-08-14 13:53:47,014 - INFO - 운전자 'Owner' 다중 각도 등록 완료: 1/3
+2025-08-14 13:53:47,015 - INFO - 첫 사용자 등록 완료: Owner
+2025-08-14 13:53:47,015 - INFO - 베이스라인 측정 시작: Owner (300초)
+2025-08-14 13:53:48,519 - INFO - 얼굴 데이터 로드 완료: 1개 (캐시됨)
+2025-08-14 13:53:48,520 - INFO - 운전자 식별 (엄격): Owner (거리: 0.195, 신뢰도: 80.5%)
+2025-08-14 13:53:48,520 - INFO - 개인별 베이스라인 없음: Owner
+2025-08-14 13:53:48,522 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:50,006 - INFO - 운전자 식별 (엄격): Owner (거리: 0.189, 신뢰도: 81.1%)
+2025-08-14 13:53:50,006 - INFO - 개인별 베이스라인 없음: Owner
+2025-08-14 13:53:50,008 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:51,577 - INFO - 운전자 식별 (엄격): Owner (거리: 0.223, 신뢰도: 77.7%)
+2025-08-14 13:53:51,577 - INFO - 개인별 베이스라인 없음: Owner
+2025-08-14 13:53:51,579 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:53,247 - INFO - 운전자 식별 (엄격): Owner (거리: 0.204, 신뢰도: 79.6%)
+2025-08-14 13:53:53,248 - INFO - 개인별 베이스라인 없음: Owner
+2025-08-14 13:53:53,250 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:53,676 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:53:54,774 - INFO - 얼굴 데이터 로드 완료: 1개 (캐시됨)
+2025-08-14 13:53:54,774 - INFO - 운전자 식별 (엄격): Owner (거리: 0.323, 신뢰도: 67.7%)
+2025-08-14 13:53:54,775 - INFO - 개인별 베이스라인 없음: Owner
+2025-08-14 13:53:54,776 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:56,344 - WARNING - 불확실한 매치: Owner (거리: 0.510, 신뢰도: 49.0%)
+2025-08-14 13:53:56,345 - INFO - 새로운 운전자 감지: Uncertain
+2025-08-14 13:53:56,345 - INFO - 개인별 임계치 없음: Uncertain
+2025-08-14 13:53:56,345 - INFO - 개인별 베이스라인 없음: Uncertain
+2025-08-14 13:53:56,347 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:58,004 - WARNING - 불확실한 매치: Owner (거리: 0.541, 신뢰도: 45.9%)
+2025-08-14 13:53:58,005 - INFO - 개인별 베이스라인 없음: Uncertain
+2025-08-14 13:53:58,007 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:53:58,888 - INFO - ⚠️ [AUTO ALERT] WARNING - Attention needed.
+2025-08-14 13:53:59,681 - WARNING - 불확실한 매치: Owner (거리: 0.503, 신뢰도: 49.7%)
+2025-08-14 13:53:59,681 - INFO - 개인별 베이스라인 없음: Uncertain
+2025-08-14 13:53:59,684 - INFO - 운전자 데이터 자동 저장 완료
+2025-08-14 13:54:01,660 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:54:01,683 - INFO - 리소스 정리 완료
+2025-08-14 13:54:01,684 - INFO - YOLO 감지 스레드 중지
+2025-08-14 13:54:01,684 - INFO - 리소스 정리 완료

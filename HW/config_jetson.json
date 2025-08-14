@@ -1,0 +1,64 @@
+{
+    "performance": {
+        "performance_mode": true,
+        "skip_frames": 2,
+        "webcam_resolution": [640, 480],
+        "face_recognition_interval": 15,
+        "yolo_detection_interval": 20,
+        "enable_gpu": true
+    },
+    "detection_thresholds": {
+        "eye_ar_thresh": 0.20,
+        "eye_ar_consec_frames": 3,
+        "pitch_down_thresh": -8.0,
+        "yaw_thresh": 25.0,
+        "roll_thresh": 10.0,
+        "gaze_consec_frames": 3,
+        "phone_near_face_threshold_px": 0,
+        "phone_consec_frames": 3,
+        "gaze_to_phone_yaw_thresh": 25,
+        "gaze_to_phone_pitch_thresh": -8,
+        "face_recognition_threshold": 0.45,
+        "phone_near_face_ratio": 0.60,
+        "warning_cooldown_ms": 200,
+        "danger_cooldown_ms": 300,
+        "yaw_phone_direction_correction": 1.0
+    },
+    "paths": {
+        "data_dir": "./data",
+        "model_dir": "./models",
+        "face_db_path": "./data/registered_faces.json",
+        "baseline_path": "./data/baseline.json",
+        "thresholds_path": "./data/driver_thresholds.json"
+    },
+    "auto_setup": {
+        "auto_baseline_measurement": true,
+        "baseline_duration": 300,
+        "auto_face_registration": true,
+        "registration_duration": 60,
+        "default_user_name": "DriverA"
+    },
+    "display": {
+        "use_english": true,
+        "show_landmarks": true,
+        "show_info_panel": true
+    },
+    "jetson": {
+        "camera_type": "usb",
+        "enable_gpu_acceleration": true,
+        "power_mode": 2,
+        "enable_jetson_clocks": true,
+        "gpu_memory_fraction": 0.8,
+        "tensorrt_optimization": false
+    },
+    "approval": {
+        "enable_approval_system": true,
+        "mqtt_broker": "192.168.137.82",
+        "mqtt_port": 1883,
+        "mqtt_username": "moring",
+        "mqtt_password": "kimoring",
+        "mqtt_client_id": "jetson_driver_monitor",
+        "approval_timeout": 60,
+        "vin": "KNMK5C2HMLP000437"
+    }
+}
