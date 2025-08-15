@@ -90,9 +90,9 @@ public class CarServiceImpl implements CarService{
 
     @Transactional
     @Override
-    public Long registerCarMileage(String carVin, Float mileageKm) {
+    public Long registerCarMileage(String vin, Float mileageKm) {
         // 1. VIN으로 차량 조회
-        Car car = carRepository.findByVin(carVin)
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         // 2. 오늘 날짜로 이미 log가 있으면 update, 없으면 새로 생성

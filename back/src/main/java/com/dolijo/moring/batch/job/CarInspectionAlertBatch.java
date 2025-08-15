@@ -3,14 +3,11 @@ package com.dolijo.moring.batch.job;
 import com.dolijo.moring.batch.dto.CarInspectionAlertBatchDto;
 import com.dolijo.moring.batch.dto.FCMNotificationRequestDto;
 import com.dolijo.moring.batch.dto.NotificationBatchDto;
-import com.dolijo.moring.common.base.BaseResponseStatus;
-import com.dolijo.moring.common.exception.BaseException;
+import com.dolijo.moring.batch.retry.PushSender;
 import com.dolijo.moring.notifycation.service.PushService;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.valueobject.NotificationType;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.batch.core.Job;
@@ -52,7 +49,9 @@ public class CarInspectionAlertBatch {
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource;
     private final JobExecutionListener jobExecutionListener;
-    private final PushService pushService;
+    //private final PushService pushService;
+    private final PushSender pushSender;
+
 
     // 배치 작업 정의
     @Bean
@@ -98,7 +97,7 @@ public class CarInspectionAlertBatch {
                 .dataSource(dataSource)
                 .selectClause(
                         "SELECT c.id AS car_id, c.nickname AS car_nickname, m.member_uuid AS member_uuid, m.nick_name AS member_name, " +
-                                "cil.inspection_date AS inspection_date, " +
+                                "cil.id, cil.inspection_date AS inspection_date, " +
                                 "DATEDIFF(cil.inspection_date, CURDATE()) AS days_left, " +
                                 "sm.fcm_token_id AS fcm_token_id"
                 )
@@ -114,7 +113,10 @@ public class CarInspectionAlertBatch {
                                 "    AND cil.inspection_status = 'PENDING' " +
                                 "    AND sm.fcm_token_id is not null"
                 )
-                .sortKeys(Map.of("cil.inspection_date", Order.ASCENDING))
+                .sortKeys(Map.of(
+                        "cil.inspection_date", Order.ASCENDING,
+                        "cil.id", Order.ASCENDING  // 유니크 키 포함
+                ))
                 .rowMapper((ResultSet rs, int rowNum) -> {
                     CarInspectionAlertBatchDto dto = new CarInspectionAlertBatchDto();
                     dto.setCarId(rs.getLong("car_id")); //
@@ -146,22 +148,20 @@ public class CarInspectionAlertBatch {
                             ")"
             );
             String fcmToken = dto.getFcmTokenId();
-            sendPushAsync(fcmToken, notiDto.getMessage());
+            //sendPushAsync(fcmToken, notiDto.getMessage());
+            sendPushAsync(fcmToken, notiDto.getMessage()); // 새로운 버전
             return notiDto;
         };
     }
 
-    @Async
     public void sendPushAsync(String fcmToken, String message) {
-        pushService.sendPushNotification(
-                FCMNotificationRequestDto.builder()
-                        .fcmToken(fcmToken)
-                        .title("차량 정기점검 알림")
-                        .body(message)
-                        .build()
-        );
-        throw new RuntimeException("비동기 테스트용 예외 발생"); // 비동기 테스트용 예외
-
+            pushSender.sendAsync(
+                    fcmToken,
+                    "차량 정기점검 알림",
+                    message,
+                    "CarInspectionAlertJob", // 잡 구분
+                    NotificationDetailType.INSPECTION_ALERT.name() // 상세 유형
+            );
     }
 
     // 알림 DB에 저장

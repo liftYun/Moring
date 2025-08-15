@@ -4,6 +4,8 @@ import com.dolijo.moring.car.entity.Car;
 import com.dolijo.moring.car.repository.CarRepository;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
+import com.dolijo.moring.notifycation.dto.in.UnauthorizedUserRequestDto;
+import com.dolijo.moring.notifycation.dto.out.UnauthorizedUserResponseDto;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.entity.Notification;
 import com.dolijo.moring.notifycation.repository.NotificationRepository;
@@ -11,11 +13,13 @@ import com.dolijo.moring.notifycation.valueobject.NotificationType;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -45,30 +49,31 @@ public class SseService {
 
     /**
      * 차량 SSE 연결 생성
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @return SseEmitter
      */
-    public SseEmitter createCarConnection(String carVin) {
+
+    public SseEmitter createCarConnection(String vin) {
         // 기존 연결이 있다면 종료
-        disconnectCar(carVin);
+        disconnectCar(vin);
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
 
         // 연결 완료 시 정리
         emitter.onCompletion(() -> {
-            carConnections.remove(carVin);
-            log.info("차량 SSE 연결 완료: {}", carVin);
+            carConnections.remove(vin);
+            log.info("차량 SSE 연결 완료: {}", vin);
         });
 
         // 타임아웃 시 정리
         emitter.onTimeout(() -> {
-            carConnections.remove(carVin);
-            log.info("차량 SSE 연결 타임아웃: {}", carVin);
+            carConnections.remove(vin);
+            log.info("차량 SSE 연결 타임아웃: {}", vin);
         });
 
         // 에러 시 정리
         emitter.onError((e) -> {
-            carConnections.remove(carVin);
-            log.error("차량 SSE 연결 에러: {}", carVin, e);
+            carConnections.remove(vin);
+            log.error("차량 SSE 연결 에러: {}", vin, e);
         });
 
         // 초기 연결 확인 메시지 전송
@@ -77,93 +82,101 @@ public class SseService {
                     .name("connect")
                     .data("차량 SSE 연결이 성공적으로 설정되었습니다."));
         } catch (IOException e) {
-            log.error("초기 SSE 메시지 전송 실패: {}", carVin, e);
+            log.error("초기 SSE 메시지 전송 실패: {}", vin, e);
             // 재연결 전송을 위해 일단 주석해둘게용
-//            carConnections.remove(carVin);
+//            carConnections.remove(vin);
             emitter.completeWithError(e);
             return emitter;
         }
 
-//        log.info("차량 SSE 연결 생성: {}", carVin);
+//        log.info("차량 SSE 연결 생성: {}", vin);
 //        return emitter;
         // 하트비트: 15초마다 ping 이벤트 (또는 주석 프레임)
         ScheduledFuture<?> hb = scheduler.scheduleAtFixedRate(() -> {
-            Entry entry = carConnections.get(carVin);
+            Entry entry = carConnections.get(vin);
             if (entry == null) return;
             try {
                 entry.emitter.send(SseEmitter.event().name("ping").data("💓"));
                 // 또는 주석 프레임을 원하면:
                 // entry.emitter.send(":\n\n");
             } catch (IOException ex) {
-                log.warn("[SSE] heartbeat send fail vin={} - {}", carVin, ex.toString());
+                log.warn("[SSE] heartbeat send fail vin={} - {}", vin, ex.toString());
                 entry.emitter.completeWithError(ex);
-                cleanup(carVin, "heartbeat-fail");
+                cleanup(vin, "heartbeat-fail");
             }
         }, HEARTBEAT_SEC, HEARTBEAT_SEC, TimeUnit.SECONDS);
 
-        carConnections.put(carVin, new Entry(emitter, hb));
-        log.info("차량 SSE 연결 생성: {}", carVin);
+        carConnections.put(vin, new Entry(emitter, hb));
+        log.info("차량 SSE 연결 생성: {}", vin);
         return emitter;
     }
 
     /**
      * 차량에게 일반 알림 전송 (운행 중 발생하는 알림)
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @param notificationDetailType 일반 알림 유형
      */
     @Transactional
-    public void sendGeneralNotification(String carVin, NotificationDetailType notificationDetailType) {
+    public void sendGeneralNotification(String vin, NotificationDetailType notificationDetailType) {
         // 1. 차량 조회
-        Car car = carRepository.findByVin(carVin)
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         // 2. SSE 연결 확인 및 알림 전송
-        Entry entry = carConnections.get(carVin);
+        Entry entry = carConnections.get(vin);
         if (entry != null) {
             try {
                 // SSE를 통해 실시간 알림 전송
                 entry.emitter.send(SseEmitter.event()
                         .name(notificationDetailType.name())
                         .data(notificationDetailType.getDescription()));
-                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", carVin, notificationDetailType.name());
+                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", vin, notificationDetailType.name());
                 // 3. SSE 전송 성공 시에만 알림 엔티티 저장
                 saveNotification(car, NotificationType.GENERAL, notificationDetailType);
 
             } catch (IOException e) {
-                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, notificationDetailType.name(), e);
+                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", vin, notificationDetailType.name(), e);
                 // 전송 실패 시 연결 정리
-                carConnections.remove(carVin);
+                carConnections.remove(vin);
                 entry.emitter.completeWithError(e);
             }
         } else {
-            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }
 
-    /**
-     * 비등록 운전자 인식 알림 전송 (SSE 모달 트리거)
-     * @param carVin 차량 VIN
-     */
-    @Transactional
-    public void sendUnauthorizedUserDetected(String carVin) {
-        Car car = carRepository.findByVin(carVin)
+    @Transactional(readOnly = true)
+    public void sendUnauthorizedUserDetected(UnauthorizedUserRequestDto request) {
+        String vin = request.getVin();
+
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
-        Entry entry = carConnections.get(carVin);
-        if (entry != null) {
-            try {
-                entry.emitter.send(SseEmitter.event()
-                        .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)
-                        .data(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)); // 데이터에도 동일 문자열 전송
-                log.info("비등록 운전자 인식 SSE 알림 전송 성공: {}", carVin);
-            } catch (IOException e) {
-                log.error("비등록 운전자 인식 SSE 알림 전송 실패: {}", carVin, e);
-                carConnections.remove(carVin);
-                entry.emitter.completeWithError(e);
-            }
-        } else {
-            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+        SseEmitter emitter = carConnections.get(vin);
+        if (emitter == null) {
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
+            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
+        }
+        // 비등록 운전자 인식 알림 엔티티
+        UnauthorizedUserResponseDto payload = UnauthorizedUserResponseDto.builder()
+                .nickname(car.getNickname())
+                .detectedAt(LocalDateTime.now())
+                .unauthorizedUserImgUrl(request.getUnauthorizedUserImgUrl())
+                .build();
+
+        try {
+            emitter.send(
+                    SseEmitter.event()
+                            .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)  // 이벤트명 유지
+                            .data(payload, MediaType.APPLICATION_JSON)        // 객체(JSON) 전송
+            );
+            log.info("비등록 운전자 인식 SSE 알림 전송 성공: vin={}, nickname={}, img={}",
+                    vin, car.getNickname(), request.getUnauthorizedUserImgUrl());
+        } catch (IOException e) {
+            log.error("비등록 운전자 인식 SSE 알림 전송 실패: vin={}, nickname={}", vin, car.getNickname(), e);
+            carConnections.remove(vin);
+            emitter.completeWithError(e);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }
@@ -192,13 +205,13 @@ public class SseService {
 
     /**
      * 차량 연결 해제
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      */
-    public void disconnectCar(String carVin) {
-        Entry entry = carConnections.remove(carVin);
+    public void disconnectCar(String vin) {
+        Entry entry = carConnections.remove(vin);
         if (entry != null) {
             entry.emitter.complete();
-            log.info("차량 SSE 연결 해제: {}", carVin);
+            log.info("차량 SSE 연결 해제: {}", vin);
         }
     }
 
@@ -212,19 +225,19 @@ public class SseService {
 
     /**
      * 특정 차량의 연결 상태 확인
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @return 연결 여부
      */
-    public boolean isCarConnected(String carVin) {
-        return carConnections.containsKey(carVin);
+    public boolean isCarConnected(String vin) {
+        return carConnections.containsKey(vin);
     }
 
-    private void cleanup(String carVin, String reason) {
-        Entry entry = carConnections.remove(carVin);
+    private void cleanup(String vin, String reason) {
+        Entry entry = carConnections.remove(vin);
         if (entry != null) {
             if (entry.heartbeat != null) entry.heartbeat.cancel(true);
             try { entry.emitter.complete(); } catch (Exception ignored) {}
-            log.info("차량 SSE 연결 정리 vin={}, reason={}", carVin, reason);
+            log.info("차량 SSE 연결 정리 vin={}, reason={}", vin, reason);
         }
     }
 

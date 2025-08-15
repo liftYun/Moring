@@ -79,7 +79,7 @@ public class SmsServiceImpl implements SmsService {
         sb.append("[Moring 비인가 운전자 탑승 알림]\n");
         sb.append("차량명: ").append(findCar.getNickname()).append("\n");
         sb.append("위치 확인: https://map.kakao.com/link/map/차량위치,")
-                .append(dto.getLatitude()).append(",").append(dto.getLongitude());
+                .append(dto.getLatitude()).append(",").append(dto.getLongitude()).append("\n");
         sb.append("탑승 일시: ").append(LocalDate.now()).append("\n");
         sb.append("이미지: ").append(dto.getImageUrl());
         Message message = new Message();
