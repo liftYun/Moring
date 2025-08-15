@@ -687,9 +687,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   @override
   Widget build(BuildContext context) {
     // showDebugPanel=false 이면 UI 없음(로직은 동작)
-    return widget.showDebugPanel
-        ? const SizedBox.shrink() // 필요하면 디버그 UI를 여기에 붙일 수 있음
-        : const SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }
 
@@ -731,6 +729,7 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
     _vin = car?.vin;
     if (_vin == null) {
       if (!mounted) return;
+      if (kDebugMode) debugPrint('[SSE] VIN이 없어 연결을 시작할 수 없습니다.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('VIN이 없어 SSE 연결을 시작할 수 없습니다.')),
       );
@@ -739,6 +738,7 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
 
     final base = dio.options.baseUrl;
     _connectUrl = '$base/api/v1/notifications/connect/$_vin';
+    if (kDebugMode) debugPrint('[SSE] 연결 URL 준비: $_connectUrl');
 
     final repo = ref.read(tokenRepositoryProvider);
     final accessToken = await repo.getAccessToken();
@@ -756,22 +756,55 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
     if (_connectUrl == null) return;
     _disconnect();
 
+    if (kDebugMode) debugPrint('[SSE] 연결 시도: $_connectUrl');
+
     _sub = SSEClient.subscribeToSSE(
       url: _connectUrl!,
       header: _headers,
       method: SSERequestType.GET,
     ).listen((event) {
-      final dataStr = event.data ?? '';
-      if (dataStr.isEmpty) return;
-      try {
-        final Map<String, dynamic> payload = jsonDecode(dataStr);
-        _handleAlert('${payload['type']}');
-      } catch (_) {
-        _handleRaw(dataStr);
+      final evt = (event.event ?? '').trim();
+      final raw = (event.data ?? '').trim();
+
+      if (kDebugMode) {
+        debugPrint('[SSE] 📩 이벤트 수신');
+        debugPrint('  • id: ${event.id ?? ''}');
+        debugPrint('  • event: $evt');
+        debugPrint('  • data(raw): $raw\n');
       }
-    }, onError: (_) {
+
+      // 1) event 이름으로 직접 매칭
+      final upperEvt = evt.toUpperCase();
+      if (upperEvt == 'FRONT_ALERT' ||
+          upperEvt == 'OXYGEN_ALERT' ||
+          upperEvt == 'DISTRACTION_ALERT') {
+        _handleAlert(upperEvt);
+        return;
+      }
+
+      // 2) data(JSON) 에 type 있으면 매칭
+      if (raw.isNotEmpty) {
+        try {
+          final m = jsonDecode(raw);
+          if (m is Map && m['type'] is String) {
+            final t = (m['type'] as String).toUpperCase();
+            if (t == 'FRONT_ALERT' || t == 'OXYGEN_ALERT' || t == 'DISTRACTION_ALERT') {
+              _handleAlert(t);
+              return;
+            }
+          }
+        } catch (_) {
+          // JSON 아님 → 3) 원시 문자열 매칭
+        }
+      }
+
+      // 3) 원시 문자열 매칭(서버가 단문 텍스트만 보낼 때)
+      _handleRaw(raw, evt);
+    }, onError: (e) {
+      if (kDebugMode) debugPrint('[SSE] 연결 오류 발생: $e. 3초 후 재연결 시도.');
       Future.delayed(const Duration(seconds: 3), _reconnect);
     }, onDone: () {
+      if (kDebugMode) debugPrint('[SSE] 연결 종료됨. 1초 후 재연결 시도.');
       Future.delayed(const Duration(seconds: 1), _reconnect);
     });
   }
@@ -784,22 +817,45 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
   void _disconnect() {
     _sub?.cancel();
     _sub = null;
+    if (kDebugMode) debugPrint('[SSE] ⏏️ 연결 해제됨.');
   }
 
-  void _handleRaw(String msg) {
-    if (msg.contains('FRONT_ALERT')) _handleAlert('FRONT_ALERT');
-    else if (msg.contains('OXYGEN_ALERT')) _handleAlert('OXYGEN_ALERT');
-    else if (msg.contains('DISTRACTION_ALERT')) _handleAlert('DISTRACTION_ALERT');
+  void _handleRaw(String msg, String evtName) {
+    if (kDebugMode) debugPrint('[Alert] 📝 원시 데이터: $msg');
+
+    // 연결 안내 텍스트/이벤트는 모달 생략
+    if (msg.contains('SSE 연결이 성공적으로 설정') ||
+        evtName.toLowerCase() == 'connect') {
+      if (kDebugMode) debugPrint('[Alert] ℹ️ 연결 성공 안내. 모달 생략.');
+      return;
+    }
+
+    // 한국어/키워드 매칭
+    final s = msg.replaceAll(' ', '');
+    if (s.contains('전방') || s.toUpperCase().contains('FRONT_ALERT')) {
+      _handleAlert('FRONT_ALERT');
+    } else if (s.contains('에어컨') || s.toUpperCase().contains('OXYGEN_ALERT')) {
+      _handleAlert('OXYGEN_ALERT');
+    } else if (s.contains('졸음') || s.toUpperCase().contains('DISTRACTION_ALERT')) {
+      _handleAlert('DISTRACTION_ALERT');
+    } else {
+      if (kDebugMode) debugPrint('[Alert] 알 수 없는 타입: ${evtName.isEmpty ? '(no event)' : evtName}');
+    }
   }
 
   Future<void> _handleAlert(String type) async {
-    if (!mounted || _dialogOpen) return;
+    if (!mounted || _dialogOpen) {
+      if (kDebugMode) {
+        debugPrint('[Alert] 모달 표시 불가. mounted=$mounted, _dialogOpen=$_dialogOpen');
+      }
+      return;
+    }
 
     String title = '알림';
     String message = '';
     IconData icon = Icons.notifications_active;
 
-    switch (type) {
+    switch (type.toUpperCase()) {
       case 'FRONT_ALERT':
         title = '경고';
         message = '전방을 주시하십시오.';
@@ -816,14 +872,17 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
         icon = Icons.visibility_off;
         break;
       default:
+        if (kDebugMode) debugPrint('[Alert] 매칭되지 않은 타입: $type');
         return;
     }
 
     _dialogOpen = true;
+    if (kDebugMode) debugPrint('[Alert] ✅ 모달 표시 시도: $type');
 
-    // 반투명 + 자동 닫힘 5초
+    // 5초 후 자동 닫힘
     final autoClose = Future.delayed(const Duration(seconds: 5), () {
       if (mounted && _dialogOpen) {
+        if (kDebugMode) debugPrint('[Alert] ⏱ 자동 닫힘(5초)');
         Navigator.of(context, rootNavigator: true).pop('auto');
       }
     });
@@ -831,49 +890,119 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
     await showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.3), // 화면 전체 반투명
+      barrierLabel: '닫기', // 접근성 및 어설션 충족
+      barrierColor: Colors.black.withOpacity(0.35),
       transitionDuration: const Duration(milliseconds: 180),
       pageBuilder: (_, __, ___) {
         return Align(
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: const EdgeInsets.only(top: 64.0, left: 16, right: 16),
+            padding: const EdgeInsets.only(top: 80, left: 18, right: 18),
             child: Material(
               color: Colors.transparent,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF232326).withOpacity(0.92), // 카드 자체 반투명
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white10),
-                  boxShadow: const [
-                    BoxShadow(blurRadius: 16, color: Colors.black26, offset: Offset(0, 6)),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(icon, color: Colors.lightBlueAccent, size: 28),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 6),
-                          Text(message,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 14)),
-                        ],
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 280, maxWidth: 640),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 22),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF232326).withOpacity(0.94),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                    boxShadow: const [
+                      BoxShadow(blurRadius: 18, color: Colors.black26, offset: Offset(0, 8)),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, color: Colors.lightBlueAccent, size: 34),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              '알림',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                height: 1.15,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            // 실제 메시지는 아래에서 별도로 빌드
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      // builder가 없을 때 message를 못 넣으므로, transitionBuilder로 message 포함 카드 출력
+      transitionBuilder: (context, anim1, anim2, child) {
+        // child는 위의 pageBuilder 결과 — 여기에 message를 다시 그려주기
+        return Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 80, left: 18, right: 18),
+            child: Opacity(
+              opacity: anim1.value,
+              child: Material(
+                color: Colors.transparent,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 280, maxWidth: 640),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 22),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF232326).withOpacity(0.94),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12),
+                      boxShadow: const [
+                        BoxShadow(blurRadius: 18, color: Colors.black26, offset: Offset(0, 8)),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(icon, color: Colors.lightBlueAccent, size: 34),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.15,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                message,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 16,
+                                  height: 1.25,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -895,18 +1024,16 @@ class _NavWithVoicePageState extends ConsumerState<NavWithVoicePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 이 페이지는 "네비 화면 위에서 조용히 동작"하는 게 목표이므로
-    // 시각적인 요소 없이, 보이지 않는 음성 패널만 올려둔다.
-    return const Stack(
-      children: [
-        // 여기에 지도 위젯을 올려두면 됨 (외부에서 이 페이지를 감싸는 쪽에서 지도 구성)
-        // ex) GoogleMap(...)
+    // 이 페이지는 "네비 화면 위에서 조용히 동작"하는 게 목표
+    return Stack(
+      children: const [
+        // 지도 등 메인 UI는 상위에서 배치
 
         // 보이지 않지만 로직은 동작하는 음성 패널
         Positioned.fill(
           child: IgnorePointer(
             ignoring: true, // 터치 막지 않도록
-            child: const VoiceAssistantPanel(
+            child: VoiceAssistantPanel(
               showDebugPanel: false, // UI 렌더 X
               autoStart: true,
               requireWakeWord: true,
