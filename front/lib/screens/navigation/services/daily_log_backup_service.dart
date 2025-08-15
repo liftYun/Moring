@@ -182,7 +182,7 @@ class DailyLogBackupService {
       if ((vin ?? '').isEmpty || (accessToken ?? '').isEmpty) return false;
 
       final dio = Dio(BaseOptions(
-        baseUrl: 'http://i13e101.p.ssafy.io:8080',
+        baseUrl: 'https://i13e101.p.ssafy.io',
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ));
@@ -314,7 +314,7 @@ class DailyLogBackupService {
       final accessToken = await _secureStorage.read(key: 'accessToken');
       if ((vin ?? '').isEmpty || (accessToken ?? '').isEmpty) return;
       final dio = Dio(BaseOptions(
-        baseUrl: 'http://i13e101.p.ssafy.io:8080',
+        baseUrl: 'https://i13e101.p.ssafy.io',
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ));
