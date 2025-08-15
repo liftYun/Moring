@@ -30,10 +30,9 @@ import 'widgets/search_results_dialog.dart';
 import 'widgets/my_location_button.dart';
 import 'widgets/heading_follow_button.dart';
 
-//sse랑 챗봇
-import 'package:moring/screens/navigation/sse_with_voice.dart';
-
-
+// ⬇️ SSE 전용 오버레이 (LLM/음성 제거)
+import 'package:moring/screens/navigation/sse_only.dart';
+import 'package:moring/voice/moring_voice_panel.dart';
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
 
@@ -1104,7 +1103,19 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
                 });
               },
             ),
-          const NavWithVoicePage(),
+
+          // ⬇️ SSE 모달 오버레이 (LLM/음성 없음)
+          const SSEAlertOverlay(),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: VoiceAssistantPanel(
+                showDebugPanel: false,   // 필요 시 true로 바꿔 디버그 카드 확인
+                autoStart: true,         // 네비 켜지면 자동 활성화
+                requireWakeWord: true,   // "모링아..."로 깨우기 (false면 항상 대기)
+              ),
+            ),
+          ),
         ],
       ),
     );

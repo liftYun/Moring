@@ -6,7 +6,7 @@ part of 'fcm_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$fCMNotifierHash() => r'e30b3c0f2d5babe006098f30224b6fe6d5f28d7c';
+String _$fCMNotifierHash() => r'9d7327e0035360870a1da3574462b26f52967ec0';
 
 /// See also [FCMNotifier].
 @ProviderFor(FCMNotifier)

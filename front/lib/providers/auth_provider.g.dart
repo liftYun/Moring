@@ -6,11 +6,9 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$isLoggedInHash() => r'b67ae5bebd8737ee29aa0c42c385ded056161cb4';
+String _$isLoggedInHash() => r'd308c6a90e8285d15d9372727d080e343cca5928';
 
-/// accessToken이 있으면 true, 없으면 false
-///
-/// Copied from [isLoggedIn].
+/// See also [isLoggedIn].
 @ProviderFor(isLoggedIn)
 final isLoggedInProvider = AutoDisposeFutureProvider<bool>.internal(
   isLoggedIn,
