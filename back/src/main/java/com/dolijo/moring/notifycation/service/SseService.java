@@ -153,8 +153,8 @@ public class SseService {
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
-        SseEmitter emitter = carConnections.get(vin);
-        if (emitter == null) {
+        Entry entry = carConnections.get(vin);
+        if (entry == null) {
             log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
@@ -166,7 +166,7 @@ public class SseService {
                 .build();
 
         try {
-            emitter.send(
+            entry.emitter.send(
                     SseEmitter.event()
                             .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)  // 이벤트명 유지
                             .data(payload, MediaType.APPLICATION_JSON)        // 객체(JSON) 전송
@@ -176,7 +176,7 @@ public class SseService {
         } catch (IOException e) {
             log.error("비등록 운전자 인식 SSE 알림 전송 실패: vin={}, nickname={}", vin, car.getNickname(), e);
             carConnections.remove(vin);
-            emitter.completeWithError(e);
+            entry.emitter.completeWithError(e);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }
