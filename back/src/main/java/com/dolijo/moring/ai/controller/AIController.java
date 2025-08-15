@@ -76,36 +76,6 @@ public class AIController {
         return BaseResponse.of(safetyAskService.ask(userInput));
     }
 
-    @GetMapping("/test")
-    @Operation(summary = "AI 테스트", description = "AI 기능 테스트용 엔드포인트입니다. 프롬프트를 입력하면 AI가 답변을 반환합니다.")
-    public BaseResponse<Void> test(@RequestParam("prompt") String prompt) {
-       // safetyAskService.ask(prompt);
-
-        SearchRequest sr = SearchRequest.builder()
-                .query(prompt)
-                .topK(3)
-                .similarityThreshold(0.5)
-                .filterExpression("collection == 'safety_rag'")
-                .build();
-
-        List<Document> hits = vectorStore.similaritySearch(sr);
-        if (hits == null || hits.isEmpty()) {
-            log.info("NO_HITS: 검색 결과가 없습니다.");
-        }
-
-        // 간단한 소스 표기를 포함한 컨텍스트 문자열 생성
-        String context = hits.stream()
-                .map(d -> d.getText() != null ? d.getText() : d.getFormattedContent())
-                .collect(Collectors.joining("\n---\n"));
-        // 너무 길면 잘라서 반환 (모델 토큰 보호)
-        if (context.length() > LIMIT_TOKEN_SIZE) {
-            context = context.substring(0, LIMIT_TOKEN_SIZE);
-        }
-        log.info("context: {}", context);
-
-        return BaseResponse.ok();
-    }
-
 
     /**
      * 이미지 파일 유효성 검사 (용량, 타입, null 등)

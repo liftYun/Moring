@@ -7,6 +7,7 @@ import com.dolijo.moring.car.dto.in.RegisterCarRequestDto;
 import com.dolijo.moring.car.dto.out.CarMileageLogResponseDto;
 import com.dolijo.moring.car.dto.out.CarResponseDto;
 import com.dolijo.moring.car.entity.Car;
+import com.dolijo.moring.car.entity.UnauthorizedUserLog;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import com.dolijo.moring.car.entity.CarInspectionLog;
@@ -41,6 +42,7 @@ public class CarServiceImpl implements CarService{
     private final CarMileageLogDslRepository carMileageLogDslRepository;
     private final CarInspectionLogRepository carInspectionLogRepository;
     private final CarInspectionLogDslRepository carInspectionLogDslRepository;
+    private final UnauthorizedUserLogRepository unauthorizedUserLogRepository;
 
     @Override
     @Transactional
@@ -88,9 +90,9 @@ public class CarServiceImpl implements CarService{
 
     @Transactional
     @Override
-    public Long registerCarMileage(String carVin, Float mileageKm) {
+    public Long registerCarMileage(String vin, Float mileageKm) {
         // 1. VIN으로 차량 조회
-        Car car = carRepository.findByVin(carVin)
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         // 2. 오늘 날짜로 이미 log가 있으면 update, 없으면 새로 생성
@@ -165,5 +167,17 @@ public class CarServiceImpl implements CarService{
         Long carId = carRepository.findByVin(vin).map(Car::getId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
         return carInspectionLogDslRepository.findLatestPendingInspectionDateByCarId(carId);
+    }
+
+    @Override
+    public void addUnauthorizedUserLog(String vin, String unauthorizedUserImgUrl) {
+        Car car = carRepository.findByVin(vin)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
+        unauthorizedUserLogRepository.save(
+                UnauthorizedUserLog.builder()
+                        .car(car)
+                        .unauthorizedUserImgUrl(unauthorizedUserImgUrl)
+                        .build()
+        );
     }
 }

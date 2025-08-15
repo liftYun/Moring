@@ -6,6 +6,7 @@ import com.dolijo.moring.security.jwt.LoginFilter;
 import com.dolijo.moring.security.jwt.OAuth2SuccessHandler;
 import com.dolijo.moring.security.service.CustomOAuth2UserService;
 import com.dolijo.moring.security.service.SocialMemberService;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -92,6 +93,8 @@ public class SecurityConfig {
 
         // 3) 경로별 인가 설정
         http.authorizeHttpRequests(auth -> auth
+                        // SSE 재디스패치 허용
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         // 카카오 인가코드를 받아 처리하는 엔드포인트
                         // OAuth2 요청 진입점 허용
                         // OAuth2 로그인 콜백 URI 허용

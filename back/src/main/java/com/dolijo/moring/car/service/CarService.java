@@ -16,19 +16,22 @@ import java.util.List;
 
 public interface CarService {
 
-    public Long registerCar(RegisterCarRequestDto dto, String memberUuid);
+     Long registerCar(RegisterCarRequestDto dto, String memberUuid);
 
-    public List<CarResponseDto> getCarsByMemberUuid(String memberUuid);
+     List<CarResponseDto> getCarsByMemberUuid(String memberUuid);
 
-    public void deleteCarByVin(String vin);
+     void deleteCarByVin(String vin);
 
-    public Long registerCarMileage(String vin, Float mileageKm);
+     public Long registerCarMileage(String vin, Float mileageKm);
 
-    public Slice<CarMileageLogResponseDto> getLogsByVin(String vin, Pageable pageable);
+     public Slice<CarMileageLogResponseDto> getLogsByVin(String vin, Pageable pageable);
 
-    void registerCarInspection(String vin, RegisterCarInspectionDto dto);
+     void registerCarInspection(String vin, RegisterCarInspectionDto dto);
 
-    Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable);
+     Slice<CarInspectionLogResponseDto> getCarInspectionLogs(String vin, Pageable pageable);
 
-    LocalDate getLatestPendingInspectionDate(String vin);
+     LocalDate getLatestPendingInspectionDate(String vin);
+
+     void addUnauthorizedUserLog(String vin, String unauthorizedUserImgUrl);
+
 }
