@@ -37,46 +37,50 @@ public class NotificationController {
             차량의 실시간 알림을 위한 SSE 연결을 생성합니다.
             한 회원이 여러 차량을 보유할 수 있으므로 차량 VIN으로만 연결을 관리합니다.
             """)
-    @GetMapping(value = "/connect/{carVin}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/connect/{vin}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connectCar(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin
+            @PathVariable("vin") String vin
     ) {
-        return sseService.createCarConnection(carVin);
+        return sseService.createCarConnection(vin);
     }
 
     // 일반 알림 전송 API (운행 중 발생하는 알림)
     @Operation(summary = "일반 알림 전송", description = "차량 운행 중 발생하는 일반 알림을 전송합니다. (전방주시, 산소, 집중 알림 등)")
-    @PostMapping("/send/general/{carVin}")
+    @PostMapping("/send/general/{vin}")
     public BaseResponse<Void> sendGeneralNotification(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin,
-            @Schema(description = "일반 알림 유형 : FRONT_ALERT(전방주시 알림), OXYGEN_ALERT(산소 알림), DISTRACTION_ALERT(집중 알림)"
-                    , required = true, example = "FRONT_ALERT")
+            @PathVariable("vin") String vin,
+            @Schema(description = """
+                                    일반 알림 유형 : 
+                                        FRONT_ALERT(전방주시 알림), OXYGEN_ALERT(산소 알림), 
+                                        PART_ALERT(부품교환 알림), INSPECTION_ALERT(정기점검 알림), 
+                                        SLEEP_ALERT(졸음 알림), UNAUTHORIZED_USER_ALERT(비인가 사용자 알림)
+                                 """, required = true, example = "FRONT_ALERT")
             @RequestParam("notificationDetailType") NotificationDetailType notificationDetailType
     ) {
-        sseService.sendGeneralNotification(carVin, notificationDetailType);
+        sseService.sendGeneralNotification(vin, notificationDetailType);
         return BaseResponse.ok();
     }
 
 
     @Operation(summary = "차량 SSE 연결 해제", description = "차량의 SSE 연결을 해제합니다.")
-    @DeleteMapping("/disconnect/{carVin}")
+    @DeleteMapping("/disconnect/{vin}")
     public BaseResponse<Void> disconnectCar(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin
+            @PathVariable("vin") String vin
     ) {
-        sseService.disconnectCar(carVin);
+        sseService.disconnectCar(vin);
         return BaseResponse.ok();
     }
 
     @Operation(summary = "차량 연결 상태 확인", description = "특정 차량의 SSE 연결 상태를 확인합니다.")
-    @GetMapping("/status/{carVin}")
+    @GetMapping("/status/{vin}")
     public BaseResponse<Boolean> getCarConnectionStatus(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin
+            @PathVariable("vin") String vin
     ) {
-        boolean isConnected = sseService.isCarConnected(carVin);
+        boolean isConnected = sseService.isCarConnected(vin);
         return BaseResponse.of(isConnected);
     }
 
@@ -136,11 +140,11 @@ public class NotificationController {
     }
 
     @Operation(summary = "비등록 운전자 인식 알림 전송", description = "비등록 운전자 인식 시 프론트에 모달 트리거 전송")
-    @PostMapping("/send/unauthorized-user/{carVin}")
+    @PostMapping("/send/unauthorized-user/{vin}")
     public BaseResponse<Void> sendUnauthorizedUserDetected(
             @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("carVin") String carVin){
-        sseService.sendUnauthorizedUserDetected(carVin);
+            @PathVariable("vin") String vin){
+        sseService.sendUnauthorizedUserDetected(vin);
         return BaseResponse.ok();
     }
 

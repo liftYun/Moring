@@ -9,7 +9,7 @@ import lombok.Getter;
 @Builder
 public final class SendNotificationRequestDto {
     private final String memberUuid;
-    private final String carVin;
+    private final String vin;
     private final NotificationType notificationType;
     private final NotificationDetailType notificationDetailType;
     private final String message;

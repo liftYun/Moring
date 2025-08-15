@@ -34,36 +34,36 @@ public class SseService {
 
     /**
      * 차량 SSE 연결 생성
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @return SseEmitter
      */
-    public SseEmitter createCarConnection(String carVin) {
+    public SseEmitter createCarConnection(String vin) {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
 
         // 기존 연결이 있다면 종료
-        SseEmitter existingEmitter = carConnections.get(carVin);
+        SseEmitter existingEmitter = carConnections.get(vin);
         if (existingEmitter != null) {
             existingEmitter.complete();
         }
 
-        carConnections.put(carVin, emitter);
+        carConnections.put(vin, emitter);
 
         // 연결 완료 시 정리
         emitter.onCompletion(() -> {
-            carConnections.remove(carVin);
-            log.info("차량 SSE 연결 완료: {}", carVin);
+            carConnections.remove(vin);
+            log.info("차량 SSE 연결 완료: {}", vin);
         });
 
         // 타임아웃 시 정리
         emitter.onTimeout(() -> {
-            carConnections.remove(carVin);
-            log.info("차량 SSE 연결 타임아웃: {}", carVin);
+            carConnections.remove(vin);
+            log.info("차량 SSE 연결 타임아웃: {}", vin);
         });
 
         // 에러 시 정리
         emitter.onError((e) -> {
-            carConnections.remove(carVin);
-            log.error("차량 SSE 연결 에러: {}", carVin, e);
+            carConnections.remove(vin);
+            log.error("차량 SSE 연결 에러: {}", vin, e);
         });
 
         // 초기 연결 확인 메시지 전송
@@ -72,73 +72,73 @@ public class SseService {
                     .name("connect")
                     .data("차량 SSE 연결이 성공적으로 설정되었습니다."));
         } catch (IOException e) {
-            log.error("초기 SSE 메시지 전송 실패: {}", carVin, e);
-            carConnections.remove(carVin);
+            log.error("초기 SSE 메시지 전송 실패: {}", vin, e);
+            carConnections.remove(vin);
             emitter.completeWithError(e);
         }
 
-        log.info("차량 SSE 연결 생성: {}", carVin);
+        log.info("차량 SSE 연결 생성: {}", vin);
         return emitter;
     }
 
     /**
      * 차량에게 일반 알림 전송 (운행 중 발생하는 알림)
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @param notificationDetailType 일반 알림 유형
      */
     @Transactional
-    public void sendGeneralNotification(String carVin, NotificationDetailType notificationDetailType) {
+    public void sendGeneralNotification(String vin, NotificationDetailType notificationDetailType) {
         // 1. 차량 조회
-        Car car = carRepository.findByVin(carVin)
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         // 2. SSE 연결 확인 및 알림 전송
-        SseEmitter emitter = carConnections.get(carVin);
+        SseEmitter emitter = carConnections.get(vin);
         if (emitter != null) {
             try {
                 // SSE를 통해 실시간 알림 전송
                 emitter.send(SseEmitter.event()
                         .name(notificationDetailType.name())
                         .data(notificationDetailType.getDescription()));
-                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", carVin, notificationDetailType.name());
+                log.info("차량에게 일반 알림 전송 성공: {}, 알림유형: {}", vin, notificationDetailType.name());
                 // 3. SSE 전송 성공 시에만 알림 엔티티 저장
                 saveNotification(car, NotificationType.GENERAL, notificationDetailType);
 
             } catch (IOException e) {
-                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", carVin, notificationDetailType.name(), e);
+                log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", vin, notificationDetailType.name(), e);
                 // 전송 실패 시 연결 정리
-                carConnections.remove(carVin);
+                carConnections.remove(vin);
                 emitter.completeWithError(e);
             }
         } else {
-            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }
 
     /**
      * 비등록 운전자 인식 알림 전송 (SSE 모달 트리거)
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      */
     @Transactional
-    public void sendUnauthorizedUserDetected(String carVin) {
-        Car car = carRepository.findByVin(carVin)
+    public void sendUnauthorizedUserDetected(String vin) {
+        Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
-        SseEmitter emitter = carConnections.get(carVin);
+        SseEmitter emitter = carConnections.get(vin);
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
                         .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)
                         .data(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)); // 데이터에도 동일 문자열 전송
-                log.info("비등록 운전자 인식 SSE 알림 전송 성공: {}", carVin);
+                log.info("비등록 운전자 인식 SSE 알림 전송 성공: {}", vin);
             } catch (IOException e) {
-                log.error("비등록 운전자 인식 SSE 알림 전송 실패: {}", carVin, e);
-                carConnections.remove(carVin);
+                log.error("비등록 운전자 인식 SSE 알림 전송 실패: {}", vin, e);
+                carConnections.remove(vin);
                 emitter.completeWithError(e);
             }
         } else {
-            log.warn("차량 SSE 연결이 존재하지 않음: {}", carVin);
+            log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }
@@ -167,13 +167,13 @@ public class SseService {
 
     /**
      * 차량 연결 해제
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      */
-    public void disconnectCar(String carVin) {
-        SseEmitter emitter = carConnections.remove(carVin);
+    public void disconnectCar(String vin) {
+        SseEmitter emitter = carConnections.remove(vin);
         if (emitter != null) {
             emitter.complete();
-            log.info("차량 SSE 연결 해제: {}", carVin);
+            log.info("차량 SSE 연결 해제: {}", vin);
         }
     }
 
@@ -187,10 +187,10 @@ public class SseService {
 
     /**
      * 특정 차량의 연결 상태 확인
-     * @param carVin 차량 VIN
+     * @param vin 차량 VIN
      * @return 연결 여부
      */
-    public boolean isCarConnected(String carVin) {
-        return carConnections.containsKey(carVin);
+    public boolean isCarConnected(String vin) {
+        return carConnections.containsKey(vin);
     }
 }

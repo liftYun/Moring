@@ -3,6 +3,7 @@ package com.dolijo.moring.batch.job;
 import com.dolijo.moring.batch.dto.PartUsageAlertBatchDto;
 import com.dolijo.moring.batch.dto.FCMNotificationRequestDto;
 import com.dolijo.moring.batch.dto.NotificationBatchDto;
+import com.dolijo.moring.batch.retry.PushSender;
 import com.dolijo.moring.notifycation.service.PushService;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.valueobject.NotificationType;
@@ -41,7 +42,8 @@ public class PartUsageAlertBatch {
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource;
     private final JobExecutionListener jobExecutionListener;
-    private final PushService pushService;
+    //private final PushService pushService;
+    private final PushSender pushSender;
 
     @Bean
     public Job partUsageAlertJob() {
@@ -132,14 +134,13 @@ public class PartUsageAlertBatch {
         };
     }
 
-    @Async
     public void sendPushAsync(String fcmToken, String message) {
-        pushService.sendPushNotification(
-                FCMNotificationRequestDto.builder()
-                        .fcmToken(fcmToken)
-                        .title("차량 부품 소모율 알림")
-                        .body(message)
-                        .build()
+        pushSender.sendAsync(
+                fcmToken,
+                "차량 정기점검 알림",
+                message,
+                "CarInspectionAlertJob", // 잡 구분
+                NotificationDetailType.INSPECTION_ALERT.name() // 상세 유형
         );
     }
 
