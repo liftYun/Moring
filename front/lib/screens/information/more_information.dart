@@ -200,7 +200,7 @@ class MorePage extends ConsumerWidget {
                       // TODO: 실제 푸시 권한 허용/차단 로직 호출
                     },
                     activeColor: Colors.white,
-                    activeTrackColor: Colors.blue,
+                    activeTrackColor: const Color(0xFF50C878),
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: const Color(0xFF23262B),
                   ),

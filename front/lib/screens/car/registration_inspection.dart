@@ -9,7 +9,8 @@ import 'package:moring/providers/current_car_provider.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 class InspectionRegistrationPage extends ConsumerStatefulWidget {
-  const InspectionRegistrationPage({Key? key}) : super(key: key);
+  final String vin;
+  const InspectionRegistrationPage({Key? key, required this.vin}) : super(key: key);
 
   @override
   ConsumerState<InspectionRegistrationPage> createState() => _InspectionRegistrationPageState();
@@ -49,13 +50,13 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
   }
 
   Future<void> _submit() async {
-    if (_car == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('차량 정보를 불러오지 못했습니다.')),
-      );
-      return;
-    }
-    if (!_formKey.currentState!.validate()) return;
+    // if (_car == null) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('차량 정보를 불러오지 못했습니다.')),
+    //   );
+    //   return;
+    // }
+    // if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
 
@@ -63,14 +64,14 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
       final dio = ref.read(authDioProvider);
       final data = {
         "inspectionDate": _dateController.text,
-        "inadequateDetails": _inadequateController.text.isEmpty ? null : _inadequateController.text,
-        "recommendationDetails": _recommendationController.text.isEmpty ? null : _recommendationController.text,
-        "selfDiagnosis": _selfDiagnosisController.text.isEmpty ? null : _selfDiagnosisController.text,
-        "specialNotes": _specialNotesController.text.isEmpty ? null : _specialNotesController.text,
+        // "inadequateDetails": _inadequateController.text.isEmpty ? null : _inadequateController.text,
+        // "recommendationDetails": _recommendationController.text.isEmpty ? null : _recommendationController.text,
+        // "selfDiagnosis": _selfDiagnosisController.text.isEmpty ? null : _selfDiagnosisController.text,
+        // "specialNotes": _specialNotesController.text.isEmpty ? null : _specialNotesController.text,
       };
 
       final resp = await dio.post(
-        '/api/v1/cars/${_car!.vin}/inspection',
+        '/api/v1/cars/${widget.vin}/inspection',
         data: data,
         options: Options(contentType: 'application/json'),
       );
@@ -123,16 +124,16 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
   @override
   void dispose() {
     _dateController.dispose();
-    _inadequateController.dispose();
-    _recommendationController.dispose();
-    _selfDiagnosisController.dispose();
-    _specialNotesController.dispose();
+    // _inadequateController.dispose();
+    // _recommendationController.dispose();
+    // _selfDiagnosisController.dispose();
+    // _specialNotesController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    _car = ref.watch(currentCarProvider);
+    // _car = ref.watch(currentCarProvider);
 
     return BaseScaffold(
       title: '점검 내역 등록',
@@ -163,23 +164,23 @@ class _InspectionRegistrationPageState extends ConsumerState<InspectionRegistrat
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? '날짜를 입력하세요' : null,
               ),
-              const SizedBox(height: 16),
-              buildExpandingField(_specialNotesController, '특기사항'),
+              // const SizedBox(height: 16),
+              // buildExpandingField(_specialNotesController, '특기사항'),
               const SizedBox(height: 28),
               SizedBox(
                 height: 48,
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF50C878),
+                    foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                     elevation: 0,
                   ),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: Colors.black)
                       : const Text('등록하기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),

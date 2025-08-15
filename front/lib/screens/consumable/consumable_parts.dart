@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/api_client.dart';
-import 'package:moring/screens/car_regist_ocr.dart'; // OCR import
+import 'package:moring/screens/consumable/part_regist_ocr.dart' ;
+import 'package:dio/dio.dart';
+import 'package:moring/screens/consumable/part_change.dart';
+import 'package:moring/screens/home_content.dart';
 
 class ConsumablePartsScreen extends ConsumerStatefulWidget {
   final List<Consumable> consumables;
@@ -18,6 +21,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
   Consumable? _selectedConsumable;
   final _replacementDateController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  List<int> _updatedPartIds = [];
 
   @override
   void dispose() {
@@ -34,7 +38,11 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         _selectedConsumable = consumable;
         _replacementDateController.text =
         consumable.dueDate != null
-            ? '${consumable.dueDate!.year}-${consumable.dueDate!.month.toString().padLeft(2, '0')}-${consumable.dueDate!.day.toString().padLeft(2, '0')}'
+            ? '${consumable.dueDate!.year}-${consumable.dueDate!.month
+            .toString().padLeft(2, '0')}-${consumable.dueDate!
+            .day
+            .toString()
+            .padLeft(2, '0')}'
             : '';
       }
     });
@@ -61,9 +69,9 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Colors.blue,
+              primary: Color(0xFF50C878), // ✅ 색상 코드 변경
               onPrimary: Colors.white,
-              surface: Color(0xFF1E1E1E),
+              surface: Color(0xFF232326),
               onSurface: Colors.white,
             ),
             dialogBackgroundColor: const Color(0xFF1E1E1E),
@@ -84,35 +92,46 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
   Future<void> _postChangeLog() async {
     if (_selectedConsumable == null) return;
 
-    final data = {
-      'vin': widget.vin,
-      'partId': _selectedConsumable!.id,
-      'changedAt': _replacementDateController.text + 'T00:00:00.000Z',
-    };
-
-    final dio = ref.read(authDioProvider);
     try {
+      final parsedDate = DateTime.parse(_replacementDateController.text);
+      final data = {
+        'vin': widget.vin,
+        'partIdList': [_selectedConsumable!.id],
+        'changedAt': parsedDate.toIso8601String(),
+      };
+
+      final dio = ref.read(authDioProvider);
       final response = await dio.post('/api/v1/parts/change-log', data: data);
-      if (response.statusCode == 200) {
-        // **등록 성공! → 최신 데이터로 재조회!**
+
+      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
         final statusResp = await dio.get('/api/v1/parts/status/${widget.vin}');
-        if (statusResp.statusCode == 200 && statusResp.data['result'] != null) {
-          // consumable 리스트 최신화
+        if (statusResp.statusCode == 200 && statusResp.data['isSuccess'] == true) {
           final List list = statusResp.data['result'] as List;
           setState(() {
-            // 화면 갱신!
             widget.consumables.clear();
             widget.consumables.addAll(list.map((e) => Consumable.fromJson(e)));
             _selectedConsumable = null;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('교체 이력이 등록되었습니다!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('교체 이력은 등록되었지만, 목록을 새로고침하는 데 실패했습니다.')),
+          );
         }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('교체 이력이 등록되었습니다!')),
+          SnackBar(content: Text('이력 등록 실패: ${response.data['message'] ?? '알 수 없는 오류'}')),
         );
       }
     } catch (e) {
+      String errorMessage = '이력 등록 중 오류가 발생했습니다: $e';
+      if (e is DioException) {
+        errorMessage = '이력 등록 실패: ${e.response?.data['message'] ?? e.message}';
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이력 등록 실패: $e')),
+        SnackBar(content: Text(errorMessage)),
       );
     }
   }
@@ -124,7 +143,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         children: [
           const SizedBox(height: 24),
           Text(
-            '${consumable.title} 교체한 일자 변경',
+            '교체 일자 변경',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -149,11 +168,11 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
           ElevatedButton(
             onPressed: _postChangeLog,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: const Color(0xFF50C878), // ✅ 색상 코드 변경
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Update', style: TextStyle(color: Colors.white, fontSize: 18)),
+            child: const Text('Update', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 20),
         ],
@@ -169,7 +188,9 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         ? '${consumable.dueDate!.year}-${consumable.dueDate!.month.toString().padLeft(2, '0')}-${consumable.dueDate!.day.toString().padLeft(2, '0')}'
         : '날짜 정보 없음';
 
-    final progress = consumable.remainingPercentage;
+    final progress = consumable.dueDate != null ? consumable.remainingPercentage : 0.0;
+    final isUpdated = _updatedPartIds.contains(consumable.id);
+    final hasDueDate = consumable.dueDate != null;
 
     return GestureDetector(
       onTap: () => _onConsumableTap(consumable),
@@ -177,11 +198,16 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: isUpdated ? Colors.greenAccent.withOpacity(0.2) : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              consumable.icon,
+              if (isUpdated)
+                const Icon(Icons.check_circle, color: Colors.greenAccent, size: 24)
+              else
+                consumable.icon,
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
@@ -204,6 +230,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                   ],
                 ),
               ),
+
               Row(
                 children: [
                   SizedBox(
@@ -221,10 +248,14 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white,
+                  SizedBox(
+                    width: 35, // "100%"를 담을 수 있는 충분한 너비
+                    child: Text(
+                      '${(progress * 100).toInt()}%',
+                      textAlign: TextAlign.end, // ✅ 텍스트를 오른쪽 정렬
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -242,17 +273,12 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
       appBar: AppBar(
         title: const Text('소모품 상세'),
         backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.center_focus_weak, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CarOcrRegistrationPage()),
-              );
-            },
-          ),
-        ],
+        leading: IconButton( // ✅ leading 속성 추가
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -288,6 +314,25 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                 }
                 return widgets;
               }).toList(),
+              // ✅ 추가: 일괄 변경 버튼
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BulkPartRegistrationPage(vin: widget.vin),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF50C878), // ✅ 색상 코드 변경
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('내역 수정하기', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
