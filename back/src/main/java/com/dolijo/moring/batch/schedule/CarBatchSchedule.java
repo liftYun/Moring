@@ -11,17 +11,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Configuration
-public class BatchSchedule {
+public class CarBatchSchedule {
 
     private final JobLauncher jobLauncher;
     private final JobRegistry jobRegistry;
 
-    public BatchSchedule(JobLauncher jobLauncher, JobRegistry jobRegistry) {
+    public CarBatchSchedule(JobLauncher jobLauncher, JobRegistry jobRegistry) {
         this.jobLauncher = jobLauncher;
         this.jobRegistry = jobRegistry;
     }
 
-    // 매일 01시 마다 실행
+    // 매일 01시 마다 차량점검일 JOB 실행
     @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
     public void runCarInspectionAlertJob() throws Exception {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -34,7 +34,7 @@ public class BatchSchedule {
         jobLauncher.run(jobRegistry.getJob("carInspectionAlertJob"), jobParameters);
     }
 
-    // 매일 03시 마다 실행(부품 소모율 알림)
+    // 매일 03시 마다 부품점검알림 JOB 실행
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void runPartUsageAlertJob() throws Exception {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -46,4 +46,6 @@ public class BatchSchedule {
 
         jobLauncher.run(jobRegistry.getJob("partUsageAlertJob"), jobParameters);
     }
+
+
 }
