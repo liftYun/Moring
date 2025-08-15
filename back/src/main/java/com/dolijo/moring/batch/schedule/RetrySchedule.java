@@ -32,7 +32,7 @@ public class RetrySchedule {
     private final ObjectMapper objectMapper;
 
     //30분마다 실행 (테스트 시 */1, 운영 시 */30)
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */30 * * * *")
     public void retryFailedPushes() {
         // 큐 길이 확인
         Long queueSize = retryRepository.size(); // LLEN 래핑 메서드
@@ -44,6 +44,7 @@ public class RetrySchedule {
         log.info("[푸시 재시도] 스케줄러 시작 | 현재 큐 길이: {}건", queueSize);
         int processed = 0, reEnqueued = 0, skipped = 0, succeeded = 0;
 
+        // 각 푸시 실패 건을 3번 까지 재시도
         while (processed < MAX_PROCESS_PER_RUN) {
             String json = retryRepository.popOne();
             if (json == null) break;
@@ -59,12 +60,11 @@ public class RetrySchedule {
 
             if (item.getAttempt() >= MAX_ATTEMPTS) {
                 skipped++;
-                log.warn("[푸시 재시도] 최대 재시도 횟수 초과로 폐기됨: 토큰={}, 제목={}, 시도횟수={}",
-                        item.getFcmToken(), item.getTitle(), item.getAttempt());
+                log.warn("[푸시 재시도] 최대 재시도 횟수 초과로 폐기");
                 continue;
             }
-
             try {
+                // 재전송
                 pushService.sendPushNotification(
                         FCMNotificationRequestDto.builder()
                                 .fcmToken(item.getFcmToken())
@@ -78,14 +78,13 @@ public class RetrySchedule {
                 item.setAttempt(item.getAttempt() + 1);
                 item.setLastError(ex.toString());
                 item.setLastTriedAt(Instant.now());
-                retryRepository.enqueue(item);
+                retryRepository.enqueue(item); // 재적재
                 reEnqueued++;
                 log.warn("[푸시 재시도] 전송 실패 → 재적재됨 (시도횟수={}): 토큰={}, 제목={}, 에러={}",
                         item.getAttempt(), item.getFcmToken(), item.getTitle(), ex.toString());
             }
         }
-
-        log.info("[푸시 재시도] 스케줄러 종료 | 처리시도={}건, 성공={}건, 재적재={}건, 폐기(시도초과)={}건",
+        log.info("[푸시 재시도 결과] 스케줄러 종료 | 처리시도={}건, 성공={}건, 재적재={}건, 폐기(시도초과)={}건",
                 processed, succeeded, reEnqueued, skipped);
     }
 }

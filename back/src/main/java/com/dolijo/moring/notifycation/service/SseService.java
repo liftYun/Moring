@@ -4,17 +4,21 @@ import com.dolijo.moring.car.entity.Car;
 import com.dolijo.moring.car.repository.CarRepository;
 import com.dolijo.moring.common.base.BaseResponseStatus;
 import com.dolijo.moring.common.exception.BaseException;
+import com.dolijo.moring.notifycation.dto.in.UnauthorizedUserRequestDto;
+import com.dolijo.moring.notifycation.dto.out.UnauthorizedUserResponseDto;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
 import com.dolijo.moring.notifycation.entity.Notification;
 import com.dolijo.moring.notifycation.repository.NotificationRepository;
 import com.dolijo.moring.notifycation.valueobject.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -118,27 +122,38 @@ public class SseService {
 
     /**
      * 비등록 운전자 인식 알림 전송 (SSE 모달 트리거)
-     * @param vin 차량 VIN
      */
-    @Transactional
-    public void sendUnauthorizedUserDetected(String vin) {
+    @Transactional(readOnly = true)
+    public void sendUnauthorizedUserDetected(UnauthorizedUserRequestDto request) {
+        String vin = request.getVin();
+
         Car car = carRepository.findByVin(vin)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
 
         SseEmitter emitter = carConnections.get(vin);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)
-                        .data(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)); // 데이터에도 동일 문자열 전송
-                log.info("비등록 운전자 인식 SSE 알림 전송 성공: {}", vin);
-            } catch (IOException e) {
-                log.error("비등록 운전자 인식 SSE 알림 전송 실패: {}", vin, e);
-                carConnections.remove(vin);
-                emitter.completeWithError(e);
-            }
-        } else {
+        if (emitter == null) {
             log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
+            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
+        }
+        // 비등록 운전자 인식 알림 엔티티
+        UnauthorizedUserResponseDto payload = UnauthorizedUserResponseDto.builder()
+                .nickname(car.getNickname())
+                .detectedAt(LocalDateTime.now())
+                .unauthorizedUserImgUrl(request.getUnauthorizedUserImgUrl())
+                .build();
+
+        try {
+            emitter.send(
+                    SseEmitter.event()
+                            .name(UNAUTHORIZED_USER_DETECTED_SSE_EVENT_NAME)  // 이벤트명 유지
+                            .data(payload, MediaType.APPLICATION_JSON)        // 객체(JSON) 전송
+            );
+            log.info("비등록 운전자 인식 SSE 알림 전송 성공: vin={}, nickname={}, img={}",
+                    vin, car.getNickname(), request.getUnauthorizedUserImgUrl());
+        } catch (IOException e) {
+            log.error("비등록 운전자 인식 SSE 알림 전송 실패: vin={}, nickname={}", vin, car.getNickname(), e);
+            carConnections.remove(vin);
+            emitter.completeWithError(e);
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
     }

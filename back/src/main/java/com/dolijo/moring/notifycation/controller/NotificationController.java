@@ -1,6 +1,7 @@
 package com.dolijo.moring.notifycation.controller;
 
 import com.dolijo.moring.common.base.BaseResponse;
+import com.dolijo.moring.notifycation.dto.in.UnauthorizedUserRequestDto;
 import com.dolijo.moring.notifycation.service.SseService;
 import com.dolijo.moring.notifycation.service.NotificationService;
 import com.dolijo.moring.notifycation.valueobject.NotificationDetailType;
@@ -140,11 +141,9 @@ public class NotificationController {
     }
 
     @Operation(summary = "비등록 운전자 인식 알림 전송", description = "비등록 운전자 인식 시 프론트에 모달 트리거 전송")
-    @PostMapping("/send/unauthorized-user/{vin}")
-    public BaseResponse<Void> sendUnauthorizedUserDetected(
-            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
-            @PathVariable("vin") String vin){
-        sseService.sendUnauthorizedUserDetected(vin);
+    @PostMapping("/send/unauthorized-user")
+    public BaseResponse<Void> sendUnauthorizedUserDetected(@RequestBody UnauthorizedUserRequestDto request) {
+        sseService.sendUnauthorizedUserDetected(request);
         return BaseResponse.ok();
     }
 

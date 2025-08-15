@@ -25,7 +25,7 @@ public class PushSender {
         try {
 
 //            log.info("강제에러 발생");
-//             throw new RuntimeException("강제 테스트 예외: 푸시 전송 실패 시뮬레이션");
+//            throw new RuntimeException("강제 테스트 예외: 푸시 전송 실패 시뮬레이션");
 
             pushService.sendPushNotification(
                     FCMNotificationRequestDto.builder()

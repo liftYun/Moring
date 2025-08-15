@@ -37,7 +37,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Log4j2
 public class PartUsageAlertBatch {
-    private static final int PART_USAGE_ALERT_THRESHOLD = 80; // 부품 소모율 알림 임계값(%)
+    private static final int PART_USAGE_ALERT_THRESHOLD = 1; // 부품 소모율 알림 임계값(%)
     private final JobRepository jobRepository;
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource;
@@ -137,10 +137,10 @@ public class PartUsageAlertBatch {
     public void sendPushAsync(String fcmToken, String message) {
         pushSender.sendAsync(
                 fcmToken,
-                "차량 정기점검 알림",
+                "부품교환 임박 알림",
                 message,
-                "CarInspectionAlertJob", // 잡 구분
-                NotificationDetailType.INSPECTION_ALERT.name() // 상세 유형
+                "partUsageAlertJob", // 잡 구분
+                NotificationDetailType.PART_ALERT.name() // 상세 유형
         );
     }
 
