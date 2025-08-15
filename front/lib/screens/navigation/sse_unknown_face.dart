@@ -1,178 +1,69 @@
 // lib/screens/navigation/sse_unknown_face.dart
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/scheduler.dart';               // 👈 추가: SchedulerBinding
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:moring/sse/sse_hub.dart';
-import 'package:moring/providers/api_client.dart';      // authDioProvider
-import 'package:moring/main.dart';                      // navigatorKey
+
+import 'package:moring/main.dart';                     // navigatorKey
+import 'package:moring/sse/sse_hub.dart';              // SseEvent, sseHubProvider
+import 'package:moring/providers/api_client.dart';     // authDioProvider
+import 'package:moring/providers/car_provider.dart';   // currentVinProvider
+
+// ======================= Payload =======================
 
 class UnknownFacePayload {
-  final DateTime? time;
-  final String? imageUrl;
-  final String? carNickname;
-  final String? vin;
+  final String nickname;      // 차량 닉네임
+  final DateTime detectedAt;  // 감지 시각
+  final String imageUrl;      // 이미지 URL
 
-  UnknownFacePayload({this.time, this.imageUrl, this.carNickname, this.vin});
+  UnknownFacePayload({
+    required this.nickname,
+    required this.detectedAt,
+    required this.imageUrl,
+  });
 
-  factory UnknownFacePayload.fromAny(dynamic data) {
-    Map m;
-    if (data is Map) {
-      m = data;
-    } else if (data is String) {
-      try { m = (jsonDecode(data) as Map); } catch (_) { m = {}; }
-    } else {
-      m = {};
-    }
+  static UnknownFacePayload? fromAny(dynamic any) {
+    try {
+      final Map<String, dynamic> m = any is String
+          ? jsonDecode(any) as Map<String, dynamic>
+          : (any as Map).cast<String, dynamic>();
 
-    String? pick(List<String> keys) {
-      for (final k in keys) {
-        final v = m[k];
-        if (v is String && v.trim().isNotEmpty) return v.trim();
-      }
+      final nick = (m['nickname'] ?? m['nickName'] ?? '').toString();
+      final img = (m['unauthorizedUserImgUrl'] ?? m['imageUrl'] ?? '').toString();
+      final whenRaw = (m['detectedAt'] ?? m['when'] ?? '').toString();
+
+      if (nick.isEmpty || img.isEmpty || whenRaw.isEmpty) return null;
+
+      DateTime when = DateTime.tryParse(whenRaw)?.toLocal() ?? DateTime.now();
+      return UnknownFacePayload(nickname: nick, detectedAt: when, imageUrl: img);
+    } catch (_) {
       return null;
     }
-
-    DateTime? parseTime() {
-      final s = pick(['createdAt','timestamp','ts','time','dateTime']);
-      if (s == null) return null;
-      try { return DateTime.parse(s); } catch (_) { return null; }
-    }
-
-    return UnknownFacePayload(
-      time: parseTime(),
-      imageUrl: pick(['imageUrl','img','image_url','faceImageUrl','photoUrl']),
-      carNickname: pick(['carNickname','carName','car_nickname','vehicleNickname']),
-      vin: pick(['vin','carVin','vehicleVin']),
-    );
   }
 }
 
-class UnknownFaceSSEOverlay extends ConsumerStatefulWidget {
-  final bool speak;
-  final int dedupWindowMs; // 같은 이미지/이벤트  중복 방지
-  const UnknownFaceSSEOverlay({super.key, this.speak = true, this.dedupWindowMs = 15000});
+// ======================= Overlay =======================
 
+class UnknownFaceSSEOverlay extends ConsumerStatefulWidget {
+  const UnknownFaceSSEOverlay({super.key});
   @override
   ConsumerState<UnknownFaceSSEOverlay> createState() => _UnknownFaceSSEOverlayState();
 }
 
 class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
   StreamSubscription<SseEvent>? _sub;
-  bool _modalOpen = false;
-
-  // 디듑
-  String? _lastKey;
-  int _lastShownMs = 0;
+  bool _dialogOpen = false;
+  int _dedupGen = 0;
 
   @override
   void initState() {
     super.initState();
-    // 허브 연결 보장
-    ref.read(sseHubProvider).ensureConnected();
-    _sub = ref.read(sseHubProvider).stream.listen(_onEvent);
-  }
-
-  void _onEvent(SseEvent e) {
-    final type = _extractType(e);
-    if (type != 'UNKNOWN_FACE' && type != 'UNKNOWN_FACE_DETECTED') return;
-
-    final payload = UnknownFacePayload.fromAny(e.json ?? e.dataRaw);
-    if (payload.imageUrl == null) return;
-
-    // dedup key: imageUrl + time
-    final key = '${payload.imageUrl}|${payload.time?.toIso8601String() ?? ''}';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (_lastKey == key && now - _lastShownMs < widget.dedupWindowMs) {
-      if (kDebugMode) debugPrint('[UnknownFace] dedup drop');
-      return;
-    }
-    _lastKey = key;
-    _lastShownMs = now;
-
-    _showModal(payload);
-  }
-
-  String _extractType(SseEvent e) {
-    final dataType = (e.json?['type'] ?? '').toString().toUpperCase();
-    final evt = e.event.toUpperCase();
-    if (evt.contains('UNKNOWN_FACE')) return 'UNKNOWN_FACE';
-    if (evt.contains('UNKNOWN_FACE_DETECTED')) return 'UNKNOWN_FACE_DETECTED';
-    return dataType;
-  }
-
-  Future<void> _showModal(UnknownFacePayload p) async {
-    if (!mounted || _modalOpen) return;
-    _modalOpen = true;
-
-    final tsText = p.time != null
-        ? '${p.time!.toLocal()}'.replaceFirst('.000', '')
-        : '시간 정보 없음';
-    final carName = p.carNickname ?? '차량';
-
-    final result = await showDialog<String>(
-      context: navigatorKey.currentContext!,
-      barrierDismissible: true,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('미등록 사용자 감지'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (p.imageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(p.imageUrl!, fit: BoxFit.cover),
-                ),
-              const SizedBox(height: 12),
-              Text('$carName 에 등록된 사용자가 아닙니다.'),
-              const SizedBox(height: 6),
-              Text('감지 시각: $tsText', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              const SizedBox(height: 8),
-              const Text('등록하시겠습니까?'),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, 'no'), child: const Text('아니요')),
-            ElevatedButton(onPressed: () => Navigator.pop(ctx, 'yes'), child: const Text('네')),
-          ],
-        );
-      },
-    );
-
-    _modalOpen = false;
-
-    if (result == 'yes') {
-      _handleYesRegister(p);
-    } else if (result == 'no') {
-      _handleNoSendSms(p);
-    }
-  }
-
-  Future<void> _handleYesRegister(UnknownFacePayload p) async {
-    navigatorKey.currentState?.pushNamed('/registration');
-  }
-
-  Future<void> _handleNoSendSms(UnknownFacePayload p) async {
-    try {
-      final dio = ref.read(authDioProvider);
-      await dio.post(
-        '/api/v1/sms/send/unauthorized-user',
-        data: {
-          'vin': p.vin,
-          'imageUrl': p.imageUrl,
-          'detectedAt': p.time?.toUtc().toIso8601String(),
-          'carNickname': p.carNickname,
-        },
-        options: Options(validateStatus: (s) => s != null && s < 500),
-      );
-    } catch (e) {
-      debugPrint('[UnknownFace] SMS 전송 실패: $e');
-    }
+    final hub = ref.read(sseHubProvider);
+    hub.ensureConnected();
+    _sub = hub.stream.listen(_onEvent);
   }
 
   @override
@@ -180,6 +71,158 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
     _sub?.cancel();
     super.dispose();
   }
+
+  void _onEvent(SseEvent e) {
+    final t = (e.event.isNotEmpty ? e.event : (e.json?['type'] ?? '').toString()).toUpperCase();
+    if (t != 'UNAUTHORIZED_USER_DETECTED') return;
+
+    final payload = UnknownFacePayload.fromAny(e.json ?? e.raw);
+    debugPrint('[UnknownFace] got event type="$t" id="${e.id}" raw="${e.raw}"');
+    if (payload == null) return;
+
+    _showDialogNowOrNextFrame(payload);   // 👈 즉시/다음 프레임에 띄우기
+  }
+
+  // 👉 핵심: 지금 바로 루트 컨텍스트가 있으면 즉시 띄우고,
+  // 없으면 프레임을 강제로 스케줄 후 다음 프레임에서 띄웁니다.
+  void _showDialogNowOrNextFrame(UnknownFacePayload p) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx != null) {
+      _showUnknownUserDialog(ctx, p);
+      return;
+    }
+    // 루트 컨텍스트가 아직 없다면 프레임을 만들어준다.
+    SchedulerBinding.instance.scheduleFrame();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      final c = navigatorKey.currentContext;
+      if (c != null) _showUnknownUserDialog(c, p);
+    });
+  }
+
+  Future<void> _showUnknownUserDialog(BuildContext context, UnknownFacePayload p) async {
+    if (_dialogOpen) return;
+    _dialogOpen = true;
+    final myGen = ++_dedupGen;
+
+    final detectedLabel =
+        '${p.detectedAt.year}-${_2(p.detectedAt.month)}-${_2(p.detectedAt.day)} '
+        '${_2(p.detectedAt.hour)}:${_2(p.detectedAt.minute)}:${_2(p.detectedAt.second)}';
+
+    // Timer? autoClose;
+    // autoClose = Timer(const Duration(seconds: 10), () {
+    //   if (!_dialogOpen) return;
+    //   final nav = Navigator.of(context, rootNavigator: true);
+    //   if (nav.canPop()) nav.pop('auto');
+    // });
+
+    final result = await showGeneralDialog<String>(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      barrierLabel: '닫기',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (_, __, ___) {
+        return Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 80, left: 18, right: 18),
+            child: Material(
+              color: Colors.transparent,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 280, maxWidth: 640),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 22),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF232326).withOpacity(0.94),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                    boxShadow: const [BoxShadow(blurRadius: 18, color: Colors.black26, offset: Offset(0, 8))],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('비인가 사용자 감지', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, height: 1.15)),
+                      const SizedBox(height: 10),
+                      Text('$detectedLabel · ${p.nickname}', style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                      const SizedBox(height: 14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.network(
+                            p.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.black26,
+                              alignment: Alignment.center,
+                              child: const Text('이미지를 불러오지 못했습니다', style: TextStyle(color: Colors.white54)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text('등록된 사용자가 아닙니다. 등록하시겠습니까?', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('no'),
+                            child: const Text('아니요'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('yes'),
+                            child: const Text('네'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    _dialogOpen = false;
+    if (myGen != _dedupGen) return;
+
+    if (result == 'no') {
+      await _sendUnauthorizedSms(p);
+    } else if (result == 'yes') {
+      // 등록 플로우 이동 필요 시 여기에 라우팅
+      // navigatorKey.currentState?.pushNamed('/registration');
+    }
+  }
+
+  Future<void> _sendUnauthorizedSms(UnknownFacePayload p) async {
+    try {
+      final dio = ref.read(authDioProvider);
+      final vin = ref.read(currentVinProvider);
+      if (vin == null) return;
+
+      await dio.post(
+        '/api/v1/sms/send/unauthorized-user',
+        data: {
+          'vin': vin,
+          'imageUrl': p.imageUrl,
+          // 필요 시 'latitude','longitude' 추가
+        },
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      debugPrint('[UnknownFace] SMS sent for vin=$vin');
+    } catch (e, st) {
+      debugPrint('[UnknownFace] SMS send failed: $e\n$st');
+    }
+  }
+
+  String _2(int n) => n.toString().padLeft(2, '0');
 
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();

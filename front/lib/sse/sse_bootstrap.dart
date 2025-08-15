@@ -2,25 +2,24 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:moring/providers/car_provider.dart'; // currentVinProvider, currentCarNicknameProvider 등
+import 'package:moring/providers/car_provider.dart'; // currentVinProvider
 import 'package:moring/sse/sse_hub.dart';
 
-/// 전역에서 현재 VIN 변화를 감지해 SSEHub에 전달하는 아주 얇은 위젯.
-/// UI는 없고, 소켓만 관리합니다.
+/// 전역에서 현재 VIN 변화를 감지해 SSEHub에 전달.
+/// UI는 없고 소켓만 관리.
 class SseBootstrap extends ConsumerWidget {
   const SseBootstrap({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1) VIN 변화를 구독(변할 때마다 호출됨)
+    // VIN이 바뀔 때마다 허브에 반영
     ref.listen<String?>(currentVinProvider, (prev, next) {
       ref.read(sseHubProvider).switchVin(next);
     });
 
-    // 2) 최초 1회 연결 보장: 현재 VIN으로 switchVin 호출
+    // 첫 빌드 시 현재 VIN으로 보정
     final vin = ref.watch(currentVinProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 같은 값이면 내부에서 무시됨
       ref.read(sseHubProvider).switchVin(vin);
     });
 

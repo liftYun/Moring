@@ -68,6 +68,7 @@ Future<void> main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
+// lib/main.dart  (MyApp만 교체하면 됩니다)
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -75,9 +76,10 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authAsync = ref.watch(isLoggedInProvider);
 
+    // 이건 build 안에서 호출하므로 OK
     ref.listen<String?>(fCMNotifierProvider, (previous, next) {
       if (next != null) {
-        debugPrint('FCM 토큰 상태 변경(전체 토큰): $next...');
+        debugPrint('FCM 토큰 상태 변경: $next');
       }
     });
 
@@ -89,11 +91,14 @@ class MyApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
 
-        // ✅ 여기서 전역 오버레이로 깔아준다 (앱의 모든 화면에서 동작)
-        builder: (context, child) => Stack(children: [
-          if (child != null) child,
-          const SseBootstrap(),              // VIN 변화 → 허브.switchVin()
-        ]),
+        // ✅ 전역 오버레이는 여기서만 깔기
+        builder: (context, child) => Stack(
+          children: [
+            if (child != null) child,
+            const SseBootstrap(),            // VIN 전환 전담
+            const UnknownFaceSSEOverlay(),   // 전역 비인가 사용자 모달
+          ],
+        ),
 
         home: authAsync.when(
           loading: () => const SplashScreen(),
@@ -113,3 +118,4 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
+
