@@ -140,7 +140,8 @@ public class NotificationController {
         return BaseResponse.of(updatedCount);
     }
 
-    @Operation(summary = "비등록 운전자 인식 알림 전송", description = "비등록 운전자 인식 시 프론트에 모달 트리거 전송")
+    @Operation(summary = "비등록 운전자 인식 알림 전송 SSE", description = "비등록 운전자 인식 시 호출해야 하는 API입니다. " +
+            "비등록 운전자의 차량 VIN, 차량 닉네임, 비등록 운전자의 이미지 URL을 포함한 요청을 받습니다.")
     @PostMapping("/send/unauthorized-user")
     public BaseResponse<Void> sendUnauthorizedUserDetected(@RequestBody UnauthorizedUserRequestDto request) {
         sseService.sendUnauthorizedUserDetected(request);
