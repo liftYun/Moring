@@ -10,8 +10,14 @@ import 'package:moring/screens/home_content.dart';
 class ConsumablePartsScreen extends ConsumerStatefulWidget {
   final List<Consumable> consumables;
   final String vin;
+  final List<int>? updatedPartIds;
 
-  const ConsumablePartsScreen({Key? key, required this.consumables, required this.vin}) : super(key: key);
+  const ConsumablePartsScreen({
+    Key? key,
+    required this.consumables,
+    required this.vin,
+    this.updatedPartIds,
+  }) : super(key: key);
 
   @override
   ConsumerState<ConsumablePartsScreen> createState() => _ConsumablePartsScreenState();
@@ -22,6 +28,14 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
   final _replacementDateController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<int> _updatedPartIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.updatedPartIds != null) {
+      _updatedPartIds = List.from(widget.updatedPartIds!);
+    }
+  }
 
   @override
   void dispose() {
@@ -197,8 +211,13 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
       child: Card(
         elevation: 0,
         margin: const EdgeInsets.only(bottom: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        color: isUpdated ? Colors.greenAccent.withOpacity(0.2) : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: isUpdated
+              ? const BorderSide(color: Colors.greenAccent, width: 1.0)
+              : BorderSide.none,
+        ),
+        color: isUpdated ? Colors.greenAccent.withOpacity(0.1) : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
@@ -317,13 +336,32 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
               // ✅ 추가: 일괄 변경 버튼
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final List<int>? updatedPartIds = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BulkPartRegistrationPage(vin: widget.vin),
                     ),
                   );
+                  if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
+                    // 서버에서 최신 데이터를 가져와서 화면 업데이트
+                    try {
+                      final dio = ref.read(authDioProvider);
+                      final response = await dio.get('/api/v1/parts/status/${widget.vin}');
+                      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+                        final List list = response.data['result'] as List;
+                        setState(() {
+                          widget.consumables.clear();
+                          widget.consumables.addAll(list.map((e) => Consumable.fromJson(e)));
+                          _updatedPartIds = updatedPartIds;
+                        });
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('데이터 새로고침 실패: $e')),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF50C878), // ✅ 색상 코드 변경
