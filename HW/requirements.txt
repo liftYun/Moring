@@ -1,0 +1,51 @@
+# Jetson Driver Monitoring System - Complete Requirements
+# driver_monitor_jetson.py 분석 기반
+
+# Core Computer Vision & AI
+opencv-python==4.11.0.86
+opencv-contrib-python>=4.8.0
+mediapipe>=0.10.0
+face-recognition==1.3.0
+ultralytics>=8.0.0
+
+# Numerical Computing
+numpy>=1.21.0
+scipy>=1.9.0
+
+# Image Processing
+Pillow>=9.0.0
+
+# MQTT Communication
+paho-mqtt>=1.6.0
+
+# Deep Learning Framework (YOLO dependency)
+torch>=1.13.0
+torchvision>=0.14.0
+
+# Build Tools
+cmake>=3.18.0
+dlib==20.0.0
+
+# System Monitoring
+psutil>=5.9.0
+
+# Machine Learning Utilities
+scikit-learn>=1.1.0
+
+# 설치 방법:
+# 1. 시스템 의존성: ./install_jetson_complete.sh
+# 2. Python 패키지만: pip3 install -r requirements.txt
+#
+# 사용된 라이브러리 분석:
+# - cv2: OpenCV (컴퓨터 비전)
+# - numpy: 수치 계산
+# - mediapipe: 얼굴 랜드마크
+# - face_recognition: 얼굴 인식
+# - ultralytics: YOLO 객체 감지
+# - PIL: 이미지 처리
+# - scipy: 과학 계산 (distance)
+# - paho-mqtt: MQTT 통신
+# - torch/torchvision: PyTorch (YOLO 의존성)
+# - dlib: 얼굴 인식 백엔드
+# - psutil: 시스템 모니터링
+# - scikit-learn: ML 유틸리티
