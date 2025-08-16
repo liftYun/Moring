@@ -1,5 +1,10 @@
 // lib/voice/moring_voice_panel.dart
-// Whisper(상시) + Clova(폴백) + 내부 LLM + OpenAI TTS
+// Whisper(상시) + (조건부)Clova 폴백 + LLM + OpenAI TTS
+// - .env: GMS_KEY, CLOVA_CLIENT_ID, CLOVA_CLIENT_SECRET
+// - LLM: POST /api/v1/AI/ask (JSON {question} or raw string 모두 허용)
+// - ※ 네비게이션 화면에서만 동작/복귀 시 자동 재개: RouteObserver 필요
+//   -> main.dart 에서 전역 제공:
+//      final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 import 'dart:async';
 import 'dart:convert';
@@ -16,77 +21,108 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-// 전역 RouteObserver (main.dart에 정의)
+// main.dart 의 전역 RouteObserver 를 import
 import 'package:moring/main.dart' show routeObserver;
 
 // 인증/무인증 클라이언트
 import 'package:moring/providers/api_client.dart'
     show authDioProvider, noAuthDioProvider;
 
-// ─────────────────────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////////////////////////
 // .env 키
+////////////////////////////////////////////////////////////////////////////////
 String get _gmsKey => dotenv.maybeGet('GMS_KEY') ?? '';
 String get _clovaClientId => dotenv.maybeGet('CLOVA_CLIENT_ID') ?? '';
 String get _clovaClientSecret => dotenv.maybeGet('CLOVA_CLIENT_SECRET') ?? '';
 
-// 엔드포인트
+////////////////////////////////////////////////////////////////////////////////
+// 엔드포인트 상수
+////////////////////////////////////////////////////////////////////////////////
 const _gmsOpenAIBase = 'https://gms.ssafy.io/gmsapi/api.openai.com';
+
+// Whisper STT
 const _whisperUrl = '$_gmsOpenAIBase/v1/audio/transcriptions';
 const _whisperModel = 'whisper-1';
 const _whisperLanguage = 'ko';
+
+// OpenAI TTS
 const _ttsUrl = '$_gmsOpenAIBase/v1/audio/speech';
 const _ttsModel = 'gpt-4o-mini-tts';
 const _ttsVoice = 'nova';
+
+// Clova STT
 const _clovaUrl = 'https://naveropenapi.apigw.ntruss.com/recog/v1/stt';
+
+// 내부 LLM
 const _llmPath = '/api/v1/AI/ask';
 
-// VAD/타이밍 (튜닝)
-const Duration _defaultTurnMax = Duration(seconds: 20);
-const int _silenceTimeoutMs = 900;
-const int _minListenMs = 500;
-const double _vadDb = -55;
-const int _ampWindowMs = 25;
+////////////////////////////////////////////////////////////////////////////////
+// VAD/타이밍
+////////////////////////////////////////////////////////////////////////////////
+const Duration _defaultTurnMax = Duration(seconds: 30);
+const int _silenceTimeoutMs = 1200;
+const int _minListenMs = 700;
+const double _vadDb = -45;
+const int _ampWindowMs = 30;
 
-const int _llmMaxListenMs = 25000;
-const int _warmupMs = 180;
-const int _cooldownMs = 100;
-const int _minConsecLoud = 1;
-const int _minVoicedMs = 90;
+const int _llmMaxListenMs = 30000;
+const int _warmupMs = 220;
+const int _cooldownMs = 120;
+const int _minConsecLoud = 2;
+const int _minVoicedMs = 120;
 const int _minFileBytes = 8000;
 
 // 대화 유지
 const int _maxTurnsMemory = 6;
-const Duration _llmIdle = Duration(seconds: 12);
-const Duration _llmGraceAfterWake = Duration(seconds: 6);
-const int _noSpeechTimeoutLlmMs = 3000;
-const int _noSpeechTimeoutWakeMs = 4000;
-const int _emptyTurnsToExit = 2;
+const Duration _llmIdle = Duration(seconds: 15);
+const Duration _llmGraceAfterWake = Duration(seconds: 7);
+const int _noSpeechTimeoutLlmMs = 5000;   // LLM 모드 무발화 타임아웃(말 생각시간 허용)
+const int _emptyTurnsToExit = 2;          // (백업용)
 
-// TTS 가드
-const int _postTtsGuardMs = 800;
-const int _needFramesToInterrupt = 6;
+// TTS 관련 가드/중단
+const int _postTtsGuardMs = 800;    // TTS 직후 리스닝 재개 지연
+const int _postTtsQuietMs = 2500;   // TTS 직후 무발화猶豫구간(빈턴 멘트 방지)
+const int _needFramesToInterrupt = 6; // TTS중 사용자 소리로 끊기 위한 프레임 수
 
 enum VoiceState { idle, listening, processing, speaking }
 
+////////////////////////////////////////////////////////////////////////////////
+// STT 결과 모델
+////////////////////////////////////////////////////////////////////////////////
 class STTResult {
   final String text;
-  final double confidence; // 0~1
-  final String engine;     // whisper | clova
+  final double confidence; // 0 ~ 1
+  final String engine;     // 'whisper' | 'clova'
   final Map<String, dynamic>? raw;
+
   STTResult(this.text, this.confidence, this.engine, {this.raw});
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////////////////////////
 // 위젯
+////////////////////////////////////////////////////////////////////////////////
 class VoiceAssistantPanel extends ConsumerStatefulWidget {
   final bool showDebugPanel;
   final bool autoStart;
   final bool requireWakeWord;
+
+  /// 배지 자체 렌더링 여부
   final bool showBadge;
+
+  /// 웨이크워드로 LLM 활성화된 동안만 배지를 보일지
   final bool showBadgeOnlyWhenActive;
+
+  /// 배지 정렬 위치
   final Alignment badgeAlignment;
+
+  /// 배지 외곽 여백
   final EdgeInsets badgeMargin;
+
+  /// (하단에 둘 때) 하단 CTA/네비 회피 px
   final double avoidBottomPx;
+
+  /// 웨이크워드만 말했을 때 TTS("네, 말씀하세요.")를 말할지 여부 (기본: 말하지 않음 = 조용히 대기 전환)
+  final bool speakOnWakeOnly;
 
   const VoiceAssistantPanel({
     super.key,
@@ -95,9 +131,10 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
     this.requireWakeWord = true,
     this.showBadge = true,
     this.showBadgeOnlyWhenActive = true,
-    this.badgeAlignment = Alignment.bottomCenter,
-    this.badgeMargin = EdgeInsets.zero,
+    this.badgeAlignment = Alignment.topCenter, // CTA 가리지 않게 상단 기본
+    this.badgeMargin = const EdgeInsets.only(top: 12),
     this.avoidBottomPx = 104,
+    this.speakOnWakeOnly = false,
   });
 
   @override
@@ -106,11 +143,11 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
 
 class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     with WidgetsBindingObserver, RouteAware {
-  // 싱글톤 오너 가드
+  // ===== 전역 싱글턴 가드 =====
   static bool _globalActive = false;
   bool _isOwner = false;
 
-  // 내부 상태
+  // ===== 내부 상태 =====
   final _recorder = AudioRecorder();
   final _player = AudioPlayer();
   final _plainDio = Dio();
@@ -142,35 +179,39 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   int _interruptLoudFrames = 0;
   int _speakEndedAtMs = 0;
 
+  // 최근 활동 시각(ms) — 유휴 타이머 오작동 방지
   int _lastActivityMs = 0;
+
+  // 중복 호출 병합
   bool _nextTurnScheduled = false;
 
   final List<Map<String, String>> _history = [];
-  double _lastAmpDb = double.nan;
-
-  // ⬇️ 중첩 방지용: LLM 파이프라인 락 + 대기열(최신 1건)
-  bool _llmBusy = false;
-  String? _queuedUserText;
 
   final List<String> _wakeWords = const [
     '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
     '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아','오리가',
     '모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
     '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','어린아','어랭아'
-    '올리나','우링아'
   ];
+  final List<String> _llmExitWords = const ['모링 종료','없다','모링종료','대화 끝','그만','종료','끝','없어'];
 
-  final List<String> _llmExitWords = const [
-    '모링 종료','없다','모링종료','대화 끝','그만','종료','끝','없어'
-  ];
-
+  // ===== STT 사후 필터(프롬프트 에코/잡문구) =====
   final List<String> _sttBlacklistExact = const [
-    '자동차 내비게이션 맥락','내비게이션 맥락','자동차 내비게이션',
-    '자연스러운 띄어쓰기','대화 맥락','모링:','친구:',
+    '자동차 내비게이션 맥락',
+    '내비게이션 맥락',
+    '자동차 내비게이션',
+    '자연스러운 띄어쓰기',
+    '대화 맥락',
+    '모링:',
+    '친구:',
   ];
   final List<RegExp> _sttBlacklistPatterns = [
     RegExp(r'^(자동차\s*)?내비게이션\s*맥락$', caseSensitive: false),
   ];
+
+  bool get _recentAfterTts =>
+      _speakEndedAtMs > 0 &&
+          DateTime.now().millisecondsSinceEpoch - _speakEndedAtMs < _postTtsQuietMs;
 
   @override
   void initState() {
@@ -207,23 +248,19 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         _speakEndedAtMs = DateTime.now().millisecondsSinceEpoch;
         _markActivity();
         if (_isLlmActive) _armIdle(_llmIdle);
-
-        // TTS가 끝나면, 대기열에 쌓인 턴을 우선 처리
-        final pending = _queuedUserText;
-        _queuedUserText = null;
-        _llmBusy = false; // 다음 턴 허용
-        if (pending != null && pending.trim().isNotEmpty) {
-          // 바로 이어서 처리
-          unawaited(_handleLlmConversation(pending));
-        } else {
-          _scheduleNextTurn(_postTtsGuardMs);
-        }
+        _scheduleNextTurn(_postTtsGuardMs);
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _markActivity();
-      _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
+      final route = ModalRoute.of(context);
+      if (route is PageRoute) {
+        routeObserver.subscribe(this, route);
+        _pageVisible = route.isCurrent;
+      } else {
+        _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
+      }
       if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
     });
   }
@@ -231,11 +268,14 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
+      // 중복 구독 방지 위해 try-unsubscribe 뒤 subscribe
+      try { routeObserver.unsubscribe(this); } catch (_) {}
       routeObserver.subscribe(this, route);
       _pageVisible = route.isCurrent;
+    } else {
+      _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
     }
 
     if (!_isOwner) return;
@@ -258,15 +298,30 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     super.dispose();
   }
 
-  // RouteAware
+  // ===== RouteAware =====
   @override
-  void didPush() { _pageVisible = true; if (_isOwner && widget.autoStart && _shouldRun()) _startLoop(); }
+  void didPush() {
+    _pageVisible = true;
+    if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
+  }
+
   @override
-  void didPopNext() { _pageVisible = true; if (_isOwner && widget.autoStart && _shouldRun()) _startLoop(); }
+  void didPopNext() {
+    _pageVisible = true;
+    if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
+  }
+
   @override
-  void didPushNext() { _pageVisible = false; if (_isOwner) _stopLoop(); }
+  void didPushNext() {
+    _pageVisible = false;
+    if (_isOwner) _stopLoop();
+  }
+
   @override
-  void didPop() { _pageVisible = false; if (_isOwner) _stopLoop(); }
+  void didPop() {
+    _pageVisible = false;
+    if (_isOwner) _stopLoop();
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -278,8 +333,12 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   bool _shouldRun() => _pageVisible && _appResumed;
 
-  void _markActivity() { _lastActivityMs = DateTime.now().millisecondsSinceEpoch; }
+  // ===== 활동 기록 =====
+  void _markActivity() {
+    _lastActivityMs = DateTime.now().millisecondsSinceEpoch;
+  }
 
+  // ===== 스케줄 병합 =====
   void _scheduleNextTurn([int delayMs = 0]) {
     if (!_isOwner) return;
     if (_nextTurnScheduled) return;
@@ -291,6 +350,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     });
   }
 
+  // ========== 루프 ==========
   Future<void> _startLoop() async {
     if (!_isOwner) return;
     if (_looping) return;
@@ -317,18 +377,18 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (mounted && (widget.showDebugPanel || widget.showBadge)) setState(() {});
   }
 
+  Future<void> _cooldown() async =>
+      Future.delayed(const Duration(milliseconds: _cooldownMs));
+
   void _processNextTurn() {
     if (!_isOwner) return;
     if (!_looping || !_shouldRun()) return;
     if (_state == VoiceState.processing || _state == VoiceState.listening) return;
-    if (_llmBusy) return; // ⬅️ LLM 파이프라인 중엔 재녹음 금지
 
     _setStatus(_isLlmActive ? '대화 대기 중…' : '녹음 준비…');
     _startListening(maxMs: _isLlmActive ? _llmMaxListenMs : _defaultTurnMax.inMilliseconds);
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Listening
   Future<void> _startListening({required int maxMs}) async {
     if (!_isOwner) return;
     if (!mounted || _state == VoiceState.listening) return;
@@ -353,14 +413,18 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
 
       _setState(VoiceState.listening);
-      _disarmIdle();
+      _disarmIdle();    // 리스닝 중에는 유휴 타이머 off
       _markActivity();
 
       final dir = await getTemporaryDirectory();
       final path = '${dir.path}/moring_turn.wav';
 
       await _recorder.start(
-        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
+        const RecordConfig(
+          encoder: AudioEncoder.wav,
+          sampleRate: 16000,
+          numChannels: 1,
+        ),
         path: path,
       );
 
@@ -380,8 +444,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           .listen((amp) async {
         if (!mounted || !_isOwner) return;
 
-        _lastAmpDb = amp.current;
-
+        // TTS 중 → 연속 큰소리면 끊기(바로 응답 가능하게)
         if (_state == VoiceState.speaking) {
           if (amp.current.isFinite && amp.current > _vadDb) {
             _interruptLoudFrames++;
@@ -428,8 +491,15 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final minOk = elapsed >= _minListenMs;
         final silentAfterSpeech = _speechActive && sinceLoud >= _silenceTimeoutMs;
         final overMax = elapsed >= maxMs;
+
+        // TTS 직후엔 무발화 타임아웃을 늘려, 빈턴 멘트를 줄임
+        final afterTts = DateTime.now().millisecondsSinceEpoch - _speakEndedAtMs;
+        final llmNoSpeech = (afterTts < _postTtsQuietMs)
+            ? _noSpeechTimeoutLlmMs * 2
+            : _noSpeechTimeoutLlmMs;
+
         final noSpeechTimeoutHit =
-            !_speechActive && elapsed >= (_isLlmActive ? _noSpeechTimeoutLlmMs : _noSpeechTimeoutWakeMs);
+            _isLlmActive && !_speechActive && elapsed >= llmNoSpeech;
 
         if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) break;
       }
@@ -471,8 +541,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
       _setStatus('음성 인식 중…');
 
+      // 1) Whisper
       final whisperRes = await _callWhisperStt(f);
 
+      // 2) Whisper가 애매하면 Clova 폴백
       STTResult finalRes = whisperRes;
       if (_shouldFallbackToClova(whisperRes)) {
         final clovaText = await _callClovaStt(f);
@@ -485,13 +557,15 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         }
       }
 
+      // ===== STT 사후 정제 =====
       _lastHeard = _sanitizeStt(finalRes.text.trim(), lastAssistant: _lastAssistant);
+
       if (_lastHeard.isEmpty) {
         _handleEmptyTurn();
         return;
       }
 
-      // 에코 가드
+      // 어시스턴트 에코 가드
       if (_isAssistantEcho(_lastHeard)) {
         if (kDebugMode) debugPrint('[Voice] echo guarded: "${_lastHeard}"');
         _setState(VoiceState.idle);
@@ -507,7 +581,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         await _handleLlmConversation(_lastHeard);
       }
 
-      if (mounted && _isOwner && _state != VoiceState.speaking && !_llmBusy) {
+      if (mounted && _isOwner && _state != VoiceState.speaking) {
         _setState(VoiceState.idle);
         _scheduleNextTurn(_cooldownMs);
       }
@@ -521,8 +595,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // STT
+  // ===== STT/품질 =====
   Future<STTResult> _callWhisperStt(File wav) async {
     if (_gmsKey.isEmpty) {
       if (kDebugMode) debugPrint('[STT] GMS_KEY 미설정');
@@ -531,9 +604,14 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     try {
       final form = FormData.fromMap({
         'model': _whisperModel,
-        'file': await MultipartFile.fromFile(wav.path, filename: 'audio.wav'),
+        'file': await MultipartFile.fromFile(
+          wav.path,
+          filename: 'audio.wav',
+          contentType: DioMediaType('audio', 'wav'),
+        ),
         'language': _whisperLanguage,
         'response_format': 'verbose_json',
+        // 프롬프트는 인식 품질 향상에 쓰되, sanitizeStt로 잔향 제거
         'prompt': '한국어 일상 대화, 자동차 내비게이션 맥락. 자연스러운 띄어쓰기.',
         'temperature': '0',
       });
@@ -559,6 +637,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         }
         return STTResult(text, conf, 'whisper', raw: map);
       }
+
+      if (kDebugMode) {
+        debugPrint('[Whisper] 실패 status=${res.statusCode} data=${res.data}');
+      }
       return STTResult('', 0.0, 'whisper');
     } catch (e) {
       if (kDebugMode) debugPrint('[Whisper] 예외: $e');
@@ -568,6 +650,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   double _estimateWhisperConfidence(Map<String, dynamic> verboseJson, String text) {
     if (text.trim().isEmpty) return 0.0;
+
     double score = 0.4;
     final len = text.runes.length;
     if (len >= 6) score += 0.1;
@@ -576,19 +659,23 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
     final segments = (verboseJson['segments'] as List?)?.cast<Map<String, dynamic>>();
     if (segments != null && segments.isNotEmpty) {
-      double sumProb = 0; int c = 0;
+      double sumProb = 0;
+      int c = 0;
       for (final s in segments) {
         final lp = (s['avg_logprob'] as num?)?.toDouble();
         if (lp != null) {
           final mapped = ((lp + 1.5) / 1.4).clamp(0.0, 1.0);
-          sumProb += mapped; c++;
+          sumProb += mapped;
+          c++;
         }
       }
       if (c > 0) score = max(score, sumProb / c);
       if (len <= 3) score = min(score, 0.35);
     }
+
     final comp = (verboseJson['compression_ratio'] as num?)?.toDouble();
     if (comp != null && comp > 2.4) score = min(score, 0.45);
+
     return score.clamp(0.0, 1.0);
   }
 
@@ -602,14 +689,19 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   Future<String> _callClovaStt(File wavFile) async {
-    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) return '';
+    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) {
+      if (kDebugMode) debugPrint('[Clova] 키 미설정 → 폴백 불가');
+      return '';
+    }
     try {
       final uri = Uri.parse(_clovaUrl).replace(queryParameters: {
-        'lang': 'Kor', 'completion': 'sync',
+        'lang': 'Kor',
+        'completion': 'sync',
       });
       final bytes = await wavFile.readAsBytes();
       final res = await _plainDio.postUri(
-        uri, data: bytes,
+        uri,
+        data: bytes,
         options: Options(
           responseType: ResponseType.plain,
           headers: {
@@ -634,17 +726,23 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
             : '';
       }
       return '';
-    } catch (_) { return ''; }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[Clova] 예외: $e');
+      return '';
+    }
   }
 
   bool _shouldFallbackToClova(STTResult whisper) {
     if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) return false;
+
     final text = whisper.text.trim();
     if (text.isEmpty) return true;
+
     final confLow = whisper.confidence < 0.58;
     final shortText = text.runes.length <= 2;
     final lowKorean = _koreanRatio(text) < 0.35;
     final hasWeird = RegExp(r'[A-Za-z]{3,}').hasMatch(text);
+
     return confLow || shortText || (lowKorean && hasWeird);
   }
 
@@ -658,41 +756,48 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     return score.clamp(0.0, 1.0);
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 대화 흐름
+  // ========== 대화 흐름 ==========
   Future<void> _handleEmptyTurn() async {
-    if (!_isOwner) return;
-    if (!mounted) return;
+    if (!_isOwner || !mounted) return;
 
     if (_isLlmActive) {
-      _emptyTurns++;
-      if (_emptyTurns >= _emptyTurnsToExit) {
-        _isLlmActive = false;
-        _disarmIdle();
-        _emptyTurns = 0;
-        await _speakOpenAiTts('난중에, 대화가 필요하면 다시 불러줘.');
-      } else {
+      // ✅ TTS 직후엔 조용히 대기만 (빈턴 멘트 금지)
+      if (_recentAfterTts) {
         _armIdle(_llmGraceAfterWake);
-        await _speakOpenAiTts('듣고 있어. 더 할 말 있으면 말해줘?');
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+        return;
       }
-    } else {
+      // ✅ 친절 멘트(“듣고 있어…”)는 제거: 침묵이면 idle 유지 + 유휴 타이머만
+      _armIdle(_llmGraceAfterWake);
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
+      return;
     }
+
+    // LLM 모드가 아니면 평소대로 다음 턴
+    _setState(VoiceState.idle);
+    _scheduleNextTurn(_cooldownMs);
   }
 
   Future<void> _checkForWakeWord(String heardText) async {
     if (!_isOwner) return;
     final userText = _extractAfterWakeWord(heardText);
     if (userText != null) {
-      // → LLM 모드 진입
-      if (!_isLlmActive) setState(() => _isLlmActive = true);
+      // LLM 대화 모드 진입
+      if (!_isLlmActive) {
+        setState(() {
+          _isLlmActive = true;
+        });
+      }
       _disarmIdle();
 
-      final trimmed = _sanitizeStt(userText).trim();
+      final trimmed = _sanitizeStt(userText).trim(); // 안전 처리
       if (trimmed.isEmpty) {
-        // 웨이크워드만
-        await _speakOpenAiTts('네, 말씀하세요.');
+        // 웨이크워드만 말했을 때: TTS 안 하고(겹침 방지) 바로 듣기 유지
+        if (widget.speakOnWakeOnly) {
+          await _speakOpenAiTts('네, 말씀하세요.');
+        }
         _armIdle(_llmGraceAfterWake);
         _setState(VoiceState.idle);
         _scheduleNextTurn(_cooldownMs);
@@ -708,27 +813,21 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   Future<void> _handleLlmConversation(String heardText) async {
     if (!_isOwner) return;
     final raw = heardText.trim();
-    if (raw.isEmpty) return;
-
-    // ⬇️ 중첩 방지: 진행 중이면 최신 1건으로 교체 후 리턴
-    if (_llmBusy) {
-      _queuedUserText = raw;
-      return;
-    }
-    _llmBusy = true;
 
     if (_llmExitWords.any((w) => raw.contains(w))) {
       _isLlmActive = false;
       _disarmIdle();
       await _speakOpenAiTts('대화를 종료합니다.');
-      // _llmBusy 해제는 onPlayerStateChanged에서
       return;
     }
 
     final afterWake = _extractAfterWakeWord(raw);
     final userSaid = (afterWake ?? raw).trim();
     if (userSaid.isEmpty) {
-      await _speakOpenAiTts('네, 말씀하세요.');
+      // (거의 없음) 안전 처리
+      _armIdle(_llmGraceAfterWake);
+      _setState(VoiceState.idle);
+      _scheduleNextTurn(_cooldownMs);
       return;
     }
 
@@ -749,7 +848,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       await _speakOpenAiTts(_lastReply);
     } else {
       await _speakOpenAiTts('지금 네트워크가 불안정해요. 잠시 후 다시 말씀해 주세요.');
-      _llmBusy = false; // 실패 시 직접 해제
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
     }
@@ -774,14 +872,15 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       final quietForMs = now - lastActive;
 
       final stillQuiet = quietForMs >= d.inMilliseconds - 200;
-      final isSafeToEnd = _isLlmActive && _state == VoiceState.idle && _looping && stillQuiet;
+      final isSafeToEnd =
+          _isLlmActive && _state == VoiceState.idle && _looping && stillQuiet;
 
       if (!isSafeToEnd) {
         _armIdle(d);
         return;
       }
 
-      _isLlmActive = false;
+      _isLlmActive = false; // 배지 즉시 숨김
       await _speakOpenAiTts('응답이 없어 대화를 종료할게요.');
     });
   }
@@ -792,24 +891,13 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _llmIdleTimer = null;
   }
 
-  // 웨이크워드 추출(강화)
   String? _extractAfterWakeWord(String text) {
     if (text.isEmpty) return null;
-
-    var cleanedHead = text
-        .replaceAll(RegExp(r'^[\s·…~,\.\-:;!?]+', unicode: true), '')
-        .replaceAll(RegExp(r'^(어|음|에|저기|그|아)+\s*', unicode: true), '');
-
-    final compact =
-    cleanedHead.replaceAll(RegExp(r'[\s\p{P}]+', unicode: true), '');
+    final noSpace = text.replaceAll(RegExp(r'\s+'), '');
     for (final w in _wakeWords) {
-      final iCompact = compact.indexOf(w);
-      if (iCompact >= 0 && iCompact <= 8) {
-        final iRaw = cleanedHead.indexOf(w);
-        if (iRaw >= 0) {
-          final rest = cleanedHead.substring(iRaw + w.length).trim();
-          return rest;
-        }
+      if (noSpace.startsWith(w)) {
+        final idx = text.toLowerCase().indexOf(w);
+        if (idx != -1) return text.substring(idx + w.length).trim();
       }
     }
     return null;
@@ -817,23 +905,20 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   String _buildConversationalQuestion(String userText) {
     final buf = StringBuffer();
-    buf.writeln('너는 "모링"이라는 이름을 가진 친절하고 상냥한 자동차 AI 어시스턴트야.');
-    buf.writeln('항상 명확하고 간결하게, 그리고 반말로 대답해야 해. 사용자는 너의 친구야.');
-    buf.writeln('자동차 네비게이션, 운전, 교통 상황과 관련된 질문에 특히 전문적으로 답변할 수 있어.');
+    buf.writeln('너는 "모링"이라는 이름의 친절하고 상냥한 자동차 AI 어시스턴트야.');
+    buf.writeln('항상 명확·간결하게, 반말로 대답해. 사용자는 너의 친구야.');
+    buf.writeln('자동차 네비게이션, 운전, 교통 상황에 특히 전문적으로 답변해.');
     buf.writeln('');
 
     if (_history.isNotEmpty) {
       buf.writeln('--- 대화 맥락 ---');
-      final start = _history.length > _maxTurnsMemory
-          ? _history.length - _maxTurnsMemory
-          : 0;
+      final start = _history.length > _maxTurnsMemory ? _history.length - _maxTurnsMemory : 0;
       for (int i = start; i < _history.length; i++) {
         final h = _history[i];
         final prefix = h['role'] == 'user' ? '친구' : '모링';
         buf.writeln('$prefix: ${h['content']}');
       }
-      buf.writeln('--- 여기까지가 대화 맥락이야 ---');
-      buf.writeln('');
+      buf.writeln('--- 여기까지 ---\n');
     }
 
     buf.writeln('친구: $userText');
@@ -849,7 +934,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
-  // LLM 호출
+  // ========== LLM 호출 ==========
   Future<String> _callLlm(String prompt) async {
     try {
       Dio apiClient;
@@ -874,7 +959,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       if (ans != null) return ans;
 
       res = await apiClient.post(
-        _llmPath, data: prompt,
+        _llmPath,
+        data: prompt,
         options: Options(
           headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
@@ -900,7 +986,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     return null;
   }
 
-  // TTS
+  // ========== TTS ==========
   Future<void> _speakOpenAiTts(String text) async {
     if (!_isOwner) return;
     if (!mounted || text.trim().isEmpty) return;
@@ -915,13 +1001,21 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _setStatus('음성 답변 중…');
 
     try {
-      final body = {'model': _ttsModel, 'input': text, 'voice': _ttsVoice, 'response_format': 'mp3'};
+      final body = {
+        'model': _ttsModel,
+        'input': text,
+        'voice': _ttsVoice,
+        'response_format': 'mp3',
+      };
 
       final res = await _plainDio.post(
         _ttsUrl,
         data: jsonEncode(body),
         options: Options(
-          headers: {'Authorization': 'Bearer $_gmsKey', 'Content-Type': 'application/json'},
+          headers: {
+            'Authorization': 'Bearer $_gmsKey',
+            'Content-Type': 'application/json',
+          },
           responseType: ResponseType.bytes,
           validateStatus: (s) => s != null && s < 500,
           sendTimeout: const Duration(seconds: 30),
@@ -937,12 +1031,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         _markActivity();
         await _player.play(BytesSource(bytes));
       } else {
-        _llmBusy = false; // 실패 시 락 해제
         _setState(VoiceState.idle);
         _scheduleNextTurn(_cooldownMs);
       }
     } catch (_) {
-      _llmBusy = false; // 예외 시 락 해제
       if (mounted && _isOwner) {
         _setState(VoiceState.idle);
         _scheduleNextTurn(_cooldownMs);
@@ -950,40 +1042,54 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
-  // STT 사후 정제
+  // ========== STT 사후 정제 ==========
   String _sanitizeStt(String text, {String? lastAssistant}) {
     final original = text;
     String s = text;
 
+    // 1) 괄호/브래킷 메타 제거 (예: [음악], (한숨))
     s = s.replaceAll(RegExp(r'[\[\(][^\]\)]{0,20}[\]\)]'), '');
+
+    // 2) 알려진 노이즈 문구 제거(대소문자 무시)
     for (final p in _sttBlacklistExact) {
       s = s.replaceAll(RegExp(RegExp.escape(p), caseSensitive: false), '');
     }
+    // 접두사 형태 메타 제거
     s = s.replaceAll(RegExp(r'^(모링|친구)\s*[:：]\s*', caseSensitive: false), '');
+
+    // 3) 동일 글자 반복 축약: "아아아아" -> "아아"
     s = s.replaceAll(RegExp(r'([가-힣A-Za-z0-9])\1{2,}'), r'\1\1');
+
+    // 4) 짧은 토큰 반복(예: "네 네 네 네") 한 번만 남기기
     s = s.replaceAll(RegExp(r'\b([가-힣A-Za-z]{1,4})\b(?:\s*\1\b){2,}'), r'\1');
+
+    // 5) 구두점/공백 정리
     s = s.replaceAll(RegExp(r'\s+'), ' ');
     s = s.replaceAll(RegExp(r'^[\.\s,;:~…·\-]+|[\.\s,;:~…·\-]+$'), '').trim();
 
+    // 6) 과잉 정제로 빈 문자열이면 원문
     if (s.isEmpty) return original.trim();
 
+    // 7) 어시스턴트 직전 발화와 같으면(잔향) 원문 유지 → 에코가드에서 필터
     if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
       final a = _normalize(lastAssistant);
       final b = _normalize(s);
       if (a == b) return original.trim();
     }
 
+    // 완전 일치/패턴 블랙리스트 → 버림
     if (_sttBlacklistExact.contains(s)) return '';
     for (final re in _sttBlacklistPatterns) {
       if (re.hasMatch(s)) return '';
     }
+
+    // 너무 짧은 고립 단어(맥락류)만 있을 때 버리기
     if (s.length <= 3 && (s.contains('맥락') || s.contains('내비'))) return '';
 
-    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
-    return s;
+    return s.trim();
   }
 
-  // 에코 가드
+  // ========== 에코 가드 ==========
   bool _isAssistantEcho(String userText) {
     if (_lastAssistant.trim().isEmpty) return false;
     final a = _normalize(_lastAssistant);
@@ -994,8 +1100,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     return sim >= 0.85 || (b.length <= 12 && a.contains(b));
   }
 
-  String _normalize(String s) =>
-      s.replaceAll(RegExp(r'[\s\.,;:!?~"\(\)\[\]\{\}…·\-]+'), '').toLowerCase();
+  String _normalize(String s) {
+    final cleaned = s.replaceAll(RegExp(r'[\s\.,;:!?~"\(\)\[\]\{\}…·\-]+'), '');
+    return cleaned.toLowerCase();
+  }
 
   double _jaccardSetSim(String a, String b) {
     Set<String> grams(String x) {
@@ -1005,6 +1113,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
       return g.isEmpty ? {x} : g;
     }
+
     final sa = grams(a);
     final sb = grams(b);
     final inter = sa.intersection(sb).length.toDouble();
@@ -1019,7 +1128,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
-  // UI
+  // ========== UI ==========
   bool _shouldShowBadge() {
     if (!widget.showBadge || !_isOwner) return false;
     if (!widget.showBadgeOnlyWhenActive) return true;
@@ -1028,7 +1137,9 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.showDebugPanel && !widget.showBadge) return const SizedBox.shrink();
+    if (!widget.showDebugPanel && !widget.showBadge) {
+      return const SizedBox.shrink();
+    }
     if (!_isOwner) return const SizedBox.shrink();
 
     final children = <Widget>[];
@@ -1062,7 +1173,9 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
                     decoration: BoxDecoration(
                       color: bgColor.withOpacity(0.95),
                       borderRadius: BorderRadius.circular(30),
-                      boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1071,16 +1184,22 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
                           duration: const Duration(milliseconds: 200),
                           transitionBuilder: (child, animation) =>
                               ScaleTransition(scale: animation, child: child),
-                          child: Icon(icon, key: ValueKey<IconData>(icon),
-                              color: Colors.black.withOpacity(0.7), size: 20),
+                          child: Icon(
+                            icon,
+                            key: ValueKey<IconData>(icon),
+                            color: Colors.black.withOpacity(0.7),
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Text(label,
-                            style: const TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            )),
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1095,12 +1214,14 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (widget.showDebugPanel) {
       children.add(
         Positioned(
-          right: 12, top: 12,
+          right: 12,
+          top: 12,
           child: Material(
             color: Colors.black.withOpacity(0.75),
             borderRadius: BorderRadius.circular(12),
             child: Container(
-              padding: const EdgeInsets.all(12), width: 300,
+              padding: const EdgeInsets.all(12),
+              width: 280,
               child: DefaultTextStyle(
                 style: const TextStyle(color: Colors.white, fontSize: 12),
                 child: Column(
@@ -1108,9 +1229,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
                   children: [
                     Text('Voice: $_status'),
                     const SizedBox(height: 6),
-                    Text('state: $_state, llm: $_isLlmActive, busy: $_llmBusy'),
-                    const SizedBox(height: 6),
-                    Text('amp: ${_lastAmpDb.isFinite ? _lastAmpDb.toStringAsFixed(1) : '–'} dB'),
+                    Text('state: $_state, llm: $_isLlmActive'),
                     const SizedBox(height: 6),
                     Text('heard: $_lastHeard', maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 6),
