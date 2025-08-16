@@ -1,11 +1,16 @@
 package com.dolijo.moring.config;
 
+import com.dolijo.moring.security.hmac.DeviceHmacProps;
+import com.dolijo.moring.security.hmac.HmacAuthFilter;
+import com.dolijo.moring.security.hmac.HmacKeyService;
+import com.dolijo.moring.security.hmac.NonceStore;
 import com.dolijo.moring.security.jwt.JWTFilter;
 import com.dolijo.moring.security.jwt.JWTUtil;
 import com.dolijo.moring.security.jwt.LoginFilter;
 import com.dolijo.moring.security.jwt.OAuth2SuccessHandler;
 import com.dolijo.moring.security.service.CustomOAuth2UserService;
 import com.dolijo.moring.security.service.SocialMemberService;
+import com.nimbusds.jose.crypto.impl.HMAC;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -28,6 +33,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.time.Duration;
 import java.util.Collections;
 
 @Configuration
@@ -69,7 +75,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, DeviceHmacProps deviceHmacProps, HmacKeyService hmacKeyService,
+                                           NonceStore nonceStore) throws Exception {
 
         // 1) CORS 설정
         http.cors(cors -> cors.configurationSource(new CorsConfigurationSource() {
@@ -95,6 +102,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                         // SSE 재디스패치 허용
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                        .requestMatchers(
+                                "/api/v1/notifications/send/**",
+                                "/api/v1/cars/*/driving-status",
+                                "/api/v1/cars/*/unauthorized-driver-popup").permitAll()
                         // 카카오 인가코드를 받아 처리하는 엔드포인트
                         // OAuth2 요청 진입점 허용
                         // OAuth2 로그인 콜백 URI 허용
@@ -109,8 +120,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/auth/refresh",
                                 "/api/v1/auth/logout/rToken").permitAll()
-                        // Swagger, 공용 API & 하드웨어 알림 테스트를 위해 임시 Open
-                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**","/api/v1/notifications/send/**").permitAll()
+                        // Swagger, 공용 API
+                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 디바이스측 접근에 대한 HMAC접근
+//                        .requestMatchers("/api/v1/notifications/send/**").authenticated()
                         // 토큰 보유자
                         .requestMatchers("/api/v1/**").authenticated()
                         // 역할별 접근 제어
@@ -123,6 +136,11 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         );
 
+//        // HMAC 차후 적용 시 다시 적용
+//        http.addFilterBefore(
+//                new HmacAuthFilter(hmacKeyService, nonceStore, Duration.ofSeconds(deviceHmacProps.getSkewSeconds())),
+//                UsernamePasswordAuthenticationFilter.class
+//        );
         // 4) JWT 필터 등록 (모든 요청 앞에서 검사)
 //        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
