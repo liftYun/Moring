@@ -34,5 +34,6 @@ public interface CarService {
 
      void updateUnauthorizedDriverPopup(String vin, boolean isAgreed);
 
+     boolean updateDrivingStatus(String vin, boolean isDriving);
 
 }

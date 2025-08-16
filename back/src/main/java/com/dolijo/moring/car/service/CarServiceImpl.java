@@ -49,6 +49,8 @@ public class CarServiceImpl implements CarService{
 
     @Value("${spring.data.redis.authorized-user-status-key-prefix}")
     private String authorizedUserStatusKeyPrefix; // 레디스 비인가 사용자 상태 키 접두사
+    @Value("${spring.data.redis.driving-user-status-key-prefix}")
+    private String drivingStatusPrefix; // 레디스 주행 상태 키 접두사
 
     @Override
     @Transactional
@@ -199,6 +201,23 @@ public class CarServiceImpl implements CarService{
             log.error("Redis 업데이트 실패: {}", key, e);
         }
     }
-
+    @Override
+    @Transactional
+    public boolean updateDrivingStatus(String vin, boolean isDriving) {
+        String key = drivingStatusPrefix + vin;
+        try {
+            boolean created = Boolean.TRUE.equals(
+                    redis.opsForValue().setIfAbsent(key, String.valueOf(isDriving))
+            );
+            if (created) {
+            } else {
+                redis.opsForValue().set(key, String.valueOf(isDriving)); // 필요시 덮어쓰기
+            }
+            return isDriving; // 설정한 값 반환
+        } catch (Exception e) {
+            log.error("Redis 주행 상태 업데이트 실패: {}", key, e);
+            throw new BaseException(BaseResponseStatus.REDIS_ERROR);
+        }
+    }
 
 }
