@@ -14,11 +14,6 @@ public class UnauthorizedUserAlertLmsRequestDto {
     @Schema(description = "차대 번호", example = "KNMK5C2HMLP000437")
     private String vin;
 
-    @Schema(description = "위도", example = "37.5665")
-    private Double latitude;
-
-    @Schema(description = "경도", example = "126.9780")
-    private Double longitude;
     @Schema(description = "이미지URL", example = "https://example.com/image.jpg")
     private String imageUrl; // 이미지 URL
 }
