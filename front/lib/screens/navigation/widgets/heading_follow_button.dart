@@ -24,7 +24,7 @@ class HeadingFollowButton extends StatelessWidget {
         width: buttonSize,  // 🆕 동일한 크기
         height: buttonSize, // 🆕 동일한 크기
         decoration: BoxDecoration(
-          color: enabled ? Colors.indigo : Colors.white,
+          color: enabled ? Colors.teal : Colors.white,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(

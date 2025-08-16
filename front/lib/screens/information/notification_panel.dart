@@ -213,7 +213,7 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
       // 초기 카운트는 내부 상태에서만 사용하므로, 리빌드 시 재설정 불필요
       // initialItemCount: _notifications.length + (_hasMore ? 1 : 0),
       initialItemCount: _notifications.length,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
       itemBuilder: (ctx, idx, anim) {
         // 로딩 스피너
         if (idx >= _notifications.length) {

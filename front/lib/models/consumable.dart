@@ -18,18 +18,18 @@ class Consumable {
   // 아이콘은 서버에 없으니 name_en 기준 임의 매핑
   static Icon iconFromName(String name) {
     switch (name.toLowerCase()) {
-      case 'engine oil': return Icon(Icons.local_gas_station);
+      case '엔진오일': return Icon(Icons.local_gas_station);
       case 'oil filter': return Icon(Icons.local_gas_station);
-      case 'air filter': return Icon(Icons.air);
+      case '에어필터': return Icon(Icons.air);
       case 'cabin filter': return Icon(Icons.air);
       case 'spark plug':
-      case 'spark plugs': return Icon(Icons.auto_awesome);
-      case 'brake fluid': return Icon(Icons.pause);
-      case 'coolant': return Icon(Icons.device_thermostat);
+      case '스파크플러그': return Icon(Icons.auto_awesome);
+      case '브레이크오일': return Icon(Icons.pause);
+      case '냉각수': return Icon(Icons.device_thermostat);
       case 'transmission fluid': return Icon(Icons.radio);
-      case 'tire': return Icon(Icons.adjust);
-      case 'brake pad': return Icon(Icons.panorama_fish_eye);
-      case 'wiper blade': return Icon(Icons.ac_unit);
+      case '타이어': return Icon(Icons.adjust);
+      case '브레이크패드': return Icon(Icons.panorama_fish_eye);
+      case '와이퍼블레이드': return Icon(Icons.ac_unit);
       default: return Icon(Icons.help_outline);
     }
   }
@@ -37,8 +37,8 @@ class Consumable {
   factory Consumable.fromJson(Map<String, dynamic> json) {
     return Consumable(
       id: json['partId'] ?? json['id'] ?? 0,
-      icon: iconFromName(json['nameEn'] ?? json['name_en'] ?? ''),
-      title: json['nameEn'] ?? json['name_en'] ?? '',
+      icon: iconFromName(json['nameKo'] ?? json['name_ko'] ?? ''),
+      title: json['nameKo'] ?? json['name_ko'] ?? '',
       dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
       percentUsed: json['percentUsed'] ?? 0,
     );

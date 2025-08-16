@@ -272,22 +272,16 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 ),
               ),
               const SizedBox(height: 26),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _onRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    '등록하기',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+              ElevatedButton(
+                onPressed: _onRegister,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF50C878),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text(
+                  '등록하기',
+                  style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 20),
@@ -303,34 +297,34 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                 ],
               ),
               const SizedBox(height: 14),
-              SizedBox(
-                height: 46,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white38, width: 1.2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final result = await Navigator.pushNamed(context, '/car_ocr');
+                             SizedBox(
+                 height: 46,
+                 child: OutlinedButton(
+                   style: OutlinedButton.styleFrom(
+                     foregroundColor: Colors.white,
+                     side: const BorderSide(color: Colors.white38, width: 1.2),
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(10),
+                     ),
+                   ),
+                   onPressed: () async {
+                     final result = await Navigator.pushNamed(context, '/car_ocr');
 
-                    // result는 OCR 페이지에서 pop할 때 전달한 데이터(Map 등)임
-                    if (result != null && result is Map<String, dynamic>) {
-                      setState(() {
-                        _vinController.text = result['vin'] ?? '';
-                        _modelController.text = result['modelName'] ?? '';
-                        _registerDateController.text = result['registeredAt'] ?? '';
-                      });
-                    }
-                  },
-                  child: const Text(
-                    '차량 등록증 스캔',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
+                     // result는 OCR 페이지에서 pop할 때 전달한 데이터(Map 등)임
+                     if (result != null && result is Map<String, dynamic>) {
+                       setState(() {
+                         _vinController.text = result['vin'] ?? '';
+                         _modelController.text = result['modelName'] ?? '';
+                         _registerDateController.text = result['registeredAt'] ?? '';
+                       });
+                     }
+                   },
+                   child: const Text(
+                     '차량 등록증 스캔',
+                     style: TextStyle(fontSize: 16),
+                   ),
+                 ),
+               ),
             ],
           ),
         ),

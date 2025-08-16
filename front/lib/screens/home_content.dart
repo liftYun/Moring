@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:moring/providers/api_client.dart';
+import 'package:moring/screens/car/car_info.dart';
+import 'package:moring/screens/information/driving_record.dart';
+import 'package:moring/screens/information/inspection_detail_page.dart';
 import 'package:moring/widgets/car_viewer_section.dart';
 import 'package:moring/widgets/consumables_section.dart';
-import 'package:moring/screens/information/driving_record.dart';
-import 'package:moring/screens/car/car_info.dart';
-import 'package:moring/screens/information/inspection_detail_page.dart';
 
 import '../providers/current_car_provider.dart';
 
@@ -25,12 +24,12 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   String? _carVin;
   List<String> _currentCarImagePaths = [];
 
-  // 주행로그용 state
+  // 주행로그
   List<Map<String, dynamic>> _mileageLogs = [];
   bool _mileageLoading = true;
   String? _mileageError;
 
-  // 점검로그용 state
+  // 점검로그
   List<Map<String, dynamic>> _inspectionLogs = [];
   bool _inspectionLoading = true;
   String? _inspectionError;
@@ -57,21 +56,19 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     });
     try {
       final dio = ref.read(authDioProvider);
-      final response = await dio.get('/api/v1/parts/status/${_carVin ?? "TEST_VIN"}');
+      final response =
+      await dio.get('/api/v1/parts/status/${_carVin ?? "TEST_VIN"}');
       if (response.statusCode == 200 && response.data['isSuccess'] == true) {
         final List list = response.data['result'] as List;
         setState(() {
-          _consumables = list.map((e) => Consumable.fromJson(e)).toList();
+          _consumables =
+              list.map((e) => Consumable.fromJson(e)).toList();
         });
       } else {
-        setState(() {
-          _error = '소모품을 불러오지 못했습니다: ${response.statusCode}';
-        });
+        _error = '소모품을 불러오지 못했습니다: ${response.statusCode}';
       }
     } catch (e) {
-      setState(() {
-        _error = '소모품을 가져오는 중 오류가 발생했습니다: $e';
-      });
+      _error = '소모품을 가져오는 중 오류가 발생했습니다: $e';
     } finally {
       setState(() {
         _isLoading = false;
@@ -86,24 +83,22 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     });
     try {
       final dio = ref.read(authDioProvider);
-      final response = await dio.get('/api/v1/cars/${_carVin ?? "TEST_VIN"}/mileage-logs-paging?page=0&size=10');
+      final response = await dio.get(
+          '/api/v1/cars/${_carVin ?? "TEST_VIN"}/mileage-logs-paging?page=0&size=10');
       if (response.statusCode == 200 && response.data['isSuccess'] == true) {
         final List content = response.data['result']['content'] ?? [];
-        setState(() {
-          _mileageLogs = content.map((e) => {
-            'distance': '${e['mileageKm']} km',
-            'date': e['recordedDate'] ?? '',
-          }).toList();
-        });
+        _mileageLogs = content
+            .map((e) => {
+          'distance': '${e['mileageKm']} km',
+          'date': e['recordedDate'] ?? '',
+        })
+            .toList();
       } else {
-        setState(() {
-          _mileageError = '주행로그를 불러오지 못했습니다: ${response.statusCode}';
-        });
+        _mileageError =
+        '주행로그를 불러오지 못했습니다: ${response.statusCode}';
       }
     } catch (e) {
-      setState(() {
-        _mileageError = '주행로그를 가져오는 중 오류가 발생했습니다: $e';
-      });
+      _mileageError = '주행로그를 가져오는 중 오류가 발생했습니다: $e';
     } finally {
       setState(() {
         _mileageLoading = false;
@@ -111,7 +106,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     }
   }
 
-  // ✅ 점검로그 API 연동
   Future<void> _fetchInspectionLogs() async {
     setState(() {
       _inspectionLoading = true;
@@ -124,27 +118,32 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       );
       if (response.statusCode == 200 && response.data['isSuccess'] == true) {
         final List content = response.data['result']['content'] ?? [];
-        setState(() {
-          _inspectionLogs = content.map((e) => {
-            'date': (e['inspectionDateTime'] ?? e['inspectionDatetime'] ?? '').toString().split('T')[0],
-            'status': e['inspectionStatus'] ?? '',
-            'detail': e,
-          }).toList();
-        });
+        _inspectionLogs = content
+            .map((e) => {
+          'date': (e['inspectionDateTime'] ??
+              e['inspectionDatetime'] ??
+              '')
+              .toString()
+              .split('T')[0],
+          'status': e['inspectionStatus'] ?? '',
+          'detail': e,
+        })
+            .toList();
       } else {
-        setState(() {
-          _inspectionError = '점검로그를 불러오지 못했습니다: ${response.statusCode}';
-        });
+        _inspectionError =
+        '점검로그를 불러오지 못했습니다: ${response.statusCode}';
       }
     } catch (e) {
-      setState(() {
-        _inspectionError = '점검로그를 가져오는 중 오류가 발생했습니다: $e';
-      });
+      _inspectionError = '점검로그를 가져오는 중 오류가 발생했습니다: $e';
     } finally {
       setState(() {
         _inspectionLoading = false;
       });
     }
+  }
+
+  Future<void> _refreshInspectionLogs() async {
+    _fetchInspectionLogs();
   }
 
   void _setCarImages(String carName) {
@@ -188,7 +187,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           numImages = 0;
           basePath = '';
       }
-      _currentCarImagePaths = List.generate(numImages, (i) => '$basePath${i + 1}.png');
+      _currentCarImagePaths =
+          List.generate(numImages, (i) => '$basePath${i + 1}.png');
     });
   }
 
@@ -214,11 +214,18 @@ class _HomeContentState extends ConsumerState<HomeContent> {
               child: CarViewerSection(imagePaths: _currentCarImagePaths),
             ),
           const SizedBox(height: 20),
+
           if (_carVin != null)
             ConsumablesSection(consumables: _consumables, vin: _carVin!),
+
           const SizedBox(height: 24),
+
           // 🚗 주행로그 Section
-          Text('주행 로그', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            '주행 로그',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           if (_mileageLoading)
             const Center(child: CircularProgressIndicator())
@@ -227,73 +234,86 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           else if (_mileageLogs.isEmpty)
               Card(
                 color: const Color(0xFF232326),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  leading: const Icon(Icons.article_outlined, color: Colors.white70),
-                  title: const Text('주행 기록이 없습니다', style: TextStyle(color: Colors.white)),
-                  subtitle: const Text('상세 화면으로 이동합니다', style: TextStyle(color: Colors.grey)),
+                  leading: const Icon(Icons.article_outlined,
+                      color: Colors.white70),
+                  title: const Text('주행 기록이 없습니다',
+                      style: TextStyle(color: Colors.white)),
+                  subtitle: const Text('상세 화면으로 이동합니다',
+                      style: TextStyle(color: Colors.grey)),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DrivingRecordPage(logs: _mileageLogs),
+                        builder: (_) =>
+                            DrivingRecordPage(logs: _mileageLogs),
                       ),
                     );
                   },
                 ),
               )
-          else
-            SizedBox(
-              height: 150,
-              child: ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: _mileageLogs.length,
-                itemBuilder: (context, idx) {
-                  final log = _mileageLogs[idx];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DrivingRecordPage(logs: _mileageLogs),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      color: const Color(0xFF232326),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.place, color: Colors.white54, size: 20),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    log['distance'] ?? '',
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    log['date'] ?? '',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                                  ),
-                                ],
+            else
+              SizedBox(
+                height: _mileageLogs.length <= 2 
+                    ? (_mileageLogs.length * 70.0) + 10.0  // 각 카드 높이(70) + 마진(10)
+                    : 150.0,  // 2개 초과시 고정 높이
+                child: ListView.builder(
+                  itemCount: _mileageLogs.length,
+                  itemBuilder: (context, index) {
+                    final log = _mileageLogs[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                DrivingRecordPage(logs: _mileageLogs),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        color: const Color(0xFF232326),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 20),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.place,
+                                  color: Colors.white54, size: 20),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(log['distance'] ?? ''),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      log['date'] ?? '',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+
           const SizedBox(height: 24),
-          // 🛠️ 점검로그 Section (점검 완료만 보이게)
+
+          // 🛠️ 점검로그 Section
           Text(
             '점검 로그',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -309,42 +329,18 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           else
             Builder(
               builder: (context) {
-                final onlyCompletedLogs =
-                _inspectionLogs.where((e) => e['status'] == '점검 완료').toList();
+                final completedLogs = _inspectionLogs
+                    .where((e) => e['status'] == '점검 완료')
+                    .toList();
+                final pendingLogs = _inspectionLogs
+                    .where((e) => e['status'] != '점검 완료')
+                    .toList();
 
-                // ✅ "점검 완료"가 없으면: 카드만 노출 (자동 이동 없음)
-                if (onlyCompletedLogs.isEmpty) {
-                  return Card(
-                    color: const Color(0xFF232326),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: ListTile(
-                      leading: const Icon(Icons.article_outlined, color: Colors.white70),
-                      title: const Text('점검 완료 이력이 없습니다', style: TextStyle(color: Colors.white)),
-                      subtitle: const Text('상세 화면으로 이동합니다', style: TextStyle(color: Colors.grey)),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => InspectionDetailPage(
-                              inspectionLogs: _inspectionLogs,
-                              vin: _carVin!,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }
-
-                // ✅ "점검 완료"가 있으면: 리스트 표시
-                return SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: onlyCompletedLogs.length,
-                    itemBuilder: (context, idx) {
-                      final log = onlyCompletedLogs[idx];
-                      return GestureDetector(
+                return Column(
+                  children: [
+                    // 다음 점검 일자
+                    if (pendingLogs.isNotEmpty)
+                      GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
@@ -352,6 +348,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                               builder: (_) => InspectionDetailPage(
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
                               ),
                             ),
                           );
@@ -359,42 +356,150 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                         child: Card(
                           color: const Color(0xFF232326),
                           margin: const EdgeInsets.only(bottom: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                                                     child: ListTile(
+                             leading: const Icon(Icons.schedule, 
+                                 color: Colors.white70, size: 24),
+                            title: Text(
+                              pendingLogs.first['date'] ?? '',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                                                         subtitle: const Text('점검 예정',
+                                 style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
                               children: [
-                                Text(
-                                  log['date'] ?? '',
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                const Icon(Icons.article_outlined,
+                                    color: Colors.white70, size: 20),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('예정된 점검 없음',
+                                          style: TextStyle(color: Colors.white)),
+                                      const SizedBox(height: 6),
+                                      const Text('상세 화면으로 이동합니다',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.verified, color: Colors.lightBlueAccent, size: 22),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      log['status'] ?? '',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+
+                    // 과거 이력
+                    if (completedLogs.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          child: ListTile(
+                            leading: const Icon(Icons.check_box,
+                                color: Colors.white54, size: 24),
+                            title: Text(
+                              completedLogs.first['date'] ?? '',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
+                              completedLogs.first['status'] ?? '',
+                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.article_outlined,
+                                    color: Colors.white70, size: 20),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('완료된 점검 이력 없음',
+                                          style: TextStyle(color: Colors.white)),
+                                      const SizedBox(height: 6),
+                                      const Text('상세 화면으로 이동합니다',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
-
-        ],// 난중에 지울거
+        ],
       ),
     );
   }

@@ -81,55 +81,80 @@ class _SlidingNotificationCardState extends ConsumerState<SlidingNotificationCar
         titleText = '알림';
     }
 
-    return SlideTransition(
-      position: _slideAnim,
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 2,
-        color: Colors.black38,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () async {
-            // 1) 서버에 읽음 처리 요청
-            final success = await api.fetchReadNotification(id: n.id);
-            if (success) {
-              // 2) 요청 성공 시 슬라이드 애니메이션 시작
-              _ctrl.forward();
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                icon,
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        // 제목
-                        titleText,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 4),
-                      // 본문
-                      Text(n.message, style: const TextStyle(color: Colors.white70)),
-                      const SizedBox(height: 6),
-                      // 시간
-                      Text(
-                        TimeOfDay.fromDateTime(n.createdAt.toLocal()).format(context),
-                        style: TextStyle(fontSize: 8, color: Colors.grey[400]),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+         return SlideTransition(
+       position: _slideAnim,
+       child: Dismissible(
+         key: ValueKey(n.id),
+         direction: DismissDirection.startToEnd, // 왼쪽에서 오른쪽으로 슬라이드
+         background: Container(
+           margin: const EdgeInsets.only(bottom: 12),
+           decoration: BoxDecoration(
+             color: Colors.red,
+             borderRadius: BorderRadius.circular(10),
+           ),
+           alignment: Alignment.centerLeft,
+           padding: const EdgeInsets.only(left: 20),
+           child: const Icon(
+             Icons.delete,
+             color: Colors.white,
+             size: 30,
+           ),
+         ),
+         confirmDismiss: (direction) async {
+           // 서버에 읽음 처리 요청
+           final success = await api.fetchReadNotification(id: n.id);
+           if (success) {
+             // 콜백 호출하여 부모에게 삭제 알림
+             widget.onMarkedRead();
+           }
+           return success;
+         },
+         child: Card(
+           elevation: 0,
+           margin: const EdgeInsets.only(bottom: 12),
+           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+           child: Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+             child: Row(
+               children: [
+                 icon,
+                 const SizedBox(width: 15),
+                 Expanded(
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Text(
+                         // 제목
+                         titleText,
+                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                           fontWeight: FontWeight.bold,
+                           color: Colors.white,
+                         ),
+                       ),
+                       const SizedBox(height: 4),
+                       // 본문
+                       Text(
+                         n.message, 
+                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                           color: Colors.white70,
+                         ),
+                       ),
+                       const SizedBox(height: 4),
+                       // 시간
+                       Text(
+                         TimeOfDay.fromDateTime(n.createdAt.toLocal()).format(context),
+                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                           color: Colors.grey[400],
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+               ],
+             ),
+           ),
+         ),
+       ),
+     );
   }
 }

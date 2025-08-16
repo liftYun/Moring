@@ -201,7 +201,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(0, 24, 0, 8),
       child: Text(
         title,
         style: const TextStyle(
@@ -235,47 +235,55 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 children: [
                   // 닉네임
                   _buildSectionHeader('Nickname'),
-                  TextFormField(
-                    controller: _nicknameController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFF283038),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                  Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                      child: TextFormField(
+                        controller: _nicknameController,
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) =>
+                        (v == null || v.isEmpty) ? '닉네임을 입력해주세요' : null,
                       ),
-                      contentPadding: const EdgeInsets.all(12),
                     ),
-                    style: const TextStyle(color: Colors.white),
-                    validator: (v) =>
-                    (v == null || v.isEmpty) ? '닉네임을 입력해주세요' : null,
                   ),
 
                   // 이메일
                   _buildSectionHeader('Email'),
-                  TextFormField(
-                    controller: _emailController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFF283038),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                  Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                      child: TextFormField(
+                        controller: _emailController,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(color: Colors.white70),
                       ),
-                      contentPadding: const EdgeInsets.all(12),
                     ),
-                    style: const TextStyle(color: Colors.white70),
                   ),
 
                   // 등록된 차량 리스트 + 삭제 버튼
                   _buildSectionHeader('등록된 차량'),
                   ...cars.map((c) => Card(
-                    color: const Color(0xFF283038),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: ListTile(
                       leading: const Icon(Icons.directions_car, color: Colors.white),
                       title: Text(
@@ -303,25 +311,16 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   const SizedBox(height: 32),
 
                   // 저장 버튼
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      onPressed: _saveChanges,
-                      child: const Text(
-                        '저장',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                  ElevatedButton(
+                    onPressed: _saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF50C878), // ✅ 색상 코드 변경
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text(
+                      '저장',
+                      style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
