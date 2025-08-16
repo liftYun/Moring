@@ -32,6 +32,7 @@ public interface CarService {
 
      LocalDate getLatestPendingInspectionDate(String vin);
 
-     void addUnauthorizedUserLog(String vin, String unauthorizedUserImgUrl);
+     void updateUnauthorizedDriverPopup(String vin, boolean isAgreed);
+
 
 }
