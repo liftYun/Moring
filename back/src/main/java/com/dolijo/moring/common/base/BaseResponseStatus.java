@@ -67,7 +67,8 @@ public enum BaseResponseStatus {
     ALREADY_REGISTERED_CAR(HttpStatus.CONFLICT, false, 409, "이미 등록된 차량입니다."),
     NO_EXIST_CAR(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 차량입니다."),
     NO_EXIST_INSPECTION_LOG(HttpStatus.NOT_FOUND, false, 404, "존재하지 않는 점검 기록입니다."),
-
+    EXPIRED_DRIVER_KEY(HttpStatus.NOT_FOUND, false, 410, "운전자 인가 대기시간이 만료되었습니다."),
+    INVALID_DRIVER_KEY_STATUS(HttpStatus.NOT_FOUND, false, 400, "운전자 인가 대기 상태가 유효하지 않습니다."),
     /**
      * Part
      */
