@@ -1,8 +1,5 @@
 // lib/voice/moring_voice_panel.dart
-// Whisper 기본 + (품질 낮으면) Clova 폴백 하이브리드 STT
-// - .env: GMS_KEY, CLOVA_CLIENT_ID, CLOVA_CLIENT_SECRET
-// - Whisper(OpenAI) & TTS: GMS 프록시 경유
-// - LLM: POST /api/v1/AI/ask (result 또는 string)
+// Whisper(상시) + Clova(폴백) + 내부 LLM + OpenAI TTS
 
 import 'dart:async';
 import 'dart:convert';
@@ -19,90 +16,88 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-// 프로젝트에 있으면 사용(없어도 동작하도록 try)
-import 'package:moring/providers/api_client.dart' show noAuthDioProvider;
+// 전역 RouteObserver (main.dart에 정의)
+import 'package:moring/main.dart' show routeObserver;
 
-////////////////////////////////////////////////////////////////////////////////
+// 인증/무인증 클라이언트
+import 'package:moring/providers/api_client.dart'
+    show authDioProvider, noAuthDioProvider;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // .env 키
-////////////////////////////////////////////////////////////////////////////////
 String get _gmsKey => dotenv.maybeGet('GMS_KEY') ?? '';
 String get _clovaClientId => dotenv.maybeGet('CLOVA_CLIENT_ID') ?? '';
 String get _clovaClientSecret => dotenv.maybeGet('CLOVA_CLIENT_SECRET') ?? '';
 
-////////////////////////////////////////////////////////////////////////////////
-// 엔드포인트 상수
-////////////////////////////////////////////////////////////////////////////////
-
-// OpenAI(GMS 프록시) 베이스
+// 엔드포인트
 const _gmsOpenAIBase = 'https://gms.ssafy.io/gmsapi/api.openai.com';
-
-// Whisper
 const _whisperUrl = '$_gmsOpenAIBase/v1/audio/transcriptions';
 const _whisperModel = 'whisper-1';
 const _whisperLanguage = 'ko';
-
-// TTS
 const _ttsUrl = '$_gmsOpenAIBase/v1/audio/speech';
 const _ttsModel = 'gpt-4o-mini-tts';
 const _ttsVoice = 'nova';
-
-// Clova STT
 const _clovaUrl = 'https://naveropenapi.apigw.ntruss.com/recog/v1/stt';
-
-// (선택) 내부 LLM API
 const _llmPath = '/api/v1/AI/ask';
 
-////////////////////////////////////////////////////////////////////////////////
-// VAD/타이밍
-////////////////////////////////////////////////////////////////////////////////
-const Duration _defaultTurnMax = Duration(seconds: 30);
-const int _silenceTimeoutMs = 1200;
-const int _minListenMs = 700;
-const double _vadDb = -45;
-const int _ampWindowMs = 30;
-const int _llmMaxListenMs = 30000;
-const int _warmupMs = 220;
-const int _cooldownMs = 120;
-const int _minConsecLoud = 2;
-const int _minVoicedMs = 120;
+// VAD/타이밍 (튜닝)
+const Duration _defaultTurnMax = Duration(seconds: 20);
+const int _silenceTimeoutMs = 900;
+const int _minListenMs = 500;
+const double _vadDb = -55;
+const int _ampWindowMs = 25;
+
+const int _llmMaxListenMs = 25000;
+const int _warmupMs = 180;
+const int _cooldownMs = 100;
+const int _minConsecLoud = 1;
+const int _minVoicedMs = 90;
 const int _minFileBytes = 8000;
+
+// 대화 유지
 const int _maxTurnsMemory = 6;
-
-/// LLM idle
-const Duration _llmIdle = Duration(seconds: 7);
-const Duration _llmGraceAfterWake = Duration(seconds: 5);
-
-/// 무발화 자동 종료
-const int _noSpeechTimeoutLlmMs = 3500;
+const Duration _llmIdle = Duration(seconds: 12);
+const Duration _llmGraceAfterWake = Duration(seconds: 6);
+const int _noSpeechTimeoutLlmMs = 3000;
+const int _noSpeechTimeoutWakeMs = 4000;
 const int _emptyTurnsToExit = 2;
+
+// TTS 가드
+const int _postTtsGuardMs = 800;
+const int _needFramesToInterrupt = 6;
 
 enum VoiceState { idle, listening, processing, speaking }
 
-////////////////////////////////////////////////////////////////////////////////
-// STT 결과 모델
-////////////////////////////////////////////////////////////////////////////////
 class STTResult {
   final String text;
-  final double confidence; // 0.0 ~ 1.0
-  final String engine;     // 'whisper' | 'clova'
+  final double confidence; // 0~1
+  final String engine;     // whisper | clova
   final Map<String, dynamic>? raw;
-
   STTResult(this.text, this.confidence, this.engine, {this.raw});
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 🔊 하이브리드 음성 비서 패널
-////////////////////////////////////////////////////////////////////////////////
+// ─────────────────────────────────────────────────────────────────────────────
+// 위젯
 class VoiceAssistantPanel extends ConsumerStatefulWidget {
-  final bool showDebugPanel; // true면 작은 디버그 카드 출력
-  final bool autoStart;      // 자동 루프 시작
-  final bool requireWakeWord; // 웨이크워드 필수 여부(모링아)
+  final bool showDebugPanel;
+  final bool autoStart;
+  final bool requireWakeWord;
+  final bool showBadge;
+  final bool showBadgeOnlyWhenActive;
+  final Alignment badgeAlignment;
+  final EdgeInsets badgeMargin;
+  final double avoidBottomPx;
 
   const VoiceAssistantPanel({
     super.key,
     this.showDebugPanel = false,
     this.autoStart = true,
     this.requireWakeWord = true,
+    this.showBadge = true,
+    this.showBadgeOnlyWhenActive = true,
+    this.badgeAlignment = Alignment.bottomCenter,
+    this.badgeMargin = EdgeInsets.zero,
+    this.avoidBottomPx = 104,
   });
 
   @override
@@ -110,7 +105,12 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
 }
 
 class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RouteAware {
+  // 싱글톤 오너 가드
+  static bool _globalActive = false;
+  bool _isOwner = false;
+
+  // 내부 상태
   final _recorder = AudioRecorder();
   final _player = AudioPlayer();
   final _plainDio = Dio();
@@ -118,7 +118,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   VoiceState _state = VoiceState.idle;
   bool _looping = false;
   bool _isLlmActive = false;
-
   bool _pageVisible = false;
   bool _appResumed = true;
 
@@ -138,21 +137,53 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   String _status = '대기';
   String _lastHeard = '';
   String _lastReply = '';
+  String _lastAssistant = '';
+
+  int _interruptLoudFrames = 0;
+  int _speakEndedAtMs = 0;
+
+  int _lastActivityMs = 0;
+  bool _nextTurnScheduled = false;
 
   final List<Map<String, String>> _history = [];
+  double _lastAmpDb = double.nan;
 
-  final _wakeWords = const [
+  // ⬇️ 중첩 방지용: LLM 파이프라인 락 + 대기열(최신 1건)
+  bool _llmBusy = false;
+  String? _queuedUserText;
+
+  final List<String> _wakeWords = const [
     '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
-    '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아',
-    '오리가','모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
-    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나',
+    '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아','오리가',
+    '모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
+    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','어린아','어랭아'
+    '올리나','우링아'
   ];
-  final _llmExitWords = const ['모링 종료','모링종료','대화 끝','그만','종료','끝'];
+
+  final List<String> _llmExitWords = const [
+    '모링 종료','없다','모링종료','대화 끝','그만','종료','끝','없어'
+  ];
+
+  final List<String> _sttBlacklistExact = const [
+    '자동차 내비게이션 맥락','내비게이션 맥락','자동차 내비게이션',
+    '자연스러운 띄어쓰기','대화 맥락','모링:','친구:',
+  ];
+  final List<RegExp> _sttBlacklistPatterns = [
+    RegExp(r'^(자동차\s*)?내비게이션\s*맥락$', caseSensitive: false),
+  ];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    if (!_globalActive) {
+      _globalActive = true;
+      _isOwner = true;
+    } else {
+      _isOwner = false;
+    }
+
     _isLlmActive = !widget.requireWakeWord;
 
     if (Platform.isAndroid) {
@@ -168,98 +199,152 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       );
     }
 
-    _player.onPlayerStateChanged.listen((event) {
+    _player.onPlayerStateChanged.listen((event) async {
+      if (!_isOwner) return;
       if (_state != VoiceState.speaking) return;
       if (event == PlayerState.completed || event == PlayerState.stopped) {
         _setState(VoiceState.idle);
+        _speakEndedAtMs = DateTime.now().millisecondsSinceEpoch;
+        _markActivity();
         if (_isLlmActive) _armIdle(_llmIdle);
-        _processNextTurn();
+
+        // TTS가 끝나면, 대기열에 쌓인 턴을 우선 처리
+        final pending = _queuedUserText;
+        _queuedUserText = null;
+        _llmBusy = false; // 다음 턴 허용
+        if (pending != null && pending.trim().isNotEmpty) {
+          // 바로 이어서 처리
+          unawaited(_handleLlmConversation(pending));
+        } else {
+          _scheduleNextTurn(_postTtsGuardMs);
+        }
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _markActivity();
       _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
-      if (widget.autoStart && _shouldRun()) _startLoop();
+      if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
+
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+      _pageVisible = route.isCurrent;
+    }
+
+    if (!_isOwner) return;
     if (_looping && !_shouldRun()) _stopLoop();
     if (!_looping && widget.autoStart && _shouldRun()) _startLoop();
   }
 
   @override
+  void dispose() {
+    try { routeObserver.unsubscribe(this); } catch (_) {}
+    WidgetsBinding.instance.removeObserver(this);
+    if (_isOwner) {
+      _stopLoop();
+      _recorder.dispose();
+      _player.dispose();
+      _ampSub?.cancel();
+      _disarmIdle();
+      _globalActive = false;
+    }
+    super.dispose();
+  }
+
+  // RouteAware
+  @override
+  void didPush() { _pageVisible = true; if (_isOwner && widget.autoStart && _shouldRun()) _startLoop(); }
+  @override
+  void didPopNext() { _pageVisible = true; if (_isOwner && widget.autoStart && _shouldRun()) _startLoop(); }
+  @override
+  void didPushNext() { _pageVisible = false; if (_isOwner) _stopLoop(); }
+  @override
+  void didPop() { _pageVisible = false; if (_isOwner) _stopLoop(); }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _appResumed = (state == AppLifecycleState.resumed);
+    if (!_isOwner) return;
     if (!_appResumed) _stopLoop();
     if (_appResumed && widget.autoStart && _shouldRun()) _startLoop();
   }
 
   bool _shouldRun() => _pageVisible && _appResumed;
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _stopLoop();
-    _recorder.dispose();
-    _player.dispose();
-    _ampSub?.cancel();
-    _disarmIdle();
-    super.dispose();
+  void _markActivity() { _lastActivityMs = DateTime.now().millisecondsSinceEpoch; }
+
+  void _scheduleNextTurn([int delayMs = 0]) {
+    if (!_isOwner) return;
+    if (_nextTurnScheduled) return;
+    _nextTurnScheduled = true;
+    Future.delayed(Duration(milliseconds: delayMs), () {
+      if (!mounted) return;
+      _nextTurnScheduled = false;
+      _processNextTurn();
+    });
   }
 
   Future<void> _startLoop() async {
+    if (!_isOwner) return;
     if (_looping) return;
     _looping = true;
-    _processNextTurn();
+    _scheduleNextTurn();
   }
 
   void _stopLoop() {
+    if (!_isOwner) return;
     if (_looping) {
       _looping = false;
       _recorder.stop();
       _player.stop();
-      _setState(VoiceState.idle);
       _ampSub?.cancel();
       _disarmIdle();
-      if (mounted) setState(() {});
+      _setState(VoiceState.idle);
+      if (mounted && (widget.showDebugPanel || widget.showBadge)) setState(() {});
     }
   }
 
-  void _setState(VoiceState newState) {
-    if (_state == newState) return;
-    _state = newState;
-    if (mounted && widget.showDebugPanel) setState(() {});
+  void _setState(VoiceState s) {
+    if (_state == s) return;
+    _state = s;
+    if (mounted && (widget.showDebugPanel || widget.showBadge)) setState(() {});
   }
-
-  Future<void> _cooldown() async =>
-      Future.delayed(const Duration(milliseconds: _cooldownMs));
 
   void _processNextTurn() {
-    if (!_looping ||
-        !_shouldRun() ||
-        _state == VoiceState.processing ||
-        _state == VoiceState.listening) {
-      return;
-    }
+    if (!_isOwner) return;
+    if (!_looping || !_shouldRun()) return;
+    if (_state == VoiceState.processing || _state == VoiceState.listening) return;
+    if (_llmBusy) return; // ⬅️ LLM 파이프라인 중엔 재녹음 금지
+
     _setStatus(_isLlmActive ? '대화 대기 중…' : '녹음 준비…');
-    _startListening(
-        maxMs: _isLlmActive ? _llmMaxListenMs : _defaultTurnMax.inMilliseconds);
+    _startListening(maxMs: _isLlmActive ? _llmMaxListenMs : _defaultTurnMax.inMilliseconds);
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // Listening
   Future<void> _startListening({required int maxMs}) async {
+    if (!_isOwner) return;
     if (!mounted || _state == VoiceState.listening) return;
+
+    final now0 = DateTime.now().millisecondsSinceEpoch;
+    final delta = now0 - _speakEndedAtMs;
+    if (_speakEndedAtMs > 0 && delta < _postTtsGuardMs) {
+      await Future.delayed(Duration(milliseconds: _postTtsGuardMs - delta));
+    }
 
     try {
       final ok = await _recorder.hasPermission();
       if (!ok) {
         _setStatus('마이크 권한 필요');
         _setState(VoiceState.idle);
-        await _cooldown();
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
         return;
       }
 
@@ -268,15 +353,14 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
 
       _setState(VoiceState.listening);
+      _disarmIdle();
+      _markActivity();
+
       final dir = await getTemporaryDirectory();
       final path = '${dir.path}/moring_turn.wav';
 
       await _recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.wav,
-          sampleRate: 16000,
-          numChannels: 1,
-        ),
+        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
         path: path,
       );
 
@@ -286,45 +370,57 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       _voicedMs = 0;
       _speechActive = false;
       _didBumpThisTurn = false;
+      _interruptLoudFrames = 0;
 
       await Future.delayed(const Duration(milliseconds: _warmupMs));
 
       _ampSub?.cancel();
-      _ampSub =
-          _recorder.onAmplitudeChanged(const Duration(milliseconds: _ampWindowMs)).listen((amp) {
-            if (!mounted) return;
+      _ampSub = _recorder
+          .onAmplitudeChanged(const Duration(milliseconds: _ampWindowMs))
+          .listen((amp) async {
+        if (!mounted || !_isOwner) return;
 
-            if (_state == VoiceState.speaking && amp.current > _vadDb) {
-              _ampSub?.cancel();
-              _player.stop();
-              return;
+        _lastAmpDb = amp.current;
+
+        if (_state == VoiceState.speaking) {
+          if (amp.current.isFinite && amp.current > _vadDb) {
+            _interruptLoudFrames++;
+            if (_interruptLoudFrames >= _needFramesToInterrupt) {
+              _interruptLoudFrames = 0;
+              await _player.stop();
             }
+          } else {
+            _interruptLoudFrames = 0;
+          }
+          return;
+        }
 
-            final now = DateTime.now().millisecondsSinceEpoch;
-            final cur = amp.current;
-            final loudFrame = cur.isFinite && cur > _vadDb;
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final loud = amp.current.isFinite && amp.current > _vadDb;
 
-            if (loudFrame) {
-              _consecLoud++;
-              _lastLoudMs = now;
+        if (loud) {
+          _markActivity();
+          _consecLoud++;
+          _lastLoudMs = now;
 
-              if (_consecLoud >= _minConsecLoud) {
-                final wasInactive = !_speechActive;
-                _speechActive = true;
-                _voicedMs += _ampWindowMs;
+          if (_consecLoud >= _minConsecLoud) {
+            final wasInactive = !_speechActive;
+            _speechActive = true;
+            _voicedMs += _ampWindowMs;
 
-                if (_isLlmActive && wasInactive && !_didBumpThisTurn) {
-                  _armIdle(_llmGraceAfterWake);
-                  _didBumpThisTurn = true;
-                }
-              }
-            } else {
-              _consecLoud = 0;
+            if (_isLlmActive && wasInactive && !_didBumpThisTurn) {
+              _armIdle(_llmGraceAfterWake);
+              _didBumpThisTurn = true;
             }
-          });
+          }
+        } else {
+          _consecLoud = 0;
+        }
+      });
 
-      while (mounted && _state == VoiceState.listening) {
+      while (mounted && _isOwner && _state == VoiceState.listening) {
         await Future.delayed(const Duration(milliseconds: 100));
+
         final now = DateTime.now().millisecondsSinceEpoch;
         final elapsed = now - _recordStartMs;
         final sinceLoud = now - _lastLoudMs;
@@ -333,25 +429,25 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final silentAfterSpeech = _speechActive && sinceLoud >= _silenceTimeoutMs;
         final overMax = elapsed >= maxMs;
         final noSpeechTimeoutHit =
-            _isLlmActive && !_speechActive && elapsed >= _noSpeechTimeoutLlmMs;
+            !_speechActive && elapsed >= (_isLlmActive ? _noSpeechTimeoutLlmMs : _noSpeechTimeoutWakeMs);
 
         if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) break;
       }
 
-      if (mounted && _state == VoiceState.listening) {
+      if (mounted && _isOwner && _state == VoiceState.listening) {
         await _stopAndProcess(filePath: path);
       }
     } catch (_) {
       _setStatus('녹음 시작 오류');
-      if (mounted) {
+      if (mounted && _isOwner) {
         _setState(VoiceState.idle);
-        await _cooldown();
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
       }
     }
   }
 
   Future<void> _stopAndProcess({required String? filePath}) async {
+    if (!_isOwner) return;
     if (!mounted || _state != VoiceState.listening) return;
 
     await _recorder.stop();
@@ -375,16 +471,13 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
       _setStatus('음성 인식 중…');
 
-      // 1) Whisper 먼저
       final whisperRes = await _callWhisperStt(f);
 
-      // 2) Whisper 품질이 낮으면 Clova 폴백(키가 있을 때만)
       STTResult finalRes = whisperRes;
       if (_shouldFallbackToClova(whisperRes)) {
         final clovaText = await _callClovaStt(f);
         if (clovaText.isNotEmpty) {
           final clovaConf = _estimateKoreanConfidence(clovaText);
-          // 두 후보 비교: 더 긴 한글 비율 + 더 높은 conf 선호
           if (clovaConf >= whisperRes.confidence ||
               _koreanRatio(clovaText) > _koreanRatio(whisperRes.text)) {
             finalRes = STTResult(clovaText, clovaConf, 'clova');
@@ -392,56 +485,56 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         }
       }
 
-      _lastHeard = finalRes.text.trim();
-
+      _lastHeard = _sanitizeStt(finalRes.text.trim(), lastAssistant: _lastAssistant);
       if (_lastHeard.isEmpty) {
         _handleEmptyTurn();
         return;
       }
 
+      // 에코 가드
+      if (_isAssistantEcho(_lastHeard)) {
+        if (kDebugMode) debugPrint('[Voice] echo guarded: "${_lastHeard}"');
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+        return;
+      }
+
       _emptyTurns = 0;
 
-      if (! _isLlmActive) {
+      if (!_isLlmActive) {
         await _checkForWakeWord(_lastHeard);
       } else {
         await _handleLlmConversation(_lastHeard);
       }
 
-      if (mounted && _state != VoiceState.speaking) {
+      if (mounted && _isOwner && _state != VoiceState.speaking && !_llmBusy) {
         _setState(VoiceState.idle);
-        await _cooldown();
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[Voice] 처리 오류: $e');
       _setStatus('처리 오류');
-      if (mounted) {
+      if (mounted && _isOwner) {
         _setState(VoiceState.idle);
-        await _cooldown();
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
       }
     }
   }
 
-  // Whisper → STT
+  // ───────────────────────────────────────────────────────────────────────────
+  // STT
   Future<STTResult> _callWhisperStt(File wav) async {
     if (_gmsKey.isEmpty) {
-      if (kDebugMode) debugPrint('[STT] GMS_KEY 미설정(Whisper 호출 불가)');
+      if (kDebugMode) debugPrint('[STT] GMS_KEY 미설정');
       return STTResult('', 0.0, 'whisper');
     }
     try {
       final form = FormData.fromMap({
         'model': _whisperModel,
-        'file': await MultipartFile.fromFile(
-          wav.path,
-          filename: 'audio.wav',
-          contentType: DioMediaType('audio', 'wav'),
-        ),
+        'file': await MultipartFile.fromFile(wav.path, filename: 'audio.wav'),
         'language': _whisperLanguage,
-        // verbose_json으로 받아 품질 판단 지표 사용
         'response_format': 'verbose_json',
-        // 한국어 구두어 보정 프롬프트(선택)
-        'prompt': '한국어 일상 대화. 자동차 내비게이션 맥락. 구어체를 자연스러운 띄어쓰기로.',
+        'prompt': '한국어 일상 대화, 자동차 내비게이션 맥락. 자연스러운 띄어쓰기.',
         'temperature': '0',
       });
 
@@ -452,6 +545,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           headers: {'Authorization': 'Bearer $_gmsKey'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
 
@@ -464,10 +559,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         }
         return STTResult(text, conf, 'whisper', raw: map);
       }
-
-      if (kDebugMode) {
-        debugPrint('[Whisper] 실패 status=${res.statusCode} data=${res.data}');
-      }
       return STTResult('', 0.0, 'whisper');
     } catch (e) {
       if (kDebugMode) debugPrint('[Whisper] 예외: $e');
@@ -475,71 +566,50 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
-  // Whisper 품질 판단(휴리스틱)
   double _estimateWhisperConfidence(Map<String, dynamic> verboseJson, String text) {
     if (text.trim().isEmpty) return 0.0;
-
-    // 기본 점수: 길이/한글비율
     double score = 0.4;
     final len = text.runes.length;
     if (len >= 6) score += 0.1;
     if (len >= 12) score += 0.1;
-    score += (_koreanRatio(text) * 0.2); // 한글 비율 가점
+    score += (_koreanRatio(text) * 0.2);
 
-    // verbose_json 지표
     final segments = (verboseJson['segments'] as List?)?.cast<Map<String, dynamic>>();
     if (segments != null && segments.isNotEmpty) {
-      // avg_logprob 평균 → [-5, 0] 대략 분포 가정 -> [0,1]로 매핑
-      double sumProb = 0;
-      int c = 0;
+      double sumProb = 0; int c = 0;
       for (final s in segments) {
         final lp = (s['avg_logprob'] as num?)?.toDouble();
         if (lp != null) {
-          // -1.5 ~ -0.1 범위를 0~1로 압축
           final mapped = ((lp + 1.5) / 1.4).clamp(0.0, 1.0);
-          sumProb += mapped;
-          c++;
+          sumProb += mapped; c++;
         }
       }
-      if (c > 0) {
-        score = max(score, sumProb / c); // 보수적으로 더 높은 쪽 채택
-      }
-      // 문자 길이로 가볍게 보정
+      if (c > 0) score = max(score, sumProb / c);
       if (len <= 3) score = min(score, 0.35);
     }
-
-    // 과도한 압축비는 환각/인코딩 이슈 가능
     final comp = (verboseJson['compression_ratio'] as num?)?.toDouble();
-    if (comp != null && comp > 2.4) {
-      score = min(score, 0.45);
-    }
-
+    if (comp != null && comp > 2.4) score = min(score, 0.45);
     return score.clamp(0.0, 1.0);
   }
 
-  // 한글 비율 추정
   double _koreanRatio(String s) {
     if (s.isEmpty) return 0.0;
     final total = s.runes.length;
-    final korean = RegExp(r'[가-힣]').allMatches(s).fold<int>(0, (p, m) => p + (m.group(0)?.runes.length ?? 0));
+    final korean = RegExp(r'[가-힣]').allMatches(s).fold<int>(
+      0, (p, m) => p + (m.group(0)?.runes.length ?? 0),
+    );
     return korean / total;
   }
 
-  // Clova STT (텍스트만 반환)
   Future<String> _callClovaStt(File wavFile) async {
-    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) {
-      if (kDebugMode) debugPrint('[Clova] 키 미설정 → 폴백 불가');
-      return '';
-    }
+    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) return '';
     try {
       final uri = Uri.parse(_clovaUrl).replace(queryParameters: {
-        'lang': 'Kor',
-        'completion': 'sync',
+        'lang': 'Kor', 'completion': 'sync',
       });
       final bytes = await wavFile.readAsBytes();
       final res = await _plainDio.postUri(
-        uri,
-        data: bytes,
+        uri, data: bytes,
         options: Options(
           responseType: ResponseType.plain,
           headers: {
@@ -548,6 +618,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
             'Content-Type': 'application/octet-stream',
           },
           validateStatus: (s) => s != null && s < 500,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
       if (res.statusCode == 200) {
@@ -562,13 +634,20 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
             : '';
       }
       return '';
-    } catch (e) {
-      if (kDebugMode) debugPrint('[Clova] 예외: $e');
-      return '';
-    }
+    } catch (_) { return ''; }
   }
 
-  // Clova 텍스트의 대략적 신뢰도(길이 + 한글비율)
+  bool _shouldFallbackToClova(STTResult whisper) {
+    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) return false;
+    final text = whisper.text.trim();
+    if (text.isEmpty) return true;
+    final confLow = whisper.confidence < 0.58;
+    final shortText = text.runes.length <= 2;
+    final lowKorean = _koreanRatio(text) < 0.35;
+    final hasWeird = RegExp(r'[A-Za-z]{3,}').hasMatch(text);
+    return confLow || shortText || (lowKorean && hasWeird);
+  }
+
   double _estimateKoreanConfidence(String text) {
     if (text.trim().isEmpty) return 0.0;
     double score = 0.5;
@@ -579,137 +658,129 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     return score.clamp(0.0, 1.0);
   }
 
-  // Whisper 결과가 나빠 보이면 Clova로 폴백 시도
-  bool _shouldFallbackToClova(STTResult whisper) {
-    if (_clovaClientId.isEmpty || _clovaClientSecret.isEmpty) return false;
-
-    final text = whisper.text.trim();
-    if (text.isEmpty) return true;
-
-    // 휴리스틱 조건들
-    final confLow = whisper.confidence < 0.58;
-    final shortText = text.runes.length <= 2;
-    final lowKorean = _koreanRatio(text) < 0.35;
-    final hasWeird = RegExp(r'[A-Za-z]{3,}').hasMatch(text); // 영어 연속 등장
-
-    return confLow || shortText || (lowKorean && hasWeird);
-  }
-
+  // ───────────────────────────────────────────────────────────────────────────
+  // 대화 흐름
   Future<void> _handleEmptyTurn() async {
+    if (!_isOwner) return;
     if (!mounted) return;
+
     if (_isLlmActive) {
       _emptyTurns++;
       if (_emptyTurns >= _emptyTurnsToExit) {
         _isLlmActive = false;
         _disarmIdle();
         _emptyTurns = 0;
-        await _speakOpenAiTts('대화가 없어 종료할게요.');
+        await _speakOpenAiTts('난중에, 대화가 필요하면 다시 불러줘.');
       } else {
         _armIdle(_llmGraceAfterWake);
-        _setState(VoiceState.idle);
-        await _cooldown();
-        _processNextTurn();
+        await _speakOpenAiTts('듣고 있어. 더 할 말 있으면 말해줘?');
       }
     } else {
       _setState(VoiceState.idle);
-      await _cooldown();
-      _processNextTurn();
+      _scheduleNextTurn(_cooldownMs);
     }
   }
 
   Future<void> _checkForWakeWord(String heardText) async {
+    if (!_isOwner) return;
     final userText = _extractAfterWakeWord(heardText);
     if (userText != null) {
-      _isLlmActive = true;
+      // → LLM 모드 진입
+      if (!_isLlmActive) setState(() => _isLlmActive = true);
       _disarmIdle();
 
-      if (userText.trim().isEmpty) {
+      final trimmed = _sanitizeStt(userText).trim();
+      if (trimmed.isEmpty) {
+        // 웨이크워드만
         await _speakOpenAiTts('네, 말씀하세요.');
+        _armIdle(_llmGraceAfterWake);
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
         return;
       }
-      await _handleLlmConversation(userText.trim());
+      await _handleLlmConversation(trimmed);
+    } else {
+      _setState(VoiceState.idle);
+      _scheduleNextTurn(_cooldownMs);
     }
   }
 
   Future<void> _handleLlmConversation(String heardText) async {
-    // 1) 원문/웨이크워드 처리
+    if (!_isOwner) return;
     final raw = heardText.trim();
-    final afterWake = _extractAfterWakeWord(raw);
-    String userSaid;
+    if (raw.isEmpty) return;
 
-    if (afterWake != null) {
-      _isLlmActive = true;
-      _disarmIdle();
-      userSaid = afterWake.trim();
-
-      if (kDebugMode) {
-        debugPrint('[Voice] heard(wake): "$raw" -> use("$userSaid")');
-      }
-
-      if (userSaid.isEmpty) {
-        await _speakOpenAiTts('네, 말씀하세요.');
-        return;
-      }
-    } else {
-      userSaid = raw;
-      if (kDebugMode) {
-        debugPrint('[Voice] heard: "$userSaid"');
-      }
+    // ⬇️ 중첩 방지: 진행 중이면 최신 1건으로 교체 후 리턴
+    if (_llmBusy) {
+      _queuedUserText = raw;
+      return;
     }
+    _llmBusy = true;
 
-    // 2) 종료/중단 명령 처리
     if (_llmExitWords.any((w) => raw.contains(w))) {
       _isLlmActive = false;
       _disarmIdle();
       await _speakOpenAiTts('대화를 종료합니다.');
-      if (kDebugMode) debugPrint('[Voice] exit requested.');
+      // _llmBusy 해제는 onPlayerStateChanged에서
       return;
     }
 
+    final afterWake = _extractAfterWakeWord(raw);
+    final userSaid = (afterWake ?? raw).trim();
     if (userSaid.isEmpty) {
-      if (kDebugMode) debugPrint('[Voice] empty user text after processing.');
+      await _speakOpenAiTts('네, 말씀하세요.');
       return;
     }
 
-    // 4) LLM 호출
     _disarmIdle();
+    _markActivity();
     _setStatus('LLM 요청 중…');
-    if (kDebugMode) debugPrint('[Voice] calling LLM with: "$userSaid"');
 
     final prompt = _buildConversationalQuestion(userSaid);
     final answer = await _callLlm(prompt);
     _lastReply = answer.trim();
+    _lastAssistant = _lastReply;
+    _markActivity();
 
     _pushHistory('user', userSaid);
     if (_lastReply.isNotEmpty) _pushHistory('assistant', _lastReply);
 
-    // 5) 응답 TTS
     if (_lastReply.isNotEmpty) {
-      if (kDebugMode) {
-        debugPrint(
-            '[Voice] TTS speak: "${_lastReply.substring(0, _lastReply.length.clamp(0, 80))}..."');
-      }
       await _speakOpenAiTts(_lastReply);
     } else {
-      if (kDebugMode) debugPrint('[Voice] empty LLM reply.');
+      await _speakOpenAiTts('지금 네트워크가 불안정해요. 잠시 후 다시 말씀해 주세요.');
+      _llmBusy = false; // 실패 시 직접 해제
       _setState(VoiceState.idle);
-      await _cooldown();
-      _processNextTurn();
+      _scheduleNextTurn(_cooldownMs);
     }
   }
 
   void _armIdle([Duration? dur]) {
+    if (!_isOwner) return;
     if (!_isLlmActive) return;
+
     final d = dur ?? _llmIdle;
     _idleGen++;
     final myGen = _idleGen;
 
+    final armedAt = DateTime.now().millisecondsSinceEpoch;
+
     _llmIdleTimer?.cancel();
     _llmIdleTimer = Timer(d, () async {
-      if (!mounted || myGen != _idleGen) return;
-      if (_state == VoiceState.speaking) {
-        await _player.stop();
+      if (!mounted || !_isOwner || myGen != _idleGen) return;
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final lastActive = (_lastActivityMs > 0) ? _lastActivityMs : armedAt;
+      final quietForMs = now - lastActive;
+
+      final stillQuiet = quietForMs >= d.inMilliseconds - 200;
+      final isSafeToEnd = _isLlmActive && _state == VoiceState.idle && _looping && stillQuiet;
+
+      if (!isSafeToEnd) {
+        _armIdle(d);
+        return;
       }
+
       _isLlmActive = false;
       await _speakOpenAiTts('응답이 없어 대화를 종료할게요.');
     });
@@ -721,14 +792,23 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _llmIdleTimer = null;
   }
 
+  // 웨이크워드 추출(강화)
   String? _extractAfterWakeWord(String text) {
     if (text.isEmpty) return null;
-    final noSpace = text.replaceAll(RegExp(r'\s+'), '');
+
+    var cleanedHead = text
+        .replaceAll(RegExp(r'^[\s·…~,\.\-:;!?]+', unicode: true), '')
+        .replaceAll(RegExp(r'^(어|음|에|저기|그|아)+\s*', unicode: true), '');
+
+    final compact =
+    cleanedHead.replaceAll(RegExp(r'[\s\p{P}]+', unicode: true), '');
     for (final w in _wakeWords) {
-      if (noSpace.startsWith(w)) {
-        final originalIndex = text.toLowerCase().indexOf(w);
-        if (originalIndex != -1) {
-          return text.substring(originalIndex + w.length).trim();
+      final iCompact = compact.indexOf(w);
+      if (iCompact >= 0 && iCompact <= 8) {
+        final iRaw = cleanedHead.indexOf(w);
+        if (iRaw >= 0) {
+          final rest = cleanedHead.substring(iRaw + w.length).trim();
+          return rest;
         }
       }
     }
@@ -736,21 +816,29 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   }
 
   String _buildConversationalQuestion(String userText) {
-    if (_history.isEmpty) return userText;
     final buf = StringBuffer();
-    buf.writeln('다음은 지금까지의 대화 맥락입니다:');
-    final start =
-    _history.length > _maxTurnsMemory ? _history.length - _maxTurnsMemory : 0;
-    for (int i = start; i < _history.length; i++) {
-      final h = _history[i];
-      if (h['role'] == 'user') {
-        buf.writeln('사용자: ${h['content']}');
-      } else {
-        buf.writeln('모링: ${h['content']}');
+    buf.writeln('너는 "모링"이라는 이름을 가진 친절하고 상냥한 자동차 AI 어시스턴트야.');
+    buf.writeln('항상 명확하고 간결하게, 그리고 반말로 대답해야 해. 사용자는 너의 친구야.');
+    buf.writeln('자동차 네비게이션, 운전, 교통 상황과 관련된 질문에 특히 전문적으로 답변할 수 있어.');
+    buf.writeln('');
+
+    if (_history.isNotEmpty) {
+      buf.writeln('--- 대화 맥락 ---');
+      final start = _history.length > _maxTurnsMemory
+          ? _history.length - _maxTurnsMemory
+          : 0;
+      for (int i = start; i < _history.length; i++) {
+        final h = _history[i];
+        final prefix = h['role'] == 'user' ? '친구' : '모링';
+        buf.writeln('$prefix: ${h['content']}');
       }
+      buf.writeln('--- 여기까지가 대화 맥락이야 ---');
+      buf.writeln('');
     }
-    buf.writeln('\n사용자: $userText');
+
+    buf.writeln('친구: $userText');
     buf.writeln('모링:');
+    if (kDebugMode) debugPrint('[LLM Prompt]\n${buf.toString()}');
     return buf.toString();
   }
 
@@ -761,14 +849,16 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
+  // LLM 호출
   Future<String> _callLlm(String prompt) async {
     try {
       Dio apiClient;
       try {
-        apiClient = ref.read(noAuthDioProvider);
+        apiClient = ref.read(authDioProvider);
       } catch (_) {
-        apiClient = _plainDio..options.baseUrl = '';
+        apiClient = ref.read(noAuthDioProvider);
       }
+
       Response res = await apiClient.post(
         _llmPath,
         data: {'question': prompt},
@@ -776,68 +866,66 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
       String? ans = _extractLlmResult(res);
       if (ans != null) return ans;
 
-      // 백엔드가 문자열 본문만 받을 때 대비
       res = await apiClient.post(
-        _llmPath,
-        data: prompt,
+        _llmPath, data: prompt,
         options: Options(
           headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
       ans = _extractLlmResult(res);
-      return ans ?? '[LLM 응답 파싱 실패]';
+      return ans ?? '';
     } catch (e) {
-      return '[LLM 호출 실패: $e]';
+      if (kDebugMode) debugPrint('[LLM] 호출 실패: $e');
+      return '';
     }
   }
 
   String? _extractLlmResult(Response res) {
     if (res.statusCode == 200) {
       final data = res.data;
-      if (data is Map && data.containsKey('result') && data['result'] is String) {
-        return (data['result'] as String).trim();
-      }
+      if (data is Map && data['result'] is String) return (data['result'] as String).trim();
       if (data is String) return data.trim();
     }
     return null;
   }
 
+  // TTS
   Future<void> _speakOpenAiTts(String text) async {
-    if (text.trim().isEmpty) return;
-    if (!mounted) return;
+    if (!_isOwner) return;
+    if (!mounted || text.trim().isEmpty) return;
     if (_gmsKey.isEmpty) {
       if (kDebugMode) debugPrint('[TTS] GMS_KEY 미설정');
       return;
     }
 
+    _disarmIdle();
+    _markActivity();
     _setState(VoiceState.speaking);
     _setStatus('음성 답변 중…');
 
     try {
-      final body = {
-        'model': _ttsModel,
-        'input': text,
-        'voice': _ttsVoice,
-        'response_format': 'mp3',
-      };
+      final body = {'model': _ttsModel, 'input': text, 'voice': _ttsVoice, 'response_format': 'mp3'};
 
       final res = await _plainDio.post(
         _ttsUrl,
         data: jsonEncode(body),
         options: Options(
-          headers: {
-            'Authorization': 'Bearer $_gmsKey',
-            'Content-Type': 'application/json',
-          },
+          headers: {'Authorization': 'Bearer $_gmsKey', 'Content-Type': 'application/json'},
           responseType: ResponseType.bytes,
           validateStatus: (s) => s != null && s < 500,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
 
@@ -845,26 +933,197 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
       if (res.statusCode == 200 && res.data != null) {
         final bytes = Uint8List.fromList(res.data as List<int>);
+        _disarmIdle();
+        _markActivity();
         await _player.play(BytesSource(bytes));
       } else {
+        _llmBusy = false; // 실패 시 락 해제
         _setState(VoiceState.idle);
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
       }
     } catch (_) {
-      if (mounted) {
+      _llmBusy = false; // 예외 시 락 해제
+      if (mounted && _isOwner) {
         _setState(VoiceState.idle);
-        _processNextTurn();
+        _scheduleNextTurn(_cooldownMs);
       }
     }
   }
 
+  // STT 사후 정제
+  String _sanitizeStt(String text, {String? lastAssistant}) {
+    final original = text;
+    String s = text;
+
+    s = s.replaceAll(RegExp(r'[\[\(][^\]\)]{0,20}[\]\)]'), '');
+    for (final p in _sttBlacklistExact) {
+      s = s.replaceAll(RegExp(RegExp.escape(p), caseSensitive: false), '');
+    }
+    s = s.replaceAll(RegExp(r'^(모링|친구)\s*[:：]\s*', caseSensitive: false), '');
+    s = s.replaceAll(RegExp(r'([가-힣A-Za-z0-9])\1{2,}'), r'\1\1');
+    s = s.replaceAll(RegExp(r'\b([가-힣A-Za-z]{1,4})\b(?:\s*\1\b){2,}'), r'\1');
+    s = s.replaceAll(RegExp(r'\s+'), ' ');
+    s = s.replaceAll(RegExp(r'^[\.\s,;:~…·\-]+|[\.\s,;:~…·\-]+$'), '').trim();
+
+    if (s.isEmpty) return original.trim();
+
+    if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
+      final a = _normalize(lastAssistant);
+      final b = _normalize(s);
+      if (a == b) return original.trim();
+    }
+
+    if (_sttBlacklistExact.contains(s)) return '';
+    for (final re in _sttBlacklistPatterns) {
+      if (re.hasMatch(s)) return '';
+    }
+    if (s.length <= 3 && (s.contains('맥락') || s.contains('내비'))) return '';
+
+    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return s;
+  }
+
+  // 에코 가드
+  bool _isAssistantEcho(String userText) {
+    if (_lastAssistant.trim().isEmpty) return false;
+    final a = _normalize(_lastAssistant);
+    final b = _normalize(userText);
+    if (a.isEmpty || b.isEmpty) return false;
+    if (a == b) return true;
+    final sim = _jaccardSetSim(a, b);
+    return sim >= 0.85 || (b.length <= 12 && a.contains(b));
+  }
+
+  String _normalize(String s) =>
+      s.replaceAll(RegExp(r'[\s\.,;:!?~"\(\)\[\]\{\}…·\-]+'), '').toLowerCase();
+
+  double _jaccardSetSim(String a, String b) {
+    Set<String> grams(String x) {
+      final g = <String>{};
+      for (int i = 0; i < x.length - 1; i++) {
+        g.add(x.substring(i, i + 2));
+      }
+      return g.isEmpty ? {x} : g;
+    }
+    final sa = grams(a);
+    final sb = grams(b);
+    final inter = sa.intersection(sb).length.toDouble();
+    final union = sa.union(sb).length.toDouble();
+    if (union == 0) return 0.0;
+    return inter / union;
+  }
+
   void _setStatus(String s) {
-    if (mounted && widget.showDebugPanel) setState(() => _status = s);
+    if (mounted && (widget.showDebugPanel || widget.showBadge)) {
+      setState(() => _status = s);
+    }
+  }
+
+  // UI
+  bool _shouldShowBadge() {
+    if (!widget.showBadge || !_isOwner) return false;
+    if (!widget.showBadgeOnlyWhenActive) return true;
+    return _isLlmActive;
   }
 
   @override
   Widget build(BuildContext context) {
-    // showDebugPanel=false 이면 UI 없음(로직은 동작)
-    return const SizedBox.shrink();
+    if (!widget.showDebugPanel && !widget.showBadge) return const SizedBox.shrink();
+    if (!_isOwner) return const SizedBox.shrink();
+
+    final children = <Widget>[];
+
+    if (_shouldShowBadge()) {
+      final (IconData icon, Color bgColor, String label) = switch (_state) {
+        VoiceState.listening => _isLlmActive
+            ? (Icons.hearing, Colors.blue, '듣는 중')
+            : (Icons.mic, Colors.lightBlueAccent, '듣는 중'),
+        VoiceState.processing => (Icons.psychology_outlined, Colors.orangeAccent, '생각 중'),
+        VoiceState.speaking => (Icons.volume_up, Colors.greenAccent, '말하는 중'),
+        VoiceState.idle => (Icons.chat_bubble_outline, Colors.blueGrey, '대화 대기'),
+      };
+
+      final isBottom = widget.badgeAlignment.y >= 0.9;
+      final extraBottom = isBottom ? widget.avoidBottomPx : 0.0;
+
+      children.add(
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: true,
+            child: SafeArea(
+              child: Align(
+                alignment: widget.badgeAlignment,
+                child: Padding(
+                  padding: widget.badgeMargin.add(EdgeInsets.only(bottom: extraBottom)),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: bgColor.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, animation) =>
+                              ScaleTransition(scale: animation, child: child),
+                          child: Icon(icon, key: ValueKey<IconData>(icon),
+                              color: Colors.black.withOpacity(0.7), size: 20),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(label,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            )),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (widget.showDebugPanel) {
+      children.add(
+        Positioned(
+          right: 12, top: 12,
+          child: Material(
+            color: Colors.black.withOpacity(0.75),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(12), width: 300,
+              child: DefaultTextStyle(
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Voice: $_status'),
+                    const SizedBox(height: 6),
+                    Text('state: $_state, llm: $_isLlmActive, busy: $_llmBusy'),
+                    const SizedBox(height: 6),
+                    Text('amp: ${_lastAmpDb.isFinite ? _lastAmpDb.toStringAsFixed(1) : '–'} dB'),
+                    const SizedBox(height: 6),
+                    Text('heard: $_lastHeard', maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 6),
+                    Text('reply: $_lastReply', maxLines: 3, overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Stack(children: children);
   }
 }
