@@ -82,7 +82,8 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
 
     if (type == 'FRONT_ALERT' ||
         type == 'OXYGEN_ALERT' ||
-        type == 'DISTRACTION_ALERT') {
+        type == 'SLEEP_ALERT' ||
+        type == 'TEMPERATURE_ALERT') {
       _showAlert(type);
       if (widget.speak) {
         _speakAlert(type); // TTS
@@ -112,14 +113,17 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
         break;
       case 'OXYGEN_ALERT':
         title = '주의';
-        message = '졸음 조심!! 에어컨 가동';
+        message = '이산화탄소 고농도!! 환기하세요';
         icon = Icons.ac_unit;
         break;
-      case 'DISTRACTION_ALERT':
-        title = '주의';
-        message = '졸음 조심!!';
+      case 'SLEEP_ALERT':
+        title = '경고';
+        message = '졸음이 감지됐습니다 조심하십시오!!';
         icon = Icons.visibility_off;
         break;
+      case 'TEMPERATURE_ALERT':
+        title = '주의';
+        message = '잠이 오기 좋은 온도입니다. 조십하십시오';
     }
 
     // 자동 닫힘 5초
@@ -223,8 +227,9 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
     // 메시지 맵핑
     final text = switch (type) {
       'FRONT_ALERT' => '경고. 전방을 주시하세요.',
-      'OXYGEN_ALERT' => '경고. 졸음을 조심하세요.',
-      'DISTRACTION_ALERT' => '주의. 졸음 운전이 감지되었습니다.',
+      'OXYGEN_ALERT' => '주의. 졸음을 조심하세요.',
+      'SLEEP_ALERT' => '경고. 졸음 운전이 감지되었습니다.',
+      'TEMPERATURE_ALERT' => '주의. 잠이 오기 좋은 온도입니다.',
       _ => null,
     };
     if (text == null || text.trim().isEmpty) return;
