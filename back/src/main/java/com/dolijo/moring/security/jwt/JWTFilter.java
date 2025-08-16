@@ -32,7 +32,9 @@ public class JWTFilter extends OncePerRequestFilter {
     // JWT 검사를 하지 않을 URL 목록
     private static final List<String> EXCLUDE_URLS = List.of(
             "/api/kakao/redirect",
-            "/api/v1/auth/refresh"
+            "/api/v1/auth/refresh",
+            // 하드웨어 토큰 발급
+            "/api/hw/oauth/token"
     );
 
     // 토큰 조회에 사용할 키들

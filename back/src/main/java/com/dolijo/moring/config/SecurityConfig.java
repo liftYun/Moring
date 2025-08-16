@@ -76,12 +76,12 @@ public class SecurityConfig {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration cfg = new CorsConfiguration();
-                cfg.setAllowedOrigins(Collections.singletonList("https://i13e101.p.ssafy.io/"));
+                cfg.setAllowedOrigins(Collections.singletonList("https://i13e101.p.ssafy.io"));
                 cfg.setAllowedMethods(Collections.singletonList("*"));
-                cfg.setAllowCredentials(true);
                 cfg.setAllowedHeaders(Collections.singletonList("*"));
-                cfg.setMaxAge(3600L);
                 cfg.setExposedHeaders(Collections.singletonList("Authorization"));
+                cfg.setAllowCredentials(true);
+                cfg.setMaxAge(3600L);
                 return cfg;
             }
         }));
@@ -109,8 +109,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/auth/refresh",
                                 "/api/v1/auth/logout/rToken").permitAll()
-                        // Swagger, 공용 API
-                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Swagger, 공용 API & 하드웨어 알림 테스트를 위해 임시 Open
+                        .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**","/api/v1/notifications/send/**").permitAll()
                         // 토큰 보유자
                         .requestMatchers("/api/v1/**").authenticated()
                         // 역할별 접근 제어
