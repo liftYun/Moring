@@ -33,8 +33,10 @@ class ConsumablesSection extends StatelessWidget {
                   ? '${consumable.dueDate!.year}-${consumable.dueDate!.month.toString().padLeft(2, '0')}-${consumable.dueDate!.day.toString().padLeft(2, '0')}'
                   : '날짜 정보 없음';
 
-              // percentUsed: 0(새것) → 100(교체필요)
-              final progress = 1.0 - (consumable.percentUsed / 100.0);
+              // 날짜 정보가 없으면 게이지바를 0으로 표시
+              final progress = consumable.dueDate != null 
+                  ? 1.0 - (consumable.percentUsed / 100.0)
+                  : 0.0;
 
               return GestureDetector(
                 onTap: () {
@@ -109,29 +111,33 @@ class _ConsumableCard extends StatelessWidget {
                 ],
               ),
             ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 80,
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.grey[700],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      progress > 0.7
-                          ? Colors.greenAccent
-                          : (progress > 0.3 ? Colors.amberAccent : Colors.redAccent),
-                    ),
-                    minHeight: 5,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${(progress * 100).toInt()}%',
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
-                ),
-              ],
-            ),
+                         Row(
+               children: [
+                 SizedBox(
+                   width: 80,
+                   child: LinearProgressIndicator(
+                     value: progress,
+                     backgroundColor: Colors.grey[700],
+                     valueColor: AlwaysStoppedAnimation<Color>(
+                       progress > 0.7
+                           ? Colors.greenAccent
+                           : (progress > 0.3 ? Colors.amberAccent : Colors.redAccent),
+                     ),
+                     minHeight: 5,
+                     borderRadius: BorderRadius.circular(5),
+                   ),
+                 ),
+                 const SizedBox(width: 8),
+                 SizedBox(
+                   width: 35, // "100%"를 담을 수 있는 충분한 너비
+                   child: Text(
+                     '${(progress * 100).toInt()}%',
+                     textAlign: TextAlign.end, // 텍스트를 오른쪽 정렬
+                     style: theme.textTheme.bodySmall?.copyWith(color: Colors.white),
+                   ),
+                 ),
+               ],
+             ),
           ],
         ),
       ),

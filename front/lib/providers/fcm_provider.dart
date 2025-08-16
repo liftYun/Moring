@@ -192,8 +192,8 @@ class FCMNotifier extends _$FCMNotifier {
   /// 로그인 필요 상태 처리
   void _handleLoginRequired() {
     navigatorKey.currentState?.pushNamedAndRemoveUntil(
-    '/login',
-    (route) => false,
+      '/login',
+          (route) => false,
     );
   }
 
@@ -258,15 +258,15 @@ class FCMNotifier extends _$FCMNotifier {
 
     switch (notificationType) {
       case 'car_inspection':
-        // debugPrint('차량 점검 화면으로 이동');
-        // UI 완성 시 추후 등록 예정
+      // debugPrint('차량 점검 화면으로 이동');
+      // UI 완성 시 추후 등록 예정
         break;
       case 'part_replacement':
-        // debugPrint('부품 교체 화면으로 이동');
-        // UI 완성 시 추후 등록 예정
+      // debugPrint('부품 교체 화면으로 이동');
+      // UI 완성 시 추후 등록 예정
         break;
       default:
-        // debugPrint('메인 화면으로 이동');
+      // debugPrint('메인 화면으로 이동');
       // UI 완성 시 추후 등록 예정
     }
   }

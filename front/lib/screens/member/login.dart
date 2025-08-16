@@ -138,16 +138,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 const SizedBox(height: 14),
 
-                // 구글 로그인 버튼
-                // 구글 버튼 스타일은 별도로 수정이 필요합니다.
-                // OutlinedButton 스타일은 이 위젯에서 직접 구현하거나,
-                // SocialLoginButton 위젯에 isOutlined 등의 파라미터를 추가하여 구현할 수 있습니다.
-                _SocialLoginButton(
-                  label: '구글로 로그인하기',
-                  iconPath: 'assets/google_logo.png',
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black87,
-                  onPressed: _loading ? null : _testLogin,
+                // 테스트 로그인 버튼
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _loading ? null : _testLogin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black87,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _loading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black87,
+                            ),
+                          )
+                        : const Text(
+                            '테스트 로그인하기',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
                 ),
               ],
             ),

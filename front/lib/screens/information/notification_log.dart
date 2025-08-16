@@ -16,6 +16,7 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   final ScrollController _scrollCtrl = ScrollController();
   final List<UnreadNotification> _notifications = [];
+  final List<Widget> _groupedItems = []; // 날짜별로 그룹화된 아이템들
   bool _isLoading = false;
   bool _hasMore = true;
   int _page = 0;
@@ -42,7 +43,11 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       final fetched = await api.fetchUnreadNotifications(vin: vin);
       final insertIndex = _notifications.length;
       _notifications.addAll(fetched);
-      for (int i = 0; i < fetched.length; i++) {
+      
+      // 날짜별로 그룹화하여 아이템 생성
+      _updateGroupedItems();
+      
+      for (int i = 0; i < _groupedItems.length; i++) {
         _listKey.currentState?.insertItem(insertIndex + i, duration: const Duration(milliseconds: 300));
       }
       _hasMore = fetched.length == _size;
@@ -54,18 +59,96 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
     }
   }
 
+  void _updateGroupedItems() {
+    _groupedItems.clear();
+    
+    if (_notifications.isEmpty) return;
+    
+    // 날짜별로 그룹화
+    final Map<String, List<UnreadNotification>> groupedNotifications = {};
+    
+    for (final notification in _notifications) {
+      final dateKey = _getDateKey(notification.createdAt);
+      if (!groupedNotifications.containsKey(dateKey)) {
+        groupedNotifications[dateKey] = [];
+      }
+      groupedNotifications[dateKey]!.add(notification);
+    }
+    
+    // 날짜 순으로 정렬 (최신 날짜가 위로)
+    final sortedDates = groupedNotifications.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+    
+    // 각 날짜 그룹에 대해 헤더와 아이템들 생성
+    for (final dateKey in sortedDates) {
+      final notifications = groupedNotifications[dateKey]!;
+      
+      // 날짜 헤더 추가
+      _groupedItems.add(_buildDateHeader(dateKey));
+      
+      // 해당 날짜의 알림들 추가
+      for (final notification in notifications) {
+        _groupedItems.add(
+          SlidingNotificationCard(
+            key: ValueKey(notification.id),
+            notification: notification,
+            onMarkedRead: () {
+              final removeIndex = _notifications.indexWhere((e) => e.id == notification.id);
+              if (removeIndex >= 0) _removeAt(removeIndex);
+            },
+          ),
+        );
+      }
+    }
+  }
+
+  String _getDateKey(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final targetDate = DateTime(date.year, date.month, date.day);
+    
+    if (targetDate == today) {
+      return '오늘';
+    } else if (targetDate == yesterday) {
+      return '어제';
+    } else {
+      return '${date.year}년 ${date.month}월 ${date.day}일';
+    }
+  }
+
+  Widget _buildDateHeader(String dateKey) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Text(
+        dateKey,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   void _removeAt(int index) {
     final removed = _notifications[index];
+    
+    // 그룹화된 아이템에서도 제거
+    _updateGroupedItems();
+    
     _listKey.currentState?.removeItem(
       index,
-          (context, animation) => SlideTransition(
+      (context, animation) => SlideTransition(
         position: Tween<Offset>(begin: Offset.zero, end: const Offset(1, 0))
             .animate(CurvedAnimation(parent: animation, curve: Curves.easeIn)),
-        child: SlidingNotificationCard(
-          key: ValueKey(removed.id),
-          notification: removed,
-          onMarkedRead: () {},
-        ),
+        child: _groupedItems.isNotEmpty && index < _groupedItems.length 
+            ? _groupedItems[index] 
+            : SlidingNotificationCard(
+                key: ValueKey(removed.id),
+                notification: removed,
+                onMarkedRead: () {},
+              ),
       ),
       duration: const Duration(milliseconds: 300),
     );
@@ -86,6 +169,7 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       _removeAt(i);
     }
     _hasMore = false;
+    _updateGroupedItems();
   }
 
   @override
@@ -128,27 +212,21 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
     return AnimatedList(
       key: _listKey,
       controller: _scrollCtrl,
-      initialItemCount: _notifications.length,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      initialItemCount: _groupedItems.length,
+      padding: const EdgeInsets.all(16),
       itemBuilder: (ctx, idx, anim) {
-        if (idx >= _notifications.length) {
+        if (idx >= _groupedItems.length) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Center(child: CircularProgressIndicator()),
           );
         }
-        final n = _notifications[idx];
+        
+        final item = _groupedItems[idx];
         return SlideTransition(
           position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
               .animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-          child: SlidingNotificationCard(
-            key: ValueKey(n.id),
-            notification: n,
-            onMarkedRead: () {
-              final removeIndex = _notifications.indexWhere((e) => e.id == n.id);
-              if (removeIndex >= 0) _removeAt(removeIndex);
-            },
-          ),
+          child: item,
         );
       },
     );
