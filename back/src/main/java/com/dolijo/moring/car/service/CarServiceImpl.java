@@ -20,8 +20,10 @@ import com.dolijo.moring.member.entity.Member;
 import com.dolijo.moring.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +44,11 @@ public class CarServiceImpl implements CarService{
     private final CarMileageLogDslRepository carMileageLogDslRepository;
     private final CarInspectionLogRepository carInspectionLogRepository;
     private final CarInspectionLogDslRepository carInspectionLogDslRepository;
-    private final UnauthorizedUserLogRepository unauthorizedUserLogRepository;
+
+    private final StringRedisTemplate redis;
+
+    @Value("${spring.data.redis.authorized-user-status-key-prefix}")
+    private String authorizedUserStatusKeyPrefix; // 레디스 비인가 사용자 상태 키 접두사
 
     @Override
     @Transactional
@@ -169,15 +175,30 @@ public class CarServiceImpl implements CarService{
         return carInspectionLogDslRepository.findLatestPendingInspectionDateByCarId(carId);
     }
 
+
+    @Transactional
     @Override
-    public void addUnauthorizedUserLog(String vin, String unauthorizedUserImgUrl) {
-        Car car = carRepository.findByVin(vin)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_EXIST_CAR));
-        unauthorizedUserLogRepository.save(
-                UnauthorizedUserLog.builder()
-                        .car(car)
-                        .unauthorizedUserImgUrl(unauthorizedUserImgUrl)
-                        .build()
-        );
+    public void updateUnauthorizedDriverPopup(String vin, boolean isAgreed) {
+        String key = authorizedUserStatusKeyPrefix + vin;
+        // 1. 키 존재 여부 확인
+        Boolean exists = redis.hasKey(key);
+        if (exists == null || !exists) {
+            log.info("Redis 키가 존재하지 않아 만료된 상태: {}", key);
+            throw new BaseException(BaseResponseStatus.EXPIRED_DRIVER_KEY); // 만료
+        }
+        if (!"pending".equals(redis.opsForValue().get(key))) {
+            log.info("현재 Redis 키 값이 'pending'이 아님: {}", key);
+            throw new BaseException(BaseResponseStatus.INVALID_DRIVER_KEY_STATUS); // 상태가 유효하지 않음
+        }
+
+        // 3. 논리값을 문자열로 저장
+        try {
+            redis.opsForValue().set(key, String.valueOf(isAgreed));
+            log.info("Redis 키 업데이트 성공: {} = {}", key, isAgreed);
+        } catch (Exception e) {
+            log.error("Redis 업데이트 실패: {}", key, e);
+        }
     }
+
+
 }

@@ -56,7 +56,7 @@ public class NotificationController {
                                     일반 알림 유형 : 
                                         FRONT_ALERT(전방주시 알림), OXYGEN_ALERT(산소 알림), 
                                         PART_ALERT(부품교환 알림), INSPECTION_ALERT(정기점검 알림), 
-                                        SLEEP_ALERT(졸음 알림), UNAUTHORIZED_USER_ALERT(비인가 사용자 알림)
+                                        SLEEP_ALERT(졸음 알림), TEMPERATURE_ALERT(온도 알림),
                                  """, required = true, example = "FRONT_ALERT")
             @RequestParam("notificationDetailType") NotificationDetailType notificationDetailType
     ) {
@@ -140,8 +140,13 @@ public class NotificationController {
         return BaseResponse.of(updatedCount);
     }
 
-    @Operation(summary = "비등록 운전자 인식 알림 전송 SSE", description = "비등록 운전자 인식 시 호출해야 하는 API입니다. " +
-            "비등록 운전자의 차량 VIN, 차량 닉네임, 비등록 운전자의 이미지 URL을 포함한 요청을 받습니다.")
+    @Operation(summary = "비등록 운전자 인식 알림 전송 SSE",
+            description = """
+                            - 비등록 운전자 인식 시 호출해야 하는 API입니다. 클라이언트에서 지금 운전자를 인가할지에 대한 여부를 표시하는
+                            또한 SSE 전송과 함께 예/아니오에 대한 데이터를 관리하는 레디스 키를 생성합니다. 
+                            - 키는 moring:authorized-user-status:{vin} 형식입니다. 또한 3분간 유지됩니다.
+                            초기 값은 문자열로 pending 으로 설정됩니다.
+                        """)
     @PostMapping("/send/unauthorized-user")
     public BaseResponse<Void> sendUnauthorizedUserDetected(@RequestBody UnauthorizedUserRequestDto request) {
         sseService.sendUnauthorizedUserDetected(request);

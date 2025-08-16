@@ -138,6 +138,22 @@ public class CarController {
         return BaseResponse.of(carService.getLatestPendingInspectionDate(vin));
     }
 
+    @Operation(summary = "비인가 운전자 확인 모달 팝업 정보 업데이트", description = """
+        비인가 운전자가 차량을 운전할 때 팝업으로 보여줄 정보를 업데이트합니다.
+        - 해당 API 리턴 결과가 true 면 정상 업데이트 된 것이고, false면 제한시간안에 클라이언트 측에서 예 또는 아니오를 누르지 못한 것입니다.
+        - 차량 VIN과 팝업 표시 여부를 받아 업데이트합니다.
+        - 팝업 표시 여부가 true이면 차주가 인가한 것이고 false으로 인가하지 않은 무단 운전자 입니다.
+        """)
+    @PatchMapping("/{vin}/unauthorized-driver-popup")
+    public BaseResponse<Void> updateUnauthorizedDriverPopup(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin,
+            @RequestParam("showPopup") boolean isAgreed
+    ) {
+        carService.updateUnauthorizedDriverPopup(vin, isAgreed);
+        return BaseResponse.ok();
+    }
+
 
 
 
