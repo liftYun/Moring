@@ -58,22 +58,11 @@ public class SseService {
         disconnectCar(vin);
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
 
-        // 연결 완료 시 정리
-        emitter.onCompletion(() -> {
-            carConnections.remove(vin);
-            log.info("차량 SSE 연결 완료: {}", vin);
-        });
-
-        // 타임아웃 시 정리
-        emitter.onTimeout(() -> {
-            carConnections.remove(vin);
-            log.info("차량 SSE 연결 타임아웃: {}", vin);
-        });
-
-        // 에러 시 정리
-        emitter.onError((e) -> {
-            carConnections.remove(vin);
+        emitter.onCompletion(() -> cleanup(vin, "completed"));
+        emitter.onTimeout(()   -> cleanup(vin, "timeout"));
+        emitter.onError(e -> {
             log.error("차량 SSE 연결 에러: {}", vin, e);
+            cleanup(vin, "error");
         });
 
         // 초기 연결 확인 메시지 전송
@@ -85,7 +74,7 @@ public class SseService {
             log.error("초기 SSE 메시지 전송 실패: {}", vin, e);
             // 재연결 전송을 위해 일단 주석해둘게용
 //            carConnections.remove(vin);
-            emitter.completeWithError(e);
+            cleanup(vin, "initial-send-fail");
             return emitter;
         }
 
@@ -208,11 +197,13 @@ public class SseService {
      * @param vin 차량 VIN
      */
     public void disconnectCar(String vin) {
-        Entry entry = carConnections.remove(vin);
-        if (entry != null) {
-            entry.emitter.complete();
-            log.info("차량 SSE 연결 해제: {}", vin);
-        }
+//        Entry entry = carConnections.remove(vin);
+//        if (entry != null) {
+//            entry.emitter.complete();
+//            log.info("차량 SSE 연결 해제: {}", vin);
+//        }
+        cleanup(vin, "manual-disconnect");
+        log.info("차량 SSE 연결 해제: {}", vin);
     }
 
     /**
