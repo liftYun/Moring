@@ -82,6 +82,10 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
 
   // 🆕 경로 전용 시간 측정 (목적지가 있을 때 사용)
   DateTime? _routeStartTime;               // 경로 시작 시간 (버튼 클릭 시점)
+  
+  // 주행 상태 표시
+  bool _lastDrivingStatus = false;
+  bool _hasInitializedDrivingStatus = false;
 
   // 주행 상태 표시
   bool _lastDrivingStatus = false;
