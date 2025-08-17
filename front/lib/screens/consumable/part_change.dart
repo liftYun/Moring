@@ -172,17 +172,10 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
           const SnackBar(content: Text('선택한 소모품들의 교체 이력이 일괄 등록되었습니다!')),
         );
 
-        // OCR에서 등록된 부품들과 현재 선택된 부품들을 모두 포함하여 반환
-        List<int> allUpdatedPartIds = List.from(_selectedPartIds);
+        // 사용자가 선택한 부품들만 반환 (OCR에서 등록된 부품이라도 사용자가 체크 해제했다면 제외)
+        List<int> updatedPartIds = List.from(_selectedPartIds);
 
-        // OCR에서 등록된 부품 IDs 추가
-        for (int id in _ocrRegisteredPartIds) {
-          if (!allUpdatedPartIds.contains(id)) {
-            allUpdatedPartIds.add(id);
-          }
-        }
-
-        print('[일괄 등록] 반환할 부품 IDs: $allUpdatedPartIds');
+        print('[일괄 등록] 반환할 부품 IDs: $updatedPartIds');
         print('[일괄 등록] OCR 등록된 부품 IDs: $_ocrRegisteredPartIds');
         print('[일괄 등록] 현재 선택된 부품 IDs: $_selectedPartIds');
         print('[일괄 등록] OCR 등록된 부품 IDs 길이: ${_ocrRegisteredPartIds.length}');
@@ -193,7 +186,7 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
 
         if (!mounted) return;
         // 변경된 부품들을 표시하고 결과 반환
-        Navigator.of(context).pop(allUpdatedPartIds);
+        Navigator.of(context).pop(updatedPartIds);
       } else {
         throw Exception(response.data['message'] ?? '등록 실패');
       }

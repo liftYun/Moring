@@ -45,15 +45,9 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
     final dio = ref.read(authDioProvider);
     try {
       final response = await dio.delete('/api/v1/cars/$vin');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        debugPrint('✅ 차량 삭제 성공: $vin');
-        return true;
-      } else {
-        debugPrint('❌ 차량 삭제 실패: ${response.statusCode}');
-        return false;
-      }
+      return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      debugPrint('❌ 차량 삭제 중 오류 발생: $e');
+      debugPrint('Delete failed: $e');
       return false;
     }
   }
@@ -151,41 +145,26 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
                             ),
                             onPressed: () async {
                               Navigator.pop(context); // 삭제 모달 닫기
-                              
-                              try {
-                                final success = await _deleteCarByVin(vin);
-                                if (success) {
-                                  // Provider들을 순서대로 새로고침
-                                  ref.invalidate(carListProvider);
-                                  ref.invalidate(currentVinProvider);
-                                  
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('차량이 성공적으로 삭제되었습니다.'),
-                                    ),
-                                  );
-                                  
-                                  // 차량 선택 페이지로 이동
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    '/carselection',
-                                    (route) => false,
-                                  );
-                                } else {
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('삭제에 실패했습니다. 다시 시도해주세요.'),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                debugPrint('❌ 삭제 처리 중 오류: $e');
+                              final success = await _deleteCarByVin(vin);
+                              if (success) {
+                                ref.refresh(carListProvider);
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('삭제 중 오류가 발생했습니다: $e'),
+                                  const SnackBar(
+                                    content: Text('차량이 성공적으로 삭제되었습니다.'),
+                                  ),
+                                );
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  '/carselection',
+                                      (route) => false,
+                                );
+                              } else {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                    Text('삭제에 실패했습니다. 관리자에게 문의하세요.'),
                                   ),
                                 );
                               }

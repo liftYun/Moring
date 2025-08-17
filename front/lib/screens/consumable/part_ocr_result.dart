@@ -87,7 +87,8 @@ class _PartOcrResultPageState extends ConsumerState<PartOcrResultPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('변경 이력이 등록되었습니다.')),
         );
-        Navigator.pop(context, true); // 성공 시 이전 페이지로 True 반환
+        // 성공 시 consumable_parts로 이동하면서 변경된 부품 IDs 전달
+        Navigator.pop(context, _partIdList);
       } else {
         throw Exception(res.data['message'] ?? '등록 실패');
       }
@@ -193,16 +194,13 @@ class _PartOcrResultPageState extends ConsumerState<PartOcrResultPage> {
 
             const Spacer(),
 
-            // 업데이트 버튼
+            // 일괄 등록 버튼
             SizedBox(
               height: 48,
               child: ElevatedButton(
-                onPressed: () {
-                  debugPrint("[PartOcrResultPage] 업데이트 클릭됨");
-                  Navigator.pop(context, {
-                    'changedAt': _changedAtController.text,
-                    'partIdList': _partIdList
-                  });
+                onPressed: _isLoading ? null : () async {
+                  debugPrint("[PartOcrResultPage] 일괄 등록 클릭됨");
+                  await _postChangeLogs();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2196F3),
@@ -214,7 +212,7 @@ class _PartOcrResultPageState extends ConsumerState<PartOcrResultPage> {
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                  '업데이트',
+                  '일괄 등록',
                   style: TextStyle(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),

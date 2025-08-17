@@ -26,14 +26,6 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPage());
-    _scrollCtrl.addListener(() {
-      if (_scrollCtrl.position.pixels >=
-          _scrollCtrl.position.maxScrollExtent - 100 &&
-          !_isLoading &&
-          _hasMore) {
-        _loadPage();
-      }
-    });
   }
 
   Future<void> _loadPage() async {
@@ -48,18 +40,12 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
 
     try {
       final api = ref.read(notificationApiProvider);
-      final response = await api.fetchUnreadNotifications(
-        vin: vin,
-        page: _page,
-        size: _size,
-      );
+      final response = await api.fetchUnreadNotifications(vin: vin);
       
       final fetched = response['notifications'] as List<UnreadNotification>;
-      final isLast = response['last'] as bool;
-      final isEmpty = response['empty'] as bool;
-      final numberOfElements = response['numberOfElements'] as int;
-      
-      debugPrint('🔔 API Response: last=$isLast, empty=$isEmpty, numberOfElements=$numberOfElements, fetched=${fetched.length}');
+      final isLast = response['last'] as bool? ?? false;
+      final isEmpty = response['empty'] as bool? ?? true;
+      final numberOfElements = response['numberOfElements'] as int? ?? 0;
       
       final insertIndex = _notifications.length;
       _notifications.addAll(fetched);
@@ -72,15 +58,12 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       }
       
       // 페이지네이션 로직 개선
-      if (isEmpty || isLast) {
+      if (isEmpty || isLast || numberOfElements == 0) {
         _hasMore = false;
-        debugPrint('🔔 No more notifications to load (empty=$isEmpty, last=$isLast)');
       } else {
-        _hasMore = numberOfElements > 0;
-        if (_hasMore && fetched.isNotEmpty) _page++;
+        _hasMore = true;
+        if (fetched.isNotEmpty) _page++;
       }
-      
-      debugPrint('🔔 Pagination: hasMore=$_hasMore, page=$_page, fetched=${fetched.length}');
     } catch (e) {
       debugPrint('🔔 loadPage error: $e');
     } finally {
@@ -162,6 +145,8 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       ),
     );
   }
+
+
 
   void _removeAt(int index) {
     final removed = _notifications[index];
@@ -248,14 +233,10 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       padding: const EdgeInsets.all(16),
       itemBuilder: (ctx, idx, anim) {
         if (idx >= _groupedItems.length) {
-          if (_isLoading && _hasMore) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
         
         final item = _groupedItems[idx];

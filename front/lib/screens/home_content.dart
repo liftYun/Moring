@@ -33,7 +33,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   List<Map<String, dynamic>> _inspectionLogs = [];
   bool _inspectionLoading = true;
   String? _inspectionError;
-  String? _pendingDate;
 
   @override
   void initState() {
@@ -107,13 +106,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     }
   }
 
-  String _dateOnly(dynamic v) {
-    if (v == null) return '';
-    final s = v.toString();
-    final i = s.indexOf('T');
-    return i > 0 ? s.substring(0, i) : s;
-  }
-
   Future<void> _fetchInspectionLogs() async {
     setState(() {
       _inspectionLoading = true;
@@ -121,45 +113,25 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     });
     try {
       final dio = ref.read(authDioProvider);
-      
-      // 1. 완료된 점검 기록 API 호출
-      final logsResponse = await dio.get(
+      final response = await dio.get(
         '/api/v1/cars/${_carVin ?? "TEST_VIN"}/inspection-logs-paging?page=0&size=10',
       );
-      
-      // 2. 대기 중인 점검 날짜 API 호출
-      final pendingResponse = await dio.get(
-        '/api/v1/cars/${_carVin ?? "TEST_VIN"}/latest-pending-inspection-date',
-      );
-      
-      if (logsResponse.statusCode == 200 && logsResponse.data['isSuccess'] == true) {
-        final List content = logsResponse.data['result']['content'] ?? [];
-        final pendingDate = pendingResponse.statusCode == 200 && pendingResponse.data['isSuccess'] == true 
-            ? pendingResponse.data['result'] as String? 
-            : null;
-        
-        final mapped = content.map<Map<String, dynamic>>((e) {
-          final dateRaw = e['inspectionDateTime'] ?? e['inspectionDatetime'];
-          final status = e['inspectionStatus'];
-          return {
-            'inspectionStatus': status,
-            'status': status,
-            'inspectionDateTime': e['inspectionDateTime'],
-            'inspectionDatetime': e['inspectionDatetime'],
-            'date': _dateOnly(dateRaw),
-            'detail': e,
-          };
-        }).toList();
-        
-        if (!mounted) return;
-        setState(() {
-          _pendingDate = pendingDate;
-          _inspectionLogs = mapped;
-          _inspectionLoading = false;
-        });
+      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+        final List content = response.data['result']['content'] ?? [];
+        _inspectionLogs = content
+            .map((e) => {
+          'date': (e['inspectionDateTime'] ??
+              e['inspectionDatetime'] ??
+              '')
+              .toString()
+              .split('T')[0],
+          'status': e['inspectionStatus'] ?? '',
+          'detail': e,
+        })
+            .toList();
       } else {
         _inspectionError =
-        '점검로그를 불러오지 못했습니다: ${logsResponse.statusCode}';
+        '점검로그를 불러오지 못했습니다: ${response.statusCode}';
       }
     } catch (e) {
       _inspectionError = '점검로그를 가져오는 중 오류가 발생했습니다: $e';
@@ -171,12 +143,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   }
 
   Future<void> _refreshInspectionLogs() async {
-    // 강제로 상태를 초기화하고 새로고침
-    setState(() {
-      _inspectionLoading = true;
-      _inspectionError = null;
-    });
-    await _fetchInspectionLogs();
+    _fetchInspectionLogs();
   }
 
   void _setCarImages(String carName) {
@@ -360,126 +327,129 @@ class _HomeContentState extends ConsumerState<HomeContent> {
           else if (_inspectionError != null)
             Center(child: Text(_inspectionError!))
           else
-                         Builder(
-               builder: (context) {
-                 final completedLogs = _inspectionLogs
-                     .where((e) => e['status'] == '점검 완료')
-                     .toList();
+            Builder(
+              builder: (context) {
+                final completedLogs = _inspectionLogs
+                    .where((e) => e['status'] == '점검 완료')
+                    .toList();
+                final pendingLogs = _inspectionLogs
+                    .where((e) => e['status'] != '점검 완료')
+                    .toList();
 
-                 return Column(
-                   children: [
-                     // 다음 점검 일자
-                     if (_pendingDate != null && _pendingDate!.isNotEmpty)
-                       GestureDetector(
-                         onTap: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => InspectionDetailPage(
-                                 inspectionLogs: _inspectionLogs,
-                                 vin: _carVin!,
-                                 onRefresh: _refreshInspectionLogs,
-                                 pendingDate: _pendingDate,
-                               ),
-                             ),
-                           );
-                         },
-                         child: Card(
-                           color: const Color(0xFF232326),
-                           margin: const EdgeInsets.only(bottom: 10),
-                           shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(14)),
-                           child: Padding(
-                             padding: const EdgeInsets.symmetric(
-                                 vertical: 12, horizontal: 20),
-                             child: Row(
-                               children: [
-                                 const Icon(Icons.schedule,
-                                     color: Colors.white70, size: 24),
-                                 const SizedBox(width: 14),
-                                 Expanded(
-                                   child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       Text(
-                                         _pendingDate!,
-                                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                             color: Colors.white, fontWeight: FontWeight.bold),
-                                       ),
-                                       const SizedBox(height: 6),
-                                       const Text('점검 예정',
-                                           style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                     ],
-                                   ),
-                                 ),
-                               ],
-                             ),
-                           ),
-                         ),
-                       )
-                     else
-                       GestureDetector(
-                         onTap: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => InspectionDetailPage(
-                                 inspectionLogs: _inspectionLogs,
-                                 vin: _carVin!,
-                                 onRefresh: _refreshInspectionLogs,
-                                 pendingDate: null,
-                               ),
-                             ),
-                           );
-                         },
-                         child: Card(
-                           color: const Color(0xFF232326),
-                           margin: const EdgeInsets.only(bottom: 10),
-                           shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12)),
-                           child: Padding(
-                             padding: const EdgeInsets.symmetric(
-                                 vertical: 12, horizontal: 20),
-                             child: Row(
-                               children: [
-                                 const Icon(Icons.article_outlined,
-                                     color: Colors.white70, size: 20),
-                                 const SizedBox(width: 14),
-                                 Expanded(
-                                   child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       const Text('예정된 점검 없음',
-                                           style: TextStyle(color: Colors.white)),
-                                       const SizedBox(height: 6),
-                                       const Text('상세 화면으로 이동합니다',
-                                           style: TextStyle(color: Colors.grey)),
-                                     ],
-                                   ),
-                                 ),
-                               ],
-                             ),
-                           ),
-                         ),
-                       ),
+                return Column(
+                  children: [
+                    // 다음 점검 일자
+                    if (pendingLogs.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                                pendingDate: pendingLogs.first['date'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.schedule,
+                                    color: Colors.white70, size: 24),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        pendingLogs.first['date'] ?? '',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text('점검 예정',
+                                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.article_outlined,
+                                    color: Colors.white70, size: 20),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('예정된 점검 없음',
+                                          style: TextStyle(color: Colors.white)),
+                                      const SizedBox(height: 6),
+                                      const Text('상세 화면으로 이동합니다',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
 
-                     // 과거 이력
-                     if (completedLogs.isNotEmpty)
-                       GestureDetector(
-                         onTap: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => InspectionDetailPage(
-                                 inspectionLogs: _inspectionLogs,
-                                 vin: _carVin!,
-                                 onRefresh: _refreshInspectionLogs,
-                                 pendingDate: _pendingDate,
-                               ),
-                             ),
-                           );
-                         },
-                         child: Card(
+                    // 과거 이력
+                    if (completedLogs.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
+                              ),
+                            ),
+                          );
+                        },
+                                                 child: Card(
                            color: const Color(0xFF232326),
                            margin: const EdgeInsets.only(bottom: 10),
                            shape: RoundedRectangleBorder(
@@ -513,56 +483,56 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                              ),
                            ),
                          ),
-                       )
-                     else
-                       GestureDetector(
-                         onTap: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                               builder: (_) => InspectionDetailPage(
-                                 inspectionLogs: _inspectionLogs,
-                                 vin: _carVin!,
-                                 onRefresh: _refreshInspectionLogs,
-                                 pendingDate: _pendingDate,
-                               ),
-                             ),
-                           );
-                         },
-                         child: Card(
-                           color: const Color(0xFF232326),
-                           margin: const EdgeInsets.only(bottom: 10),
-                           shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12)),
-                           child: Padding(
-                             padding: const EdgeInsets.symmetric(
-                                 vertical: 12, horizontal: 20),
-                             child: Row(
-                               children: [
-                                 const Icon(Icons.article_outlined,
-                                     color: Colors.white70, size: 20),
-                                 const SizedBox(width: 14),
-                                 Expanded(
-                                   child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       const Text('완료된 점검 이력 없음',
-                                           style: TextStyle(color: Colors.white)),
-                                       const SizedBox(height: 6),
-                                       const Text('상세 화면으로 이동합니다',
-                                           style: TextStyle(color: Colors.grey)),
-                                     ],
-                                   ),
-                                 ),
-                               ],
-                             ),
-                           ),
-                         ),
-                       ),
-                   ],
-                 );
-               },
-             ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InspectionDetailPage(
+                                inspectionLogs: _inspectionLogs,
+                                vin: _carVin!,
+                                onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          color: const Color(0xFF232326),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.article_outlined,
+                                    color: Colors.white70, size: 20),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('완료된 점검 이력 없음',
+                                          style: TextStyle(color: Colors.white)),
+                                      const SizedBox(height: 6),
+                                      const Text('상세 화면으로 이동합니다',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );

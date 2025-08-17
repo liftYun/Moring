@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 class DrivingRecordPage extends StatefulWidget {
-  final List<Map<String, dynamic>> logs;
-  const DrivingRecordPage({Key? key, required this.logs}) : super(key: key);
+  final List<Map<String, dynamic>>? logs;
+  const DrivingRecordPage({Key? key, this.logs}) : super(key: key);
 
   @override
   State<DrivingRecordPage> createState() => _DrivingRecordPageState();
@@ -35,9 +35,9 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
       allYears.add(year.toString());
     }
     
-    if (widget.logs.isNotEmpty) {
+    if (widget.logs != null && widget.logs!.isNotEmpty) {
       // 실제 로그 데이터에서 년도 추출
-      final logYears = widget.logs
+      final logYears = widget.logs!
           .map((log) => log['date'].toString().substring(0, 4))
           .toSet()
           .toList()
@@ -68,7 +68,12 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
 
   void _filterLogs() {
     setState(() {
-      _filteredLogs = widget.logs.where((log) {
+      if (widget.logs == null) {
+        _filteredLogs = [];
+        return;
+      }
+      
+      _filteredLogs = widget.logs!.where((log) {
         if (log['date'] == null || log['date'].isEmpty) return false;
 
         final year = log['date'].toString().substring(0, 4);

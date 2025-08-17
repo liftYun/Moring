@@ -61,9 +61,9 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
       );
       
       final fetched = response['notifications'] as List<UnreadNotification>;
-      final isLast = response['last'] as bool;
-      final isEmpty = response['empty'] as bool;
-      final numberOfElements = response['numberOfElements'] as int;
+      final isLast = response['last'] as bool? ?? false;
+      final isEmpty = response['empty'] as bool? ?? true;
+      final numberOfElements = response['numberOfElements'] as int? ?? 0;
       
       debugPrint('🔔 API Response: last=$isLast, empty=$isEmpty, numberOfElements=$numberOfElements, fetched=${fetched.length}');
       
@@ -222,6 +222,8 @@ class _NotificationPanelState extends ConsumerState<NotificationPanel>
     _hasMore = false;
     _updateGroupedItems();
   }
+
+
 
   @override
   void dispose() {

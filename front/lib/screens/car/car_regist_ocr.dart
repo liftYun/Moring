@@ -168,87 +168,42 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
     final dio = ref.read(authDioProvider);
     print('[_sendOcrImage] 함수 실행됨. API 요청 시작.');
 
-    try {
-      final Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
-        imageFile.path,
-        quality: 50,
-      );
+    final Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
+      imageFile.path,
+      quality: 50,
+    );
 
-      if (compressedBytes == null) {
-        throw Exception('이미지 압축에 실패했습니다.');
-      }
-
-      print('[_sendOcrImage] 원본 이미지 크기: ${await imageFile.length()} bytes');
-      print('[_sendOcrImage] 압축된 이미지 크기: ${compressedBytes.length} bytes');
-
-      final mimeType = lookupMimeType(imageFile.path) ?? 'application/octet-stream';
-      final mimeParts = mimeType.split('/');
-
-      final formData = FormData.fromMap({
-        'image': MultipartFile.fromBytes(
-          compressedBytes,
-          filename: 'ocr_image${p.extension(imageFile.path)}',
-          contentType: MediaType(mimeParts[0], mimeParts[1]),
-        ),
-      });
-
-      print('[_sendOcrImage] API 요청 시작: /api/v1/AI/car-registration');
-      print('[_sendOcrImage] FormData 크기: ${formData.length} bytes');
-
-      final response = await dio.post(
-        '/api/v1/AI/car-registration',
-        data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ),
-      );
-
-      print('[_sendOcrImage] API 응답 상태 코드: ${response.statusCode}');
-      print('[_sendOcrImage] API 응답 헤더: ${response.headers}');
-      print('[_sendOcrImage] API 응답 데이터: ${response.data}');
-
-      if (response.statusCode != 200) {
-        throw Exception('서버 오류: ${response.statusCode} - ${response.statusMessage}');
-      }
-
-      if (response.data['isSuccess'] != true) {
-        final errorMessage = response.data['message'] ?? 'OCR 처리 실패';
-        print('[_sendOcrImage] OCR 처리 실패: $errorMessage');
-        throw Exception(errorMessage);
-      }
-
-      final result = response.data['result'];
-      print('[_sendOcrImage] 추출된 result 값: $result');
-      
-      if (result == null) {
-        throw Exception('OCR 결과가 비어있습니다.');
-      }
-
-      return Map<String, dynamic>.from(result);
-    } catch (e) {
-      print('[_sendOcrImage] 예외 발생: $e');
-      if (e is DioException) {
-        print('[_sendOcrImage] DioException 상세 정보:');
-        print('  - Type: ${e.type}');
-        print('  - Message: ${e.message}');
-        print('  - Error: ${e.error}');
-        print('  - Response: ${e.response?.data}');
-        print('  - Status Code: ${e.response?.statusCode}');
-        
-        if (e.response?.statusCode == 500) {
-          throw Exception('서버 내부 오류 (500): 서버에서 OCR 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        } else if (e.type == DioExceptionType.connectionTimeout) {
-          throw Exception('연결 시간 초과: 네트워크 연결을 확인해주세요.');
-        } else if (e.type == DioExceptionType.receiveTimeout) {
-          throw Exception('응답 시간 초과: 서버 응답이 지연되고 있습니다.');
-        } else {
-          throw Exception('OCR 요청 실패: ${e.message}');
-        }
-      }
-      rethrow;
+    if (compressedBytes == null) {
+      throw Exception('이미지 압축에 실패했습니다.');
     }
+
+    print('[_sendOcrImage] 원본 이미지 크기: ${await imageFile.length()} bytes');
+    print('[_sendOcrImage] 압축된 이미지 크기: ${compressedBytes.length} bytes');
+
+    final mimeType = lookupMimeType(imageFile.path) ?? 'application/octet-stream';
+    final mimeParts = mimeType.split('/');
+
+    final formData = FormData.fromMap({
+      'image': MultipartFile.fromBytes(
+        compressedBytes,
+        filename: 'ocr_image${p.extension(imageFile.path)}',
+        contentType: MediaType(mimeParts[0], mimeParts[1]),
+      ),
+    });
+
+    final response = await dio.post(
+      '/api/v1/AI/car-registration',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+
+    if (response.statusCode != 200 || response.data['isSuccess'] != true) {
+      throw Exception(response.data['message'] ?? 'OCR 처리 실패');
+    }
+
+    print('[_sendOcrImage] API 응답 데이터: ${response.data}');
+    print('[_sendOcrImage] 추출된 result 값: ${response.data['result']}');
+    return Map<String, dynamic>.from(response.data['result'] ?? {});
   }
 
   Future<void> _onRegister(BuildContext context) async {
@@ -263,57 +218,17 @@ class _CarOcrRegistrationPageState extends ConsumerState<CarOcrRegistrationPage>
     setState(() => _isLoading = true);
 
     try {
-      print('[_onRegister] OCR 처리 시작');
       final ocrResult = await _sendOcrImage(_capturedImage!);
-      
       if (!mounted) return;
-      
-             print('[_onRegister] OCR 처리 성공: $ocrResult');
-       setState(() => _isLoading = false);
-       
-       // OCR 결과 검증
-       if (ocrResult.isEmpty) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('OCR에서 차량 정보를 추출하지 못했습니다. 다른 이미지를 시도해주세요.')),
-         );
-         return;
-       }
-       
-       // OCR 결과 상세 로깅
-       print('[_onRegister] 반환할 OCR 결과:');
-       ocrResult.forEach((key, value) {
-         print('  $key: $value');
-       });
-       
-       Navigator.pop(context, ocrResult);
+      setState(() => _isLoading = false);
+      Navigator.pop(context, ocrResult);
     } catch (e, stackTrace) {
       setState(() => _isLoading = false);
       print('[_onRegister] 오류 발생: $e');
       print('[_onRegister] 스택 트레이스: $stackTrace');
-      
-      String errorMessage = 'OCR 요청 실패';
-      if (e.toString().contains('500')) {
-        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      } else if (e.toString().contains('timeout')) {
-        errorMessage = '요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.';
-      } else if (e.toString().contains('network')) {
-        errorMessage = '네트워크 연결을 확인해주세요.';
-      } else {
-        errorMessage = e.toString();
-      }
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: '다시 시도',
-              onPressed: () => _onRegister(context),
-            ),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('OCR 요청 실패: $e')),
+      );
     }
   }
 

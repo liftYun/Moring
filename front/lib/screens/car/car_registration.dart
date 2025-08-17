@@ -407,54 +407,13 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
                    onPressed: () async {
                      final result = await Navigator.pushNamed(context, '/car_ocr');
 
-                     // OCR 결과 디버깅
-                     print('[OCR 결과] 받은 데이터: $result');
-                     print('[OCR 결과] 데이터 타입: ${result.runtimeType}');
-
                      // result는 OCR 페이지에서 pop할 때 전달한 데이터(Map 등)임
                      if (result != null && result is Map<String, dynamic>) {
-                       print('[OCR 결과] VIN: ${result['vin']}');
-                       print('[OCR 결과] Model: ${result['modelName']}');
-                       print('[OCR 결과] Date: ${result['registeredAt']}');
-                       
-                       // 다양한 필드명 시도
-                       final vin = result['vin'] ?? result['VIN'] ?? result['vehicleNumber'] ?? '';
-                       final model = result['modelName'] ?? result['model'] ?? result['vehicleModel'] ?? '';
-                       String date = result['registeredAt'] ?? result['registrationDate'] ?? result['date'] ?? '';
-                       
-                       // 날짜 형식 변환 (YYYY.MM.DD -> YYYY-MM-DD)
-                       if (date.isNotEmpty && date.contains('.')) {
-                         date = date.replaceAll('.', '-');
-                       }
-                       
-                       print('[OCR 결과] 파싱된 VIN: $vin');
-                       print('[OCR 결과] 파싱된 Model: $model');
-                       print('[OCR 결과] 파싱된 Date: $date');
-                       
                        setState(() {
-                         _vinController.text = vin;
-                         _modelController.text = model;
-                         _registerDateController.text = date;
+                         _vinController.text = result['vin'] ?? '';
+                         _modelController.text = result['modelName'] ?? '';
+                         _registerDateController.text = result['registeredAt'] ?? '';
                        });
-                       
-                       // 성공 메시지 표시
-                       if (vin.isNotEmpty || model.isNotEmpty) {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(
-                             content: Text('OCR 결과가 입력창에 적용되었습니다.'),
-                             duration: Duration(seconds: 2),
-                           ),
-                         );
-                       } else {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(
-                             content: Text('OCR에서 차량 정보를 추출하지 못했습니다.'),
-                             duration: Duration(seconds: 3),
-                           ),
-                         );
-                       }
-                     } else {
-                       print('[OCR 결과] 결과가 null이거나 Map이 아님: $result');
                      }
                    },
                    child: const Text(

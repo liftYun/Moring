@@ -136,17 +136,7 @@ class _InspectionDetailPageState extends ConsumerState<InspectionDetailPage> {
                       ),
                     );
                     if (isRegistered == true) {
-                      // 새로고침 실행
                       widget.onRefresh();
-                      // 성공 메시지 표시
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('점검 내역이 새로고침되었습니다.'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
                     }
                   },
                   icon: const Icon(Icons.add),

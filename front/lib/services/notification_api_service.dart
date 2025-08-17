@@ -23,19 +23,18 @@ class NotificationApi {
       queryParameters: {'page': page, 'size': size},
     );
     
-    // API 응답 구조에 맞게 수정
-    final result = resp.data['result'];
+    // API 응답 구조: { result: { content: [...], last: bool, empty: bool, numberOfElements: int } }
+    final result = resp.data['result'] as Map<String, dynamic>;
     final content = (result['content'] as List).cast<Map<String, dynamic>>();
     final notifications = content
         .map((e) => UnreadNotification.fromJson(e))
         .toList();
     
-    // 페이지네이션 정보와 함께 반환
     return {
       'notifications': notifications,
-      'last': result['last'] as bool,
-      'empty': result['empty'] as bool,
-      'numberOfElements': result['numberOfElements'] as int,
+      'last': result['last'] ?? false,
+      'empty': result['empty'] ?? true,
+      'numberOfElements': result['numberOfElements'] ?? 0,
     };
   }
 
