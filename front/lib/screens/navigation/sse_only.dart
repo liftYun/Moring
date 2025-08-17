@@ -11,6 +11,8 @@ import 'package:audioplayers/audioplayers.dart';
 
 import 'package:moring/sse/sse_hub.dart';
 
+import 'package:moring/providers/api_client.dart';
+
 /// .env
 String get _gmsKey => dotenv.maybeGet('GMS_KEY') ?? '';
 
@@ -41,7 +43,7 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
   bool _dialogOpen = false;
 
   // ===== TTS 관련 =====
-  final _dio = Dio();
+  late final Dio _authDio;
   final _player = AudioPlayer();
 
   // 낭독 디듑 (타입별 최근 낭독시각)
@@ -56,6 +58,9 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
 
     // 이벤트 구독
     _sub = ref.read(sseHubProvider).stream.listen(_onEvent);
+
+    // authDioProvider 가져오기
+    _authDio = ref.read(authDioProvider);
 
     // Android 오디오 포커스(스피커폰)
     _configureAudioContext();
@@ -254,7 +259,7 @@ class _SSEAlertOverlayState extends ConsumerState<SSEAlertOverlay> {
         'response_format': 'mp3',
       };
 
-      final res = await _dio.post<List<int>>(
+      final res = await _authDio.post<List<int>>(
         _ttsUrl,
         data: jsonEncode(body),
         options: Options(
