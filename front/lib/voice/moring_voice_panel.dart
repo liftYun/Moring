@@ -1,5 +1,6 @@
 // lib/voice/moring_voice_panel.dart
 // Whisper(상시) + Clova(폴백) + 내부 LLM + OpenAI TTS
+// 변경 포인트: 웨이크워드 반응 강화, TTS 실패 시 락 해제, 타이밍 단축(빠른 응답)
 
 import 'dart:async';
 import 'dart:convert';
@@ -39,17 +40,24 @@ const _ttsModel = 'gpt-4o-mini-tts';
 const _ttsVoice = 'nova';
 const _clovaUrl = 'https://naveropenapi.apigw.ntruss.com/recog/v1/stt';
 const _llmPath = '/api/v1/AI/ask';
+// ❶ 옵션 플래그 추가(파일 상단 상수 근처)
+const bool _exitToWakeOnNoSpeech = true; // true면 한 번 빈 턴에서 즉시 LLM 종료
 
-// VAD/타이밍 (튜닝)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VAD/타이밍 (빠른 응답을 위한 보수적 단축)
 const Duration _defaultTurnMax = Duration(seconds: 20);
-const int _silenceTimeoutMs = 900;
-const int _minListenMs = 500;
+const int _silenceTimeoutMs = 700;     // 900 → 700 (말끝 감지 빠르게)
+const int _silenceFastMs = 450;      // 빠른 종료 꼬리(충분히 말했을 때)
+const int _voicedGateMs = 450;       // "충분히 말했다"로 간주하는 최소 보이스 구간
+const int _listenPollMs = 50;        // while 루프 폴링 주기 (기존 100 → 50)
+const int _minListenMs = 350;        // 첫 단어 자르지 않을 최소 녹음 (500 → 350)
 const double _vadDb = -55;
-const int _ampWindowMs = 25;
+const int _ampWindowMs = 20;
 
-const int _llmMaxListenMs = 25000;
-const int _warmupMs = 180;
-const int _cooldownMs = 100;
+const int _llmMaxListenMs = 22000;     // 25000 → 22000 (길게 말해도 과도 대기 줄이기)
+const int _warmupMs = 150;             // 180 → 150
+const int _cooldownMs = 70;            // 100 → 70
 const int _minConsecLoud = 1;
 const int _minVoicedMs = 90;
 const int _minFileBytes = 8000;
@@ -58,13 +66,16 @@ const int _minFileBytes = 8000;
 const int _maxTurnsMemory = 6;
 const Duration _llmIdle = Duration(seconds: 12);
 const Duration _llmGraceAfterWake = Duration(seconds: 6);
-const int _noSpeechTimeoutLlmMs = 3000;
-const int _noSpeechTimeoutWakeMs = 4000;
+const int _noSpeechTimeoutLlmMs = 1800;   // 3000 → 1800 (대기 짧게)
+const int _noSpeechTimeoutWakeMs = 3500;  // 4000 → 3500
 const int _emptyTurnsToExit = 2;
 
 // TTS 가드
 const int _postTtsGuardMs = 800;
 const int _needFramesToInterrupt = 6;
+
+// 웨이크워드 디바운스(중복 트리거 방지)
+const int _wakeDebounceMs = 1200;
 
 enum VoiceState { idle, listening, processing, speaking }
 
@@ -152,11 +163,14 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   bool _llmBusy = false;
   String? _queuedUserText;
 
+  // 웨이크 디바운스
+  int _lastWakeAtMs = 0;
+
   final List<String> _wakeWords = const [
     '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
     '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아','오리가',
     '모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
-    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','어린아','어랭아'
+    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','어린아','어랭아',
     '올리나','우링아'
   ];
 
@@ -213,7 +227,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         _queuedUserText = null;
         _llmBusy = false; // 다음 턴 허용
         if (pending != null && pending.trim().isNotEmpty) {
-          // 바로 이어서 처리
           unawaited(_handleLlmConversation(pending));
         } else {
           _scheduleNextTurn(_postTtsGuardMs);
@@ -302,7 +315,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (!_isOwner) return;
     if (_looping) {
       _looping = false;
-      _recorder.stop();
+      try { _recorder.stop(); } catch (_) {}
       _player.stop();
       _ampSub?.cancel();
       _disarmIdle();
@@ -419,20 +432,28 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       });
 
       while (mounted && _isOwner && _state == VoiceState.listening) {
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(Duration(milliseconds: _listenPollMs));
 
         final now = DateTime.now().millisecondsSinceEpoch;
         final elapsed = now - _recordStartMs;
         final sinceLoud = now - _lastLoudMs;
 
         final minOk = elapsed >= _minListenMs;
-        final silentAfterSpeech = _speechActive && sinceLoud >= _silenceTimeoutMs;
+
+        // "충분히 말했다"면 더 짧은 꼬리로 종료(빠른 말끝)
+        final enoughSpeech = _speechActive && _voicedMs >= _voicedGateMs;
+        final fastTail = enoughSpeech && sinceLoud >= _silenceFastMs;
+
+        // 기존 최장 꼬리 (안전망)
+        final slowTail = _speechActive && sinceLoud >= _silenceTimeoutMs;
+
         final overMax = elapsed >= maxMs;
         final noSpeechTimeoutHit =
             !_speechActive && elapsed >= (_isLlmActive ? _noSpeechTimeoutLlmMs : _noSpeechTimeoutWakeMs);
 
-        if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) break;
+        if ((minOk && (fastTail || slowTail)) || noSpeechTimeoutHit || overMax) break;
       }
+
 
       if (mounted && _isOwner && _state == VoiceState.listening) {
         await _stopAndProcess(filePath: path);
@@ -660,20 +681,56 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   // ───────────────────────────────────────────────────────────────────────────
   // 대화 흐름
+  // Future<void> _handleEmptyTurn() async {
+  //   if (!_isOwner) return;
+  //   if (!mounted) return;
+  //
+  //   if (_isLlmActive) {
+  //     _emptyTurns++;
+  //     if (_emptyTurns >= _emptyTurnsToExit) {
+  //       _isLlmActive = false;
+  //       _disarmIdle();
+  //       _emptyTurns = 0;
+  //       // 종료 멘트만 짧게
+  //       final _ = await _speakOpenAiTts('난중에, 대화가 필요하면 다시 불러줘.');
+  //     } else {
+  //       // 빠른 진행을 위해 피드백 멘트 생략, 바로 다음 턴
+  //       _armIdle(_llmGraceAfterWake);
+  //       _setState(VoiceState.idle);
+  //       _scheduleNextTurn(_cooldownMs);
+  //     }
+  //   } else {
+  //     _setState(VoiceState.idle);
+  //     _scheduleNextTurn(_cooldownMs);
+  //   }
+  // }
+  // ❷ _handleEmptyTurn() 교체
   Future<void> _handleEmptyTurn() async {
     if (!_isOwner) return;
     if (!mounted) return;
 
     if (_isLlmActive) {
+      if (_exitToWakeOnNoSpeech) {
+        // 말이 전혀 없었거나 너무 짧았으면 곧바로 LLM 모드 종료 → 웨이크워드 대기
+        _isLlmActive = false;
+        _disarmIdle();
+        _emptyTurns = 0;
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+        return;
+      }
+
+      // 기존 동작 유지하고 싶으면(2번 비었을 때 종료) 아래 로직 사용
       _emptyTurns++;
       if (_emptyTurns >= _emptyTurnsToExit) {
         _isLlmActive = false;
         _disarmIdle();
         _emptyTurns = 0;
-        await _speakOpenAiTts('난중에, 대화가 필요하면 다시 불러줘.');
+        final _ = await _speakOpenAiTts('난중에, 대화가 필요하면 다시 불러줘.');
       } else {
         _armIdle(_llmGraceAfterWake);
-        await _speakOpenAiTts('듣고 있어. 더 할 말 있으면 말해줘?');
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
       }
     } else {
       _setState(VoiceState.idle);
@@ -681,29 +738,37 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     }
   }
 
+
   Future<void> _checkForWakeWord(String heardText) async {
     if (!_isOwner) return;
+
     final userText = _extractAfterWakeWord(heardText);
     if (userText != null) {
-      // → LLM 모드 진입
+      // LLM 모드 진입
       if (!_isLlmActive) setState(() => _isLlmActive = true);
       _disarmIdle();
 
       final trimmed = _sanitizeStt(userText).trim();
+
       if (trimmed.isEmpty) {
-        // 웨이크워드만
+        // 웨이크워드만 인식된 경우: 짧게 안내 후 곧바로 리슨 재개
         await _speakOpenAiTts('네, 말씀하세요.');
-        _armIdle(_llmGraceAfterWake);
-        _setState(VoiceState.idle);
-        _scheduleNextTurn(_cooldownMs);
+        // onPlayerStateChanged에서 TTS 종료 감지 시
+        // _setState(VoiceState.idle) + _scheduleNextTurn(_postTtsGuardMs)
+        // 가 이미 동작하므로 여기서는 리턴만 해도 됩니다.
         return;
       }
+
+      // 웨이크워드 + 질문이 같이 들어온 경우 → 바로 LLM 처리
       await _handleLlmConversation(trimmed);
     } else {
+      // 웨이크워드 아님 → 대기 유지
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
     }
   }
+
+
 
   Future<void> _handleLlmConversation(String heardText) async {
     if (!_isOwner) return;
@@ -720,15 +785,24 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (_llmExitWords.any((w) => raw.contains(w))) {
       _isLlmActive = false;
       _disarmIdle();
-      await _speakOpenAiTts('대화를 종료합니다.');
-      // _llmBusy 해제는 onPlayerStateChanged에서
-      return;
+      final ok = await _speakOpenAiTts('대화를 종료할게.');
+      if (!ok) {
+        _llmBusy = false;
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+      }
+      return; // 정상 재생 시 onPlayerStateChanged에서 해제
     }
 
     final afterWake = _extractAfterWakeWord(raw);
     final userSaid = (afterWake ?? raw).trim();
     if (userSaid.isEmpty) {
-      await _speakOpenAiTts('네, 말씀하세요.');
+      final ok = await _speakOpenAiTts('응, 말해봐.');
+      if (!ok) {
+        _llmBusy = false;
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+      }
       return;
     }
 
@@ -746,10 +820,17 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (_lastReply.isNotEmpty) _pushHistory('assistant', _lastReply);
 
     if (_lastReply.isNotEmpty) {
-      await _speakOpenAiTts(_lastReply);
+      final ok = await _speakOpenAiTts(_lastReply);
+      if (!ok) {
+        // ⬅️ TTS 시작 실패 시 즉시 복구
+        _llmBusy = false;
+        _setState(VoiceState.idle);
+        _scheduleNextTurn(_cooldownMs);
+      }
     } else {
-      await _speakOpenAiTts('지금 네트워크가 불안정해요. 잠시 후 다시 말씀해 주세요.');
-      _llmBusy = false; // 실패 시 직접 해제
+      final ok = await _speakOpenAiTts('지금은 연결이 불안정해. 잠시만.');
+      // 실패/성공과 무관하게 이 경로는 직접 해제
+      _llmBusy = false;
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
     }
@@ -782,7 +863,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
 
       _isLlmActive = false;
-      await _speakOpenAiTts('응답이 없어 대화를 종료할게요.');
+      final _ = await _speakOpenAiTts('응답이 없어서 대화를 끝낼게.');
     });
   }
 
@@ -792,24 +873,38 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _llmIdleTimer = null;
   }
 
-  // 웨이크워드 추출(강화)
+  // 웨이크워드 추출(강화 + 디바운스)
   String? _extractAfterWakeWord(String text) {
     if (text.isEmpty) return null;
 
+    // 디바운스: 연속 인식 방지
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastWakeAtMs < _wakeDebounceMs) return null;
+
+    // 문장 앞의 군더더기 제거
     var cleanedHead = text
         .replaceAll(RegExp(r'^[\s·…~,\.\-:;!?]+', unicode: true), '')
         .replaceAll(RegExp(r'^(어|음|에|저기|그|아)+\s*', unicode: true), '');
 
-    final compact =
-    cleanedHead.replaceAll(RegExp(r'[\s\p{P}]+', unicode: true), '');
+    // 앞부분 15글자만 압축해서 빠르게 매칭
+    final headSlice = cleanedHead.length > 15 ? cleanedHead.substring(0, 15) : cleanedHead;
+
+    // 안전한 구두점/공백 클래스(작은따옴표 포함 가능하도록 raw 삼중 따옴표)
+    final punct = RegExp(
+        r'''[\s!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~·…“”‘’—–【】〔〕（）〈〉《》「」『』]+'''
+    );
+    final compact = headSlice.replaceAll(punct, '');
+
     for (final w in _wakeWords) {
       final iCompact = compact.indexOf(w);
-      if (iCompact >= 0 && iCompact <= 8) {
+      if (iCompact >= 0 && iCompact <= 10) {
+        _lastWakeAtMs = now;
         final iRaw = cleanedHead.indexOf(w);
         if (iRaw >= 0) {
           final rest = cleanedHead.substring(iRaw + w.length).trim();
           return rest;
         }
+        return '';
       }
     }
     return null;
@@ -817,13 +912,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
 
   String _buildConversationalQuestion(String userText) {
     final buf = StringBuffer();
-    buf.writeln('너는 "모링"이라는 이름을 가진 친절하고 상냥한 자동차 AI 어시스턴트야.');
-    buf.writeln('항상 명확하고 간결하게, 그리고 반말로 대답해야 해. 사용자는 너의 친구야.');
-    buf.writeln('자동차 네비게이션, 운전, 교통 상황과 관련된 질문에 특히 전문적으로 답변할 수 있어.');
-    buf.writeln('');
-
+    // 프롬프트는 짧게(응답 속도에 유리)
+    buf.writeln('너는 "모링"이라는 이름의 친절한 자동차 AI야. 반말로 간결하게 답해.');
     if (_history.isNotEmpty) {
-      buf.writeln('--- 대화 맥락 ---');
+      buf.writeln('---맥락---');
       final start = _history.length > _maxTurnsMemory
           ? _history.length - _maxTurnsMemory
           : 0;
@@ -832,13 +924,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final prefix = h['role'] == 'user' ? '친구' : '모링';
         buf.writeln('$prefix: ${h['content']}');
       }
-      buf.writeln('--- 여기까지가 대화 맥락이야 ---');
-      buf.writeln('');
+      buf.writeln('---끝---');
     }
-
     buf.writeln('친구: $userText');
     buf.writeln('모링:');
-    if (kDebugMode) debugPrint('[LLM Prompt]\n${buf.toString()}');
     return buf.toString();
   }
 
@@ -866,8 +955,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 20),   // 30 → 20
+          receiveTimeout: const Duration(seconds: 20),// 30 → 20
         ),
       );
       String? ans = _extractLlmResult(res);
@@ -879,8 +968,8 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
           responseType: ResponseType.json,
           validateStatus: (s) => s != null && s < 500,
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 20),
         ),
       );
       ans = _extractLlmResult(res);
@@ -900,19 +989,18 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     return null;
   }
 
-  // TTS
-  Future<void> _speakOpenAiTts(String text) async {
-    if (!_isOwner) return;
-    if (!mounted || text.trim().isEmpty) return;
+  // TTS (실패 시 false 반환 → 상위에서 복구)
+  Future<bool> _speakOpenAiTts(String text) async {
+    if (!_isOwner) return false;
+    if (!mounted || text.trim().isEmpty) return false;
     if (_gmsKey.isEmpty) {
       if (kDebugMode) debugPrint('[TTS] GMS_KEY 미설정');
-      return;
+      return false;
     }
 
     _disarmIdle();
     _markActivity();
-    _setState(VoiceState.speaking);
-    _setStatus('음성 답변 중…');
+    _setStatus('음성 준비…');
 
     try {
       final body = {'model': _ttsModel, 'input': text, 'voice': _ttsVoice, 'response_format': 'mp3'};
@@ -924,37 +1012,83 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           headers: {'Authorization': 'Bearer $_gmsKey', 'Content-Type': 'application/json'},
           responseType: ResponseType.bytes,
           validateStatus: (s) => s != null && s < 500,
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 20),
         ),
       );
 
-      if (!mounted) return;
+      if (!mounted) return false;
 
       if (res.statusCode == 200 && res.data != null) {
         final bytes = Uint8List.fromList(res.data as List<int>);
-        _disarmIdle();
         _markActivity();
+        _setState(VoiceState.speaking);
+        _setStatus('말하는 중…');
+
         await _player.play(BytesSource(bytes));
+
+        // 워치독: 드물게 완료 이벤트 누락 시 자동 복구
+        Timer(const Duration(seconds: 20), () {
+          if (!mounted) return;
+          if (_state == VoiceState.speaking) {
+            if (kDebugMode) debugPrint('[TTS] watchdog stop()');
+            _player.stop(); // onPlayerStateChanged에서 해제 루틴 수행
+          }
+        });
+
+        return true;
       } else {
-        _llmBusy = false; // 실패 시 락 해제
-        _setState(VoiceState.idle);
-        _scheduleNextTurn(_cooldownMs);
+        if (kDebugMode) debugPrint('[TTS] HTTP ${res.statusCode} → 실패');
+        return false;
       }
-    } catch (_) {
-      _llmBusy = false; // 예외 시 락 해제
-      if (mounted && _isOwner) {
-        _setState(VoiceState.idle);
-        _scheduleNextTurn(_cooldownMs);
-      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[TTS] 예외: $e');
+      return false;
     }
   }
 
   // STT 사후 정제
+  // String _sanitizeStt(String text, {String? lastAssistant}) {
+  //   final original = text;
+  //   String s = text;
+  //
+  //   s = s.replaceAll(RegExp(r'[\[\(][^\]\)]{0,20}[\]\)]'), '');
+  //   for (final p in _sttBlacklistExact) {
+  //     s = s.replaceAll(RegExp(RegExp.escape(p), caseSensitive: false), '');
+  //   }
+  //   s = s.replaceAll(RegExp(r'^(모링|친구)\s*[:：]\s*', caseSensitive: false), '');
+  //   s = s.replaceAll(RegExp(r'([가-힣A-Za-z0-9])\1{2,}'), r'\1\1');
+  //   s = s.replaceAll(RegExp(r'\b([가-힣A-Za-z]{1,4})\b(?:\s*\1\b){2,}'), r'\1');
+  //   s = s.replaceAll(RegExp(r'\s+'), ' ');
+  //   s = s.replaceAll(RegExp(r'^[\.\s,;:~…·\-]+|[\.\s,;:~…·\-]+$'), '').trim();
+  //
+  //   // if (s.isEmpty) return original.trim();
+  //   if (s.isEmpty) return ''; // ← 빈 문자열이면 그대로 버린다 (원문 복구 금지)
+  //
+  //   if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
+  //     final a = _normalize(lastAssistant);
+  //     final b = _normalize(s);
+  //     if (a == b) return original.trim();
+  //   }
+  //
+  //   if (_sttBlacklistExact.contains(s)) return '';
+  //   for (final re in _sttBlacklistPatterns) {
+  //     if (re.hasMatch(s)) return '';
+  //   }
+  //   if (s.length <= 3 && (s.contains('맥락') || s.contains('내비'))) return '';
+  //
+  //   s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+  //   return s;
+  // }
   String _sanitizeStt(String text, {String? lastAssistant}) {
     final original = text;
     String s = text;
 
+    // 1) 우선 정확 매치 블랙리스트부터 컷
+    final t0 = s.trim();
+    if (_sttBlacklistExact.contains(t0)) return '';
+
+    // 2) 라이트한 정리
     s = s.replaceAll(RegExp(r'[\[\(][^\]\)]{0,20}[\]\)]'), '');
     for (final p in _sttBlacklistExact) {
       s = s.replaceAll(RegExp(RegExp.escape(p), caseSensitive: false), '');
@@ -965,23 +1099,26 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     s = s.replaceAll(RegExp(r'\s+'), ' ');
     s = s.replaceAll(RegExp(r'^[\.\s,;:~…·\-]+|[\.\s,;:~…·\-]+$'), '').trim();
 
-    if (s.isEmpty) return original.trim();
+    // 3) 여기서 비었으면 그냥 버림
+    if (s.isEmpty) return '';
 
-    if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
-      final a = _normalize(lastAssistant);
-      final b = _normalize(s);
-      if (a == b) return original.trim();
-    }
-
+    // 4) 나머지 금칙/패턴
     if (_sttBlacklistExact.contains(s)) return '';
     for (final re in _sttBlacklistPatterns) {
       if (re.hasMatch(s)) return '';
     }
     if (s.length <= 3 && (s.contains('맥락') || s.contains('내비'))) return '';
 
-    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    // 5) 에코 가드용 비교는 원문 복구 없이 진행
+    if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
+      final a = _normalize(lastAssistant);
+      final b = _normalize(s);
+      if (a == b) return ''; // 원문으로 되돌리지 말고 버린다
+    }
+
     return s;
   }
+
 
   // 에코 가드
   bool _isAssistantEcho(String userText) {
