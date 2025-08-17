@@ -15,12 +15,12 @@ class NavigationState {
   double destinationLat = 0.0;
   double destinationLng = 0.0;
   bool hasDestination = false;
-  
+
   // 검색 관련 상태
   List<Map<String, dynamic>> searchResults = [];
   bool isSearching = false;
   bool isSearchFocused = false; // ✅ 검색바 포커스 상태 추가
-  
+
   // 경로 관련 상태
   List<Map<String, double>> routeCoordinates = [];
   bool isCalculatingRoute = false;
@@ -29,18 +29,18 @@ class NavigationState {
   String trafficInfo = '';
   double routeDistance = 0.0;
   double distanceToDestination = 0.0;
-  
+
   // 주행 관련 상태
   bool isDriving = false;
   double totalDrivingDistance = 0.0;
   DateTime? drivingStartTime;
   double maxSpeed = 0.0;
   List<double> speedHistory = [];
-  
+
   // 속도 필터링 관련
   List<double> speedBuffer = [];
   static const int speedBufferSize = 5;
-  
+
   // 지도 관련 상태
   GoogleMapController? mapController;
   bool isMapReady = false;
@@ -53,13 +53,13 @@ class NavigationState {
   static const double stopKmhThreshold = 8.0;               // 이 속도 이하를 "정지 후보"로 간주 (GPS 노이즈 고려)
   static const Duration stopHold = Duration(seconds: 4);     // 이 시간 이상 유지되면 0으로 고정 (더 안정적인 감지)
   static const double moveKmhThreshold = 12.0;              // 이 속도 이상이면 확실히 움직임으로 판정
-  
+
   // 주행 통계
   double get averageSpeed {
     if (speedHistory.isEmpty) return 0.0;
     return speedHistory.reduce((a, b) => a + b) / speedHistory.length;
   }
-  
+
   String get formattedDrivingTime {
     if (drivingStartTime == null) return "00:00";
     final duration = DateTime.now().difference(drivingStartTime!);
@@ -67,7 +67,7 @@ class NavigationState {
     final minutes = duration.inMinutes % 60;
     return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}";
   }
-  
+
   String get formattedTotalDistance {
     if (totalDrivingDistance < 1000) {
       return "${totalDrivingDistance.toStringAsFixed(1)}m";
@@ -75,14 +75,14 @@ class NavigationState {
       return "${(totalDrivingDistance / 1000).toStringAsFixed(1)}km";
     }
   }
-  
+
   String get formattedCurrentSpeed {
     // final speed = double.tryParse(currentSpeed) ?? 0.0;
     // return "${speed.toStringAsFixed(0)}";
 
     return currentSpeed.toStringAsFixed(0);
   }
-  
+
   String get formattedDistanceToDestination {
     if (distanceToDestination < 1000) {
       return "${distanceToDestination.toStringAsFixed(0)}m";

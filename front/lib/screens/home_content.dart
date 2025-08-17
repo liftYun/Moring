@@ -349,6 +349,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
                                 onRefresh: _refreshInspectionLogs,
+                                pendingDate: pendingLogs.first['date'],
                               ),
                             ),
                           );
@@ -358,16 +359,31 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                           margin: const EdgeInsets.only(bottom: 10),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
-                                                     child: ListTile(
-                             leading: const Icon(Icons.schedule, 
-                                 color: Colors.white70, size: 24),
-                            title: Text(
-                              pendingLogs.first['date'] ?? '',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.white, fontWeight: FontWeight.bold),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.schedule,
+                                    color: Colors.white70, size: 24),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        pendingLogs.first['date'] ?? '',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text('점검 예정',
+                                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                                                         subtitle: const Text('점검 예정',
-                                 style: TextStyle(color: Colors.grey, fontSize: 12)),
                           ),
                         ),
                       )
@@ -381,6 +397,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
                                 onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
                               ),
                             ),
                           );
@@ -427,29 +444,45 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
                                 onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
                               ),
                             ),
                           );
                         },
-                        child: Card(
-                          color: const Color(0xFF232326),
-                          margin: const EdgeInsets.only(bottom: 10),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          child: ListTile(
-                            leading: const Icon(Icons.check_box,
-                                color: Colors.white54, size: 24),
-                            title: Text(
-                              completedLogs.first['date'] ?? '',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              completedLogs.first['status'] ?? '',
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                          ),
-                        ),
+                                                 child: Card(
+                           color: const Color(0xFF232326),
+                           margin: const EdgeInsets.only(bottom: 10),
+                           shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(14)),
+                           child: Padding(
+                             padding: const EdgeInsets.symmetric(
+                                 vertical: 12, horizontal: 20),
+                             child: Row(
+                               children: [
+                                 const Icon(Icons.check_box,
+                                     color: Colors.white54, size: 24),
+                                 const SizedBox(width: 14),
+                                 Expanded(
+                                   child: Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     children: [
+                                       Text(
+                                         completedLogs.first['date'] ?? '',
+                                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                             color: Colors.white, fontWeight: FontWeight.bold),
+                                       ),
+                                       const SizedBox(height: 6),
+                                       Text(
+                                         completedLogs.first['status'] ?? '',
+                                         style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                       ),
+                                     ],
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ),
+                         ),
                       )
                     else
                       GestureDetector(
@@ -461,6 +494,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                 inspectionLogs: _inspectionLogs,
                                 vin: _carVin!,
                                 onRefresh: _refreshInspectionLogs,
+                                pendingDate: null,
                               ),
                             ),
                           );

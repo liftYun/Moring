@@ -13,20 +13,29 @@ class NotificationApi {
   }
 
   /// GET /api/v1/notifications/{vin}/unread
-  Future<List<UnreadNotification>> fetchUnreadNotifications({
+  Future<Map<String, dynamic>> fetchUnreadNotifications({
     required String vin,
     int page = 0,
     int size = 10,
   }) async {
     final resp = await _dio.get(
       '/api/v1/notifications/$vin/unread',
-      // queryParameters: {'page': page, 'size': size},
+      queryParameters: {'page': page, 'size': size},
     );
-    // BaseResponse<Slice<...>> 구조를 가정
-    final content = (resp.data['result']['content'] as List).cast<Map<String, dynamic>>();
-    return content
+    
+    // API 응답 구조: { result: { content: [...], last: bool, empty: bool, numberOfElements: int } }
+    final result = resp.data['result'] as Map<String, dynamic>;
+    final content = (result['content'] as List).cast<Map<String, dynamic>>();
+    final notifications = content
         .map((e) => UnreadNotification.fromJson(e))
         .toList();
+    
+    return {
+      'notifications': notifications,
+      'last': result['last'] ?? false,
+      'empty': result['empty'] ?? true,
+      'numberOfElements': result['numberOfElements'] ?? 0,
+    };
   }
 
   /// PATCH /api/v1/notifications/read/{notificationId}

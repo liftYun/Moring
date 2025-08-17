@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 class DrivingRecordPage extends StatefulWidget {
-  final List<Map<String, dynamic>> logs;
-  const DrivingRecordPage({Key? key, required this.logs}) : super(key: key);
+  final List<Map<String, dynamic>>? logs;
+  const DrivingRecordPage({Key? key, this.logs}) : super(key: key);
 
   @override
   State<DrivingRecordPage> createState() => _DrivingRecordPageState();
@@ -27,15 +27,28 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
   }
 
   void _initializeFilters() {
-    if (widget.logs.isNotEmpty) {
-      final years = widget.logs
+    // 현재 년도 기준으로 20년 전까지의 년도 목록 생성
+    final currentYear = DateTime.now().year;
+    final List<String> allYears = [];
+    
+    for (int year = currentYear; year >= currentYear - 20; year--) {
+      allYears.add(year.toString());
+    }
+    
+    if (widget.logs != null && widget.logs!.isNotEmpty) {
+      // 실제 로그 데이터에서 년도 추출
+      final logYears = widget.logs!
           .map((log) => log['date'].toString().substring(0, 4))
           .toSet()
           .toList()
         ..sort((a, b) => b.compareTo(a));
+      
+      // 실제 로그 데이터의 년도와 20년 범위의 년도를 합치고 중복 제거
+      final combinedYears = {...allYears, ...logYears}.toList()
+        ..sort((a, b) => b.compareTo(a));
 
       setState(() {
-        _availableYears = years.cast<String>();
+        _availableYears = combinedYears;
         // 기본 선택 값으로 '전체'를 설정하고, availableYears 리스트에 추가
         _selectedYear = '전체';
         _availableYears.insert(0, '전체');
@@ -43,10 +56,10 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
         _selectedMonth = '전체';
       });
     } else {
-      // 기록이 없을 경우에도 '전체' 옵션은 표시
+      // 기록이 없을 경우에도 20년 범위의 년도와 '전체' 옵션 표시
       setState(() {
         _selectedYear = '전체';
-        _availableYears = ['전체'];
+        _availableYears = ['전체', ...allYears];
         _selectedMonth = '전체';
       });
     }
@@ -55,7 +68,12 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
 
   void _filterLogs() {
     setState(() {
-      _filteredLogs = widget.logs.where((log) {
+      if (widget.logs == null) {
+        _filteredLogs = [];
+        return;
+      }
+      
+      _filteredLogs = widget.logs!.where((log) {
         if (log['date'] == null || log['date'].isEmpty) return false;
 
         final year = log['date'].toString().substring(0, 4);

@@ -40,7 +40,13 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
 
     try {
       final api = ref.read(notificationApiProvider);
-      final fetched = await api.fetchUnreadNotifications(vin: vin);
+      final response = await api.fetchUnreadNotifications(vin: vin);
+      
+      final fetched = response['notifications'] as List<UnreadNotification>;
+      final isLast = response['last'] as bool? ?? false;
+      final isEmpty = response['empty'] as bool? ?? true;
+      final numberOfElements = response['numberOfElements'] as int? ?? 0;
+      
       final insertIndex = _notifications.length;
       _notifications.addAll(fetched);
       
@@ -50,8 +56,14 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       for (int i = 0; i < _groupedItems.length; i++) {
         _listKey.currentState?.insertItem(insertIndex + i, duration: const Duration(milliseconds: 300));
       }
-      _hasMore = fetched.length == _size;
-      if (_hasMore && fetched.isNotEmpty) _page++;
+      
+      // 페이지네이션 로직 개선
+      if (isEmpty || isLast || numberOfElements == 0) {
+        _hasMore = false;
+      } else {
+        _hasMore = true;
+        if (fetched.isNotEmpty) _page++;
+      }
     } catch (e) {
       debugPrint('🔔 loadPage error: $e');
     } finally {
@@ -85,6 +97,9 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       
       // 날짜 헤더 추가
       _groupedItems.add(_buildDateHeader(dateKey));
+      
+      // 해당 날짜의 알림들을 시간순으로 정렬 (최신이 위로)
+      notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       
       // 해당 날짜의 알림들 추가
       for (final notification in notifications) {
@@ -130,6 +145,8 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       ),
     );
   }
+
+
 
   void _removeAt(int index) {
     final removed = _notifications[index];

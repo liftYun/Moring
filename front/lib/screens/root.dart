@@ -7,6 +7,8 @@ import 'package:moring/utils/base_scaffold.dart';
 import 'package:moring/utils/bottom_nav_bar.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/information/more_information.dart';
+import 'package:moring/screens/member/mypage.dart';
+import 'package:moring/screens/information/more_information.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
