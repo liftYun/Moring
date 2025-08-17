@@ -8,6 +8,7 @@ import 'package:moring/utils/bottom_nav_bar.dart';
 import 'package:moring/screens/home_page.dart';
 import 'package:moring/screens/information/more_information.dart';
 import 'package:moring/screens/member/mypage.dart';
+import 'package:moring/screens/information/more_information.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:moring/providers/api_client.dart';
 import 'package:dio/dio.dart';
@@ -101,7 +102,7 @@ class _RootPageState extends ConsumerState<RootPage>
     const HomePage(),           // 0번 탭 (홈) - IndexedStack
     Container(),                // 1번 탭 (네비게이션) - 빈 컨테이너 (Lazy Loading으로 변경)
     Container(),                // 2번 탭 (주행로그) - 빈 컨테이너 (이미 Lazy Loading 사용중)
-    const MyPageScreen(),           // 3번 탭 (더보기) - IndexedStack
+    const MorePage(),           // 3번 탭 (더보기) - IndexedStack
   ];
 
   void _onItemTapped(int index) {

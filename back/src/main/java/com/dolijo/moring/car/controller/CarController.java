@@ -138,6 +138,42 @@ public class CarController {
         return BaseResponse.of(carService.getLatestPendingInspectionDate(vin));
     }
 
+    @Operation(summary = "비인가 운전자 확인 모달 팝업 정보 업데이트", description = """
+        비인가 운전자가 차량을 운전할 때 팝업으로 보여줄 정보를 업데이트합니다.
+        - 해당 API는 운전자 확인 모달 관련 정보를 유지하는 키가 없거나 이미 변경한 상태면 예외를 발생시킵니다.
+        - 팝업 표시 여부가 true이면 차주가 인가한 것이고 false으로 인가하지 않은 무단 운전자 입니다.
+        """)
+    @PatchMapping("/{vin}/unauthorized-driver-popup")
+    public BaseResponse<Void> updateUnauthorizedDriverPopup(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin,
+            @RequestParam("showPopup") boolean isAgreed
+    ) {
+        carService.updateUnauthorizedDriverPopup(vin, isAgreed);
+        return BaseResponse.ok();
+    }
+    @Operation(summary = "차량 운전중인 상태 업데이트",
+            description = """
+                            차량이 운전중인 상태인지 여부를 업데이트합니다.
+                            - 차량이 운전중인 상태면 true, 그렇지 않으면 false로 설정합니다.
+                            - 해당 데이터는 REDIS로 관리됩니다.
+                            - 리턴 결과는 논리값으로 사용자가 어떤 값을 설정했는지에 대한 확인용입니다.
+                        """)
+    @PatchMapping("/{vin}/driving-status")
+    public BaseResponse<Boolean> updateDrivingStatus(
+            @Parameter(description = "차량 VIN", required = true, example = "KNMK5C2HMLP000437")
+            @PathVariable("vin") String vin,
+            @Parameter(description = "운전중 상태 여부", required = true)
+            @RequestParam("isDriving") boolean isDriving
+    ) {
+        return BaseResponse.of(
+                carService.updateDrivingStatus(vin, isDriving)
+        );
+    }
+
+
+
+
 
 
 

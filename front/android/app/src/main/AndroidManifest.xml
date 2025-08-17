@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.moring">
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
     <!-- 인터넷 -->
     <uses-permission android:name="android.permission.INTERNET" />

@@ -199,11 +199,11 @@ class _PartOcrResultPageState extends ConsumerState<PartOcrResultPage> {
               child: ElevatedButton(
                 onPressed: () {
                   debugPrint("[PartOcrResultPage] 업데이트 클릭됨");
-                    Navigator.pop(context, {
-                      'changedAt': _changedAtController.text,
-                      'partIdList': _partIdList
-                    });
-                  },
+                  Navigator.pop(context, {
+                    'changedAt': _changedAtController.text,
+                    'partIdList': _partIdList
+                  });
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2196F3),
                   foregroundColor: Colors.white,

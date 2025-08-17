@@ -30,10 +30,16 @@ import 'widgets/driving_controls.dart';
 import 'widgets/search_results_dialog.dart';
 import 'widgets/my_location_button.dart';
 import 'widgets/heading_follow_button.dart';
+// ⬇️ 네비에서 쓰는 SSE 알림(TTS) + 음성비서 패널
+import 'package:moring/screens/navigation/sse_only.dart';
+import 'package:moring/voice/moring_voice_panel.dart';
 
 // ⬇️ SSE 전용 오버레이 (LLM/음성 제거)
 import 'package:moring/screens/navigation/sse_only.dart';
 import 'package:moring/voice/moring_voice_panel.dart';
+// 🔹 마지막 사용자/시스템 활동 시각(ms)
+int _lastActivityMs = 0;
+
 class NavigationPage extends ConsumerStatefulWidget {
   const NavigationPage({super.key});
 
@@ -1171,7 +1177,12 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
                 });
               },
             ),
-
+          const VoiceAssistantPanel(
+            autoStart: true,
+            showBadge: true,
+            requireWakeWord: true,
+            showDebugPanel: true, // 디버그 카드 보고 싶다면 true
+          ),
           // ⬇️ SSE 모달 오버레이 (LLM/음성 없음)
           const SSEAlertOverlay(),
           Positioned.fill(

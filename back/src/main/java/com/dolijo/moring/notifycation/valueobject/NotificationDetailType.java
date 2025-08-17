@@ -10,7 +10,7 @@ public enum NotificationDetailType {
     PART_ALERT("부품교환 알림"),
     INSPECTION_ALERT("정기점검 알림"),
     SLEEP_ALERT("졸음 알림"),
-    UNAUTHORIZED_USER_ALERT("비인가 사용자 알림");
+    TEMPERATURE_ALERT("온도 알림");
     private final String description;
     NotificationDetailType(String description) {
         this.description = description;

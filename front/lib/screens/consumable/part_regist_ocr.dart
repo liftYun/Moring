@@ -60,17 +60,17 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
 
   Future<bool> _requestPermission(Permission permission) async {
     print('[_requestPermission] 권한 요청 시작: $permission');
-    
+
     try {
       // 먼저 현재 권한 상태 확인
       final status = await permission.status;
       print('[_requestPermission] 현재 권한 상태: $status');
-      
+
       if (status.isGranted) {
         print('[_requestPermission] 권한이 이미 허용됨');
         return true;
       }
-      
+
       // 권한이 거부된 경우 바로 시스템 권한 요청
       if (status.isDenied) {
         print('[_requestPermission] 시스템 권한 요청 다이얼로그 표시');
@@ -78,20 +78,20 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
         print('[_requestPermission] 권한 요청 결과: $result');
         return result.isGranted;
       }
-      
+
       // 권한이 영구적으로 거부된 경우 커스텀 메시지 표시
       if (status.isPermanentlyDenied) {
         print('[_requestPermission] 영구 거부 상태 - 커스텀 다이얼로그 표시');
-        
+
         if (!mounted) return false;
-        
+
         String permissionMessage = '';
         if (permission == Permission.camera) {
           permissionMessage = '카메라 권한이 필요합니다.\n소모품 교체 이력을 촬영하기 위해 카메라 접근을 허용해주세요.';
         } else if (permission == Permission.photos || permission == Permission.storage || permission == Permission.mediaLibrary) {
           permissionMessage = '갤러리 접근 권한이 필요합니다.\n소모품 교체 이력 사진을 선택하기 위해 갤러리 접근을 허용해주세요.';
         }
-        
+
         await showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -119,7 +119,7 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
         );
         return false;
       }
-      
+
       print('[_requestPermission] 알 수 없는 권한 상태: $status');
       return false;
     } catch (e) {
@@ -130,11 +130,11 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
 
   Future<void> _takePicture() async {
     print('[_takePicture] 함수 호출됨');
-    
+
     // 권한 요청
     final hasPermission = await _requestPermission(Permission.camera);
     print('[_takePicture] 권한 상태: $hasPermission');
-    
+
     if (!hasPermission) {
       print('[_takePicture] 권한이 거부됨');
       if (!mounted) return;
@@ -164,28 +164,28 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
 
   Future<void> _pickImageFromGallery() async {
     print('[_pickImageFromGallery] 함수 호출됨');
-    
+
     // 여러 권한을 순차적으로 시도
     List<Permission> permissionsToTry = [
       Permission.photos,
       Permission.storage,
       Permission.mediaLibrary,
     ];
-    
+
     bool hasPermission = false;
-    
+
     for (Permission permission in permissionsToTry) {
       print('[_pickImageFromGallery] 권한 시도: $permission');
-      
+
       hasPermission = await _requestPermission(permission);
       print('[_pickImageFromGallery] 권한 상태: $hasPermission');
-      
+
       if (hasPermission) {
         print('[_pickImageFromGallery] 권한 획득 성공: $permission');
         break;
       }
     }
-    
+
     if (!hasPermission) {
       print('[_pickImageFromGallery] 모든 권한이 거부됨');
       if (!mounted) return;
@@ -204,7 +204,7 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
         maxHeight: 1080,
         imageQuality: 85,
       );
-      
+
       if (image != null) {
         print('[_pickImageFromGallery] 이미지 선택됨: ${image.path}');
         setState(() => _capturedImage = image);
@@ -302,12 +302,12 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
   Future<void> _postBatchChangeLogs(String changedAt, List<int> partIdList) async {
     final dio = ref.read(authDioProvider);
     try {
-        final data = {
-          'vin': widget.vin,
-          'partIdList': partIdList,
-          'changedAt': changedAt + 'T00:00:00.000Z',
-        };
-        await dio.post('/api/v1/parts/change-log', data: data);
+      final data = {
+        'vin': widget.vin,
+        'partIdList': partIdList,
+        'changedAt': changedAt + 'T00:00:00.000Z',
+      };
+      await dio.post('/api/v1/parts/change-log', data: data);
 
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -369,9 +369,9 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
                       child: _isTakingPicture
                           ? const CircularProgressIndicator(color: Colors.black)
                           : const Text(
-                              '카메라로 촬영하기',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
+                        '카메라로 촬영하기',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

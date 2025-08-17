@@ -170,24 +170,24 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('선택한 소모품들의 교체 이력이 일괄 등록되었습니다!')),
         );
-        
+
         // OCR에서 등록된 부품들과 현재 선택된 부품들을 모두 포함하여 반환
         List<int> allUpdatedPartIds = List.from(_selectedPartIds);
-        
+
         // OCR에서 등록된 부품 IDs 추가
         for (int id in _ocrRegisteredPartIds) {
           if (!allUpdatedPartIds.contains(id)) {
             allUpdatedPartIds.add(id);
           }
         }
-        
+
         print('[일괄 등록] 반환할 부품 IDs: $allUpdatedPartIds');
         print('[일괄 등록] OCR 등록된 부품 IDs: $_ocrRegisteredPartIds');
         print('[일괄 등록] 현재 선택된 부품 IDs: $_selectedPartIds');
-        
+
         // 잠시 대기 후 결과 반환 (스낵바가 표시될 시간을 줌)
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         if (!mounted) return;
         Navigator.of(context).pop(allUpdatedPartIds);
       } else {
@@ -217,51 +217,51 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
             }
         ),
         actions: [
-                     IconButton(
-             icon: const Icon(Icons.center_focus_weak, color: Colors.white),
-             onPressed: () async {
-               final dynamic result = await Navigator.push(
-                 context,
-                 MaterialPageRoute(
-                   builder: (context) => PartOcrRegistrationPage(vin: widget.vin),
-                 ),
-               );
-               print('[OCR 버튼] Navigator.pop 결과: $result');
-               
-               if (result != null) {
-                 if (result is List<int>) {
-                   // OCR에서 일괄 등록한 경우 - 바로 상위로 전달
-                   print('[OCR 버튼] List<int> 형태로 받음, 바로 상위로 전달: $result');
-                   Navigator.of(context).pop(result);
-                   return;
-                                   } else if (result is Map<String, dynamic>) {
-                    // OCR 결과를 받아서 현재 페이지에서 선택된 상태로 표시
-                    final List<int>? partIdList = result['parts']?.cast<int>() ?? result['partIdList']?.cast<int>();
-                    print('[OCR 버튼] OCR 결과 전체: $result');
-                    print('[OCR 버튼] parts 필드: ${result['parts']}');
-                    print('[OCR 버튼] partIdList 필드: ${result['partIdList']}');
-                    if (partIdList != null && partIdList.isNotEmpty) {
-                     setState(() {
-                       _selectedPartIds = List<int>.from(partIdList);
-                       _ocrRegisteredPartIds = List<int>.from(partIdList);
-                     });
-                     print('[OCR 버튼] OCR 결과로 부품 선택됨: $_selectedPartIds');
-                     
-                     // OCR에서 받은 날짜 정보가 있으면 설정
-                     final String? changedAt = result['changedAt'];
-                     if (changedAt != null && changedAt.isNotEmpty) {
-                       try {
-                         final parsedDate = DateTime.parse(changedAt);
-                         _replacementDateController.text = DateFormat('yyyy-MM-dd').format(parsedDate);
-                       } catch (_) {
-                         _replacementDateController.text = changedAt;
-                       }
-                     }
-                   }
-                 }
-               }
-             },
-           ),
+          IconButton(
+            icon: const Icon(Icons.center_focus_weak, color: Colors.white),
+            onPressed: () async {
+              final dynamic result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PartOcrRegistrationPage(vin: widget.vin),
+                ),
+              );
+              print('[OCR 버튼] Navigator.pop 결과: $result');
+
+              if (result != null) {
+                if (result is List<int>) {
+                  // OCR에서 일괄 등록한 경우 - 바로 상위로 전달
+                  print('[OCR 버튼] List<int> 형태로 받음, 바로 상위로 전달: $result');
+                  Navigator.of(context).pop(result);
+                  return;
+                } else if (result is Map<String, dynamic>) {
+                  // OCR 결과를 받아서 현재 페이지에서 선택된 상태로 표시
+                  final List<int>? partIdList = result['parts']?.cast<int>() ?? result['partIdList']?.cast<int>();
+                  print('[OCR 버튼] OCR 결과 전체: $result');
+                  print('[OCR 버튼] parts 필드: ${result['parts']}');
+                  print('[OCR 버튼] partIdList 필드: ${result['partIdList']}');
+                  if (partIdList != null && partIdList.isNotEmpty) {
+                    setState(() {
+                      _selectedPartIds = List<int>.from(partIdList);
+                      _ocrRegisteredPartIds = List<int>.from(partIdList);
+                    });
+                    print('[OCR 버튼] OCR 결과로 부품 선택됨: $_selectedPartIds');
+
+                    // OCR에서 받은 날짜 정보가 있으면 설정
+                    final String? changedAt = result['changedAt'];
+                    if (changedAt != null && changedAt.isNotEmpty) {
+                      try {
+                        final parsedDate = DateTime.parse(changedAt);
+                        _replacementDateController.text = DateFormat('yyyy-MM-dd').format(parsedDate);
+                      } catch (_) {
+                        _replacementDateController.text = changedAt;
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          ),
         ],
       ),
       body: Padding(
@@ -357,12 +357,12 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                                                                                              Text(
-                                       '잔여량: ${consumable.dueDate != null ? (consumable.remainingPercentage * 100).toInt() : 0}%',
-                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                         color: Colors.grey,
-                                       ),
-                                     ),
+                                    Text(
+                                      '잔여량: ${consumable.dueDate != null ? (consumable.remainingPercentage * 100).toInt() : 0}%',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],

@@ -75,7 +75,6 @@ class MyApp extends ConsumerWidget {
         theme: AppTheme,
         debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
-
         // ✅ 전역 오버레이: 소켓 VIN 스위칭 + 비인가 사용자 모달
         builder: (context, child) => Stack(
           children: [
@@ -84,7 +83,6 @@ class MyApp extends ConsumerWidget {
             const UnknownFaceSSEOverlay(), // 전체 화면에서 비인가 사용자 모달 처리
           ],
         ),
-
         home: authAsync.when(
           loading: () => const SplashScreen(),
           error: (_, __) => const LoginPage(),
@@ -104,4 +102,3 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
-

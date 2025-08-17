@@ -1,11 +1,57 @@
-// # 눈 감김 기준값 (EAR)
-// # 고개 숙임 기준값 (도 단위)
-// # 좌우 회전 기준값 (도 단위)
-// # 좌우 기울임 기준값 (도 단위)
 {
-  "EYE_AR_THRESH": 0.25,
-  "PITCH_DOWN_THRESH": 15,
-  "YAW_THRESH": 20,
-  "ROLL_THRESH": 15
+  "mqtt": {
+    "broker": "192.168.10.3",
+    "port": 1883,
+    "username": "moring",
+    "password": "kimoring",
+    "client_id_jetson": "jetson_driver_monitor",
+    "client_id_raspberry": "raspberry_pi_monitor"
+  },
+  "vehicle": {
+    "vin": "KNMK5C2HMLP000435"
+  },
+  "server": {
+    "base_url": "https://i13e101.p.ssafy.io",
+    "api_endpoint": "/api/v1/notifications/send/general",
+    "approval_endpoint": "/api/v1/notifications/send/approval"
+  },
+  "notifications": {
+    "mattermost_webhook": "https://meeting.ssafy.com/hooks/4emuoribrfn89dreyefdt9etwe",
+    "fcm_timeout": 10,
+    "approval_timeout": 300
+  },
+  "sensors": {
+    "dht11_pin": 4,
+    "mhz19b_port": "/dev/ttyAMA0",
+    "buzzer_pin": 18,
+    "read_interval": 10
+  },
+  "detection": {
+    "eye_ar_threshold": 0.20,
+    "pitch_threshold": -8.0,
+    "yaw_threshold": 25.0,
+    "roll_threshold": 10.0,
+    "phone_confidence": 0.6
+  },
+  "performance": {
+    "skip_frames": 5,
+    "face_recognition_interval": 60,
+    "yolo_detection_interval": 30,
+    "enable_gpu": true,
+    "performance_mode": true,
+    "webcam_resolution": [640, 480]
+  },
+  "jetson": {
+    "camera_type": "usb",
+    "enable_gpu_acceleration": true,
+    "power_mode": 0,
+    "enable_jetson_clocks": true,
+    "gpu_memory_fraction": 0.8,
+    "tensorrt_optimization": false
+  },
+  "logging": {
+    "level": "INFO",
+    "max_size": "10MB",
+    "backup_count": 5
+  }
 }
-

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moring/models/consumable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moring/providers/api_client.dart';
-import 'package:moring/screens/consumable/part_regist_ocr.dart';
+import 'package:moring/screens/consumable/part_regist_ocr.dart' ;
 import 'package:dio/dio.dart';
 import 'package:moring/screens/consumable/part_change.dart';
 import 'package:moring/screens/home_content.dart';
@@ -28,7 +28,6 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
   final _replacementDateController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<int> _updatedPartIds = [];
-  List<Consumable> _consumables = [];
 
   @override
   void initState() {
@@ -36,7 +35,6 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
     if (widget.updatedPartIds != null) {
       _updatedPartIds = List.from(widget.updatedPartIds!);
     }
-    _consumables = List.from(widget.consumables);
   }
 
   @override
@@ -54,13 +52,17 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         _selectedConsumable = consumable;
         _replacementDateController.text =
         consumable.dueDate != null
-            ? '${consumable.dueDate!.year}-${consumable.dueDate!.month.toString().padLeft(2, '0')}-${consumable.dueDate!.day.toString().padLeft(2, '0')}'
+            ? '${consumable.dueDate!.year}-${consumable.dueDate!.month
+            .toString().padLeft(2, '0')}-${consumable.dueDate!
+            .day
+            .toString()
+            .padLeft(2, '0')}'
             : '';
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final selectedIndex = _consumables.indexOf(consumable);
+      final selectedIndex = widget.consumables.indexOf(consumable);
       if (selectedIndex != -1) {
         _scrollController.animateTo(
           (selectedIndex * 100.0) + 100,
@@ -120,7 +122,8 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         if (statusResp.statusCode == 200 && statusResp.data['isSuccess'] == true) {
           final List list = statusResp.data['result'] as List;
           setState(() {
-            _consumables = list.map((e) => Consumable.fromJson(e)).toList();
+            widget.consumables.clear();
+            widget.consumables.addAll(list.map((e) => Consumable.fromJson(e)));
             _selectedConsumable = null;
           });
           ScaffoldMessenger.of(context).showSnackBar(
@@ -200,13 +203,8 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         : '날짜 정보 없음';
 
     final progress = consumable.dueDate != null ? consumable.remainingPercentage : 0.0;
-    final isUpdated = _updatedPartIds.isNotEmpty && _updatedPartIds.contains(consumable.id);
+    final isUpdated = _updatedPartIds.contains(consumable.id);
     final hasDueDate = consumable.dueDate != null;
-
-    // 디버깅 로그 추가
-    print('[ _buildConsumableItemCard ] 부품 ID: ${consumable.id}, 제목: ${consumable.title}');
-    print('[ _buildConsumableItemCard ] _updatedPartIds: $_updatedPartIds');
-    print('[ _buildConsumableItemCard ] isUpdated: $isUpdated');
 
     return GestureDetector(
       onTap: () => _onConsumableTap(consumable),
@@ -243,7 +241,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      formattedDueDate,
+                      '$formattedDueDate',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey,
                       ),
@@ -251,6 +249,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                   ],
                 ),
               ),
+
               Row(
                 children: [
                   SizedBox(
@@ -293,7 +292,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
       appBar: AppBar(
         title: const Text('소모품 상세'),
         backgroundColor: Colors.black,
-        leading: IconButton(
+        leading: IconButton( // ✅ leading 속성 추가
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
@@ -322,7 +321,7 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              ..._consumables.expand((consumable) {
+              ...widget.consumables.expand((consumable) {
                 List<Widget> widgets = [
                   _buildConsumableItemCard(
                     context: context,
@@ -334,57 +333,34 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
                 }
                 return widgets;
               }).toList(),
+              // ✅ 추가: 일괄 변경 버튼
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  print('[내역 수정하기] 버튼 클릭됨');
-                  final dynamic result = await Navigator.push(
+                  final List<int>? updatedPartIds = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BulkPartRegistrationPage(vin: widget.vin),
                     ),
                   );
-                  print('[내역 수정하기] Navigator.pop 결과: $result');
-
-                  List<int>? updatedPartIds;
-
-                  if (result != null) {
-                    if (result is List<int>) {
-                      updatedPartIds = result;
-                      print('[내역 수정하기] List<int> 형태로 받음: $updatedPartIds');
-                    } else if (result is Map<String, dynamic>) {
-                      updatedPartIds = result['partIdList']?.cast<int>();
-                      print('[내역 수정하기] Map에서 partIdList 추출: $updatedPartIds');
-                    }
-
-                    if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
-                      print('[내역 수정하기] 업데이트된 부품 IDs: $updatedPartIds');
-                      // 서버에서 최신 데이터를 가져와서 화면 업데이트
-                      try {
-                        final dio = ref.read(authDioProvider);
-                        final response = await dio.get('/api/v1/parts/status/${widget.vin}');
-                        if (response.statusCode == 200 && response.data['isSuccess'] == true) {
-                          final List list = response.data['result'] as List;
-                          setState(() {
-                            _consumables = list.map((e) => Consumable.fromJson(e)).toList();
-                            _updatedPartIds = List<int>.from(updatedPartIds ?? []);
-                          });
-                          print('[내역 수정하기] setState 완료, _updatedPartIds: $_updatedPartIds');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('소모품 교체 이력이 업데이트되었습니다!')),
-                          );
-                        }
-                      } catch (e) {
-                        print('[내역 수정하기] 오류 발생: $e');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('데이터 새로고침 실패: $e')),
-                        );
+                  if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
+                    // 서버에서 최신 데이터를 가져와서 화면 업데이트
+                    try {
+                      final dio = ref.read(authDioProvider);
+                      final response = await dio.get('/api/v1/parts/status/${widget.vin}');
+                      if (response.statusCode == 200 && response.data['isSuccess'] == true) {
+                        final List list = response.data['result'] as List;
+                        setState(() {
+                          widget.consumables.clear();
+                          widget.consumables.addAll(list.map((e) => Consumable.fromJson(e)));
+                          _updatedPartIds = updatedPartIds;
+                        });
                       }
-                    } else {
-                      print('[내역 수정하기] updatedPartIds가 null이거나 비어있음');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('데이터 새로고침 실패: $e')),
+                      );
                     }
-                  } else {
-                    print('[내역 수정하기] result가 null');
                   }
                 },
                 style: ElevatedButton.styleFrom(
