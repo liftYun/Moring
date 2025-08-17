@@ -210,17 +210,17 @@ class MorePage extends ConsumerWidget {
 
             // --- 기타 설정 섹션 ---
             _buildSectionHeader(context, ref, ''),
-            _buildTile(
-              icon: Icons.backup,
-              title: '백업 설정',
-              subtitle: '주행 로그 백업을 관리하세요.',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BackupSettingsPage()),
-                );
-              },
-            ),
+            // _buildTile(
+            //   icon: Icons.backup,
+            //   title: '백업 설정',
+            //   subtitle: '주행 로그 백업을 관리하세요.',
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => const BackupSettingsPage()),
+            //     );
+            //   },
+            // ),
             _buildTile(
               icon: Icons.event_note,
               title: '점검 로그',

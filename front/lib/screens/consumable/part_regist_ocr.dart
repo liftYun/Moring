@@ -277,9 +277,8 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
       debugPrint("[_onRegister] 추출된 부품 IDs: $updatedPartIds");
 
       if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
-        // OCR 결과를 상위로 전달 (BulkPartRegistrationPage에서 처리)
-        debugPrint("[_onRegister] OCR 결과를 상위로 전달: $ocrResult");
-        if (!mounted) return;
+        // OCR 결과를 part_ocr_result 페이지로 전달
+        debugPrint("[_onRegister] OCR 결과를 part_ocr_result로 전달: $ocrResult");
         Navigator.pop(context, ocrResult);
       } else {
         debugPrint("[_onRegister] OCR 결과에서 부품 IDs를 찾을 수 없음");

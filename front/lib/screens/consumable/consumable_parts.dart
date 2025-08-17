@@ -295,7 +295,12 @@ class _ConsumablePartsScreenState extends ConsumerState<ConsumablePartsScreen> {
         leading: IconButton( // ✅ leading 속성 추가
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            // 변경된 부품이 있으면 홈화면으로 이동, 없으면 이전 페이지로
+            if (_updatedPartIds.isNotEmpty) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/root', (route) => false);
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
       ),
