@@ -1,6 +1,7 @@
 // lib/screens/navigation/sse_unknown_face.dart
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/scheduler.dart';
 
 import 'package:dio/dio.dart';
@@ -204,20 +205,43 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text('등록된 사용자가 아닙니다. 이 사용자를 인가하시겠습니까?',
-                          style: TextStyle(color: Colors.white, fontSize: 16)),
+                      const Text('등록된 사용자가 아닙니다. 등록하시겠습니까?', style: TextStyle(color: Colors.white, fontSize: 16)),
                       const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(
-                            onPressed: () => onAnswer(authorized: false), // ❌ 무단 → PATCH(false) + SMS(항상)
-                            child: const Text('아니요'),
+                          SizedBox(
+                            width: 80,
+                            height: 36,
+                            child: OutlinedButton(
+                              onPressed: () => onAnswer(authorized: false), // ❌ 무단 → PATCH(false) + SMS(항상)
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF50C878),
+                                side: const BorderSide(color: Color(0xFF50C878), width: 1.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: const Text('아니요'),
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: () => onAnswer(authorized: true),  // ✅ 인가 → PATCH(true)
-                            child: const Text('네'),
+                          SizedBox(
+                            width: 80,
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: () => onAnswer(authorized: true), // ✅ 인가 → PATCH(true)
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF50C878),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: const Text('네'),
+                            ),
                           ),
                         ],
                       ),
@@ -237,6 +261,13 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
     if (myGen != _dedupGen) return;
 
     debugPrint('[UnknownFace] dialog result=$result');
+
+    if (result == 'no') {
+      // 이미 onAnswer()에서 SMS 시도함 — 여기선 추가 조치 없음.
+    } else if (result == 'yes') {
+      // 인가 선택 시: 페이스라인 측정 모달 띄우기 (v2 기능 유지)
+      _showFaceLineMeasurementModal(context);
+    }
   }
 
   // 서버 팝업 상태 업데이트 (스펙: showPopup 쿼리 파라미터)
@@ -269,6 +300,105 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
       },
       options: Options(headers: {'Content-Type': 'application/json'}),
     );
+  }
+
+  /// 🆕 페이스라인 측정 모달 띄우기
+  void _showFaceLineMeasurementModal(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showModalBottomSheet(
+        context: context,
+        barrierColor: Colors.black.withOpacity(0.3),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return Stack(
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(color: Colors.transparent),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 220,
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF23262B),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 24,
+                        offset: Offset(0, -6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        '10분간 페이스라인 측정 예정입니다.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        '얼굴을 가리지 말고 운전해 주십시오.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '(해당 시간 동안 일부 기능이 제한될 수 있습니다.)',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.24),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context); // 모달 닫기
+                          },
+                          child: const Text(
+                            '확인',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   String _2(int n) => n.toString().padLeft(2, '0');

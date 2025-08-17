@@ -1,10 +1,8 @@
 // lib/voice/moring_voice_panel.dart
 // Whisper(상시) + (조건부)Clova 폴백 + LLM + OpenAI TTS
 // - .env: GMS_KEY, CLOVA_CLIENT_ID, CLOVA_CLIENT_SECRET
-// - LLM: POST /api/v1/AI/ask (JSON {question} or raw string 모두 허용)
-// - ※ 네비게이션 화면에서만 동작/복귀 시 자동 재개: RouteObserver 필요
-//   -> main.dart 에서 전역 제공:
-//      final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+// - LLM: POST /api/v1/AI/ask (JSON {question} or raw string)
+// - 네비 화면에서만 동작/복귀 자동 재개: main.dart에 routeObserver 전역 선언 필요
 
 import 'dart:async';
 import 'dart:convert';
@@ -21,11 +19,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-// main.dart 의 전역 RouteObserver 를 import
-import 'package:moring/main.dart' show routeObserver;
-
-// 인증/무인증 클라이언트
-import 'package:moring/providers/api_client.dart'
+import 'package:moring/main.dart' show routeObserver;                // RouteObserver
+import 'package:moring/providers/api_client.dart'                    // API clients
     show authDioProvider, noAuthDioProvider;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +31,7 @@ String get _clovaClientId => dotenv.maybeGet('CLOVA_CLIENT_ID') ?? '';
 String get _clovaClientSecret => dotenv.maybeGet('CLOVA_CLIENT_SECRET') ?? '';
 
 ////////////////////////////////////////////////////////////////////////////////
-// 엔드포인트 상수
+// 엔드포인트
 ////////////////////////////////////////////////////////////////////////////////
 const _gmsOpenAIBase = 'https://gms.ssafy.io/gmsapi/api.openai.com';
 
@@ -76,13 +71,13 @@ const int _minFileBytes = 8000;
 const int _maxTurnsMemory = 6;
 const Duration _llmIdle = Duration(seconds: 15);
 const Duration _llmGraceAfterWake = Duration(seconds: 7);
-const int _noSpeechTimeoutLlmMs = 5000;   // LLM 모드 무발화 타임아웃(말 생각시간 허용)
-const int _emptyTurnsToExit = 2;          // (백업용)
+const int _noSpeechTimeoutLlmMs = 5000;   // LLM 모드 무발화 타임아웃
+const int _emptyTurnsToExit = 2;
 
-// TTS 관련 가드/중단
-const int _postTtsGuardMs = 800;    // TTS 직후 리스닝 재개 지연
-const int _postTtsQuietMs = 2500;   // TTS 직후 무발화猶豫구간(빈턴 멘트 방지)
-const int _needFramesToInterrupt = 6; // TTS중 사용자 소리로 끊기 위한 프레임 수
+// TTS 관련
+const int _postTtsGuardMs = 800;   // TTS 직후 리스닝 재개 지연
+const int _postTtsQuietMs = 2500;  // TTS 직후 무발화猶豫 구간
+const int _needFramesToInterrupt = 6;
 
 enum VoiceState { idle, listening, processing, speaking }
 
@@ -106,22 +101,13 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
   final bool autoStart;
   final bool requireWakeWord;
 
-  /// 배지 자체 렌더링 여부
   final bool showBadge;
-
-  /// 웨이크워드로 LLM 활성화된 동안만 배지를 보일지
   final bool showBadgeOnlyWhenActive;
-
-  /// 배지 정렬 위치
   final Alignment badgeAlignment;
-
-  /// 배지 외곽 여백
   final EdgeInsets badgeMargin;
-
-  /// (하단에 둘 때) 하단 CTA/네비 회피 px
   final double avoidBottomPx;
 
-  /// 웨이크워드만 말했을 때 TTS("네, 말씀하세요.")를 말할지 여부 (기본: 말하지 않음 = 조용히 대기 전환)
+  /// 웨이크워드만 말했을 때 "네, 말씀하세요"를 말할지 (기본: false = 조용히 대기 전환)
   final bool speakOnWakeOnly;
 
   const VoiceAssistantPanel({
@@ -131,7 +117,7 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
     this.requireWakeWord = true,
     this.showBadge = true,
     this.showBadgeOnlyWhenActive = true,
-    this.badgeAlignment = Alignment.topCenter, // CTA 가리지 않게 상단 기본
+    this.badgeAlignment = Alignment.topCenter,
     this.badgeMargin = const EdgeInsets.only(top: 12),
     this.avoidBottomPx = 104,
     this.speakOnWakeOnly = false,
@@ -179,23 +165,23 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
   int _interruptLoudFrames = 0;
   int _speakEndedAtMs = 0;
 
-  // 최근 활동 시각(ms) — 유휴 타이머 오작동 방지
-  int _lastActivityMs = 0;
-
-  // 중복 호출 병합
+  int _lastActivityMs = 0;     // 최근 활동 시각
   bool _nextTurnScheduled = false;
 
   final List<Map<String, String>> _history = [];
 
   final List<String> _wakeWords = const [
     '모링아','모링','머링아','머링','오링아','오링','로링아','로링','보링아','보링',
-    '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아','오리가',
-    '모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
-    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','어린아','어랭아'
+    '모링가','머리가','머리 감아','오징어','모르냐','브링어','우리가','어링아',
+    '오리가','모닝아','모닝','머닝아','머닝','오닝아','오닝','로닝아','로닝','보닝아','보닝',
+    '얼른와','머리나','머리냐','무료 영화','뭐래냐','머래냐','머라냐','모리나','모릉아','모렝아','어른아','오르막'
+    ,'오류가','어린아','어랭아','올리나','우링아','우리나','머리나',
+
+
   ];
   final List<String> _llmExitWords = const ['모링 종료','없다','모링종료','대화 끝','그만','종료','끝','없어'];
 
-  // ===== STT 사후 필터(프롬프트 에코/잡문구) =====
+  // STT 사후 필터
   final List<String> _sttBlacklistExact = const [
     '자동차 내비게이션 맥락',
     '내비게이션 맥락',
@@ -206,7 +192,10 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     '친구:',
   ];
   final List<RegExp> _sttBlacklistPatterns = [
-    RegExp(r'^(자동차\s*)?내비게이션\s*맥락$', caseSensitive: false),
+    // "자동차 내비[게이션] (맥락) …" 류를 전부 컷
+    RegExp(r'^(?:자동차\s*)?내비(?:게이션)?(?:\s*맥락)?(?:입니다|이에요|다|임)?\.?$', caseSensitive: false),
+    RegExp(r'^(?:대화\s*맥락)$', caseSensitive: false),
+    RegExp(r'^(?:자연스러운\s*띄어쓰기)$', caseSensitive: false),
   ];
 
   bool get _recentAfterTts =>
@@ -270,14 +259,12 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     super.didChangeDependencies();
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
-      // 중복 구독 방지 위해 try-unsubscribe 뒤 subscribe
       try { routeObserver.unsubscribe(this); } catch (_) {}
       routeObserver.subscribe(this, route);
       _pageVisible = route.isCurrent;
     } else {
       _pageVisible = ModalRoute.of(context)?.isCurrent ?? true;
     }
-
     if (!_isOwner) return;
     if (_looping && !_shouldRun()) _stopLoop();
     if (!_looping && widget.autoStart && _shouldRun()) _startLoop();
@@ -304,19 +291,16 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _pageVisible = true;
     if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
   }
-
   @override
   void didPopNext() {
     _pageVisible = true;
     if (_isOwner && widget.autoStart && _shouldRun()) _startLoop();
   }
-
   @override
   void didPushNext() {
     _pageVisible = false;
     if (_isOwner) _stopLoop();
   }
-
   @override
   void didPop() {
     _pageVisible = false;
@@ -413,7 +397,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       }
 
       _setState(VoiceState.listening);
-      _disarmIdle();    // 리스닝 중에는 유휴 타이머 off
+      _disarmIdle();    // 리스닝 중 유휴 타이머 off
       _markActivity();
 
       final dir = await getTemporaryDirectory();
@@ -444,7 +428,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
           .listen((amp) async {
         if (!mounted || !_isOwner) return;
 
-        // TTS 중 → 연속 큰소리면 끊기(바로 응답 가능하게)
+        // TTS 중 → 연속 큰소리면 끊기
         if (_state == VoiceState.speaking) {
           if (amp.current.isFinite && amp.current > _vadDb) {
             _interruptLoudFrames++;
@@ -492,14 +476,12 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         final silentAfterSpeech = _speechActive && sinceLoud >= _silenceTimeoutMs;
         final overMax = elapsed >= maxMs;
 
-        // TTS 직후엔 무발화 타임아웃을 늘려, 빈턴 멘트를 줄임
+        // TTS 직후엔 무발화 타임아웃을 늘려 빈턴 멘트 방지
         final afterTts = DateTime.now().millisecondsSinceEpoch - _speakEndedAtMs;
-        final llmNoSpeech = (afterTts < _postTtsQuietMs)
-            ? _noSpeechTimeoutLlmMs * 2
-            : _noSpeechTimeoutLlmMs;
+        final llmNoSpeech =
+        (afterTts < _postTtsQuietMs) ? _noSpeechTimeoutLlmMs * 2 : _noSpeechTimeoutLlmMs;
 
-        final noSpeechTimeoutHit =
-            _isLlmActive && !_speechActive && elapsed >= llmNoSpeech;
+        final noSpeechTimeoutHit = _isLlmActive && !_speechActive && elapsed >= llmNoSpeech;
 
         if ((minOk && silentAfterSpeech) || noSpeechTimeoutHit || overMax) break;
       }
@@ -611,9 +593,9 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         ),
         'language': _whisperLanguage,
         'response_format': 'verbose_json',
-        // 프롬프트는 인식 품질 향상에 쓰되, sanitizeStt로 잔향 제거
-        'prompt': '한국어 일상 대화, 자동차 내비게이션 맥락. 자연스러운 띄어쓰기.',
-        'temperature': '0',
+        // ⚠️ 프롬프트 제거: "자동차 내비게이션 맥락" 에코 방지
+        // 'prompt': '한국어 일상 대화. 운전 중 짧은 발화.',  // 필요하면 이렇게 가볍게만
+        // 'temperature': '0',
       });
 
       final res = await _plainDio.post(
@@ -761,21 +743,20 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (!_isOwner || !mounted) return;
 
     if (_isLlmActive) {
-      // ✅ TTS 직후엔 조용히 대기만 (빈턴 멘트 금지)
+      // TTS 직후엔 조용히 대기만 (빈턴 멘트 금지)
       if (_recentAfterTts) {
         _armIdle(_llmGraceAfterWake);
         _setState(VoiceState.idle);
         _scheduleNextTurn(_cooldownMs);
         return;
       }
-      // ✅ 친절 멘트(“듣고 있어…”)는 제거: 침묵이면 idle 유지 + 유휴 타이머만
+      // 침묵이면 idle 유지 + 유휴 타이머만
       _armIdle(_llmGraceAfterWake);
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
       return;
     }
 
-    // LLM 모드가 아니면 평소대로 다음 턴
     _setState(VoiceState.idle);
     _scheduleNextTurn(_cooldownMs);
   }
@@ -784,17 +765,13 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     if (!_isOwner) return;
     final userText = _extractAfterWakeWord(heardText);
     if (userText != null) {
-      // LLM 대화 모드 진입
       if (!_isLlmActive) {
-        setState(() {
-          _isLlmActive = true;
-        });
+        setState(() => _isLlmActive = true);
       }
       _disarmIdle();
 
-      final trimmed = _sanitizeStt(userText).trim(); // 안전 처리
+      final trimmed = _sanitizeStt(userText).trim();
       if (trimmed.isEmpty) {
-        // 웨이크워드만 말했을 때: TTS 안 하고(겹침 방지) 바로 듣기 유지
         if (widget.speakOnWakeOnly) {
           await _speakOpenAiTts('네, 말씀하세요.');
         }
@@ -824,7 +801,6 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     final afterWake = _extractAfterWakeWord(raw);
     final userSaid = (afterWake ?? raw).trim();
     if (userSaid.isEmpty) {
-      // (거의 없음) 안전 처리
       _armIdle(_llmGraceAfterWake);
       _setState(VoiceState.idle);
       _scheduleNextTurn(_cooldownMs);
@@ -880,7 +856,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
         return;
       }
 
-      _isLlmActive = false; // 배지 즉시 숨김
+      _isLlmActive = false;
       await _speakOpenAiTts('응답이 없어 대화를 종료할게요.');
     });
   }
@@ -891,13 +867,30 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     _llmIdleTimer = null;
   }
 
+  // ===== 웨이크워드 추출(강화판) =====
+  // - 공백/구두점 허용, 앞에 "어/음/저기/저기요/이봐/야/자기" 같은 빈말 허용
+  // - 매칭되면 그 뒷부분을 원문 기준으로 정확히 잘라서 반환
   String? _extractAfterWakeWord(String text) {
     if (text.isEmpty) return null;
-    final noSpace = text.replaceAll(RegExp(r'\s+'), '');
+    final t = text.trim();
+
+    const fillers = r'(?:어|어어|음|음음|저기|저기요|이봐|야|자기|혹시|저|그)\s*[,;:.~…-]?\s*';
+    String charsWithGap(String w) {
+      final b = StringBuffer();
+      for (final ch in w.split('')) {
+        b.write(RegExp.escape(ch));
+        b.write(r'[\s,\.!?~_\-:;·…]*'); // 글자 사이 허용
+      }
+      return b.toString();
+    }
+
     for (final w in _wakeWords) {
-      if (noSpace.startsWith(w)) {
-        final idx = text.toLowerCase().indexOf(w);
-        if (idx != -1) return text.substring(idx + w.length).trim();
+      final re = RegExp('^\\s*(?:$fillers)*${charsWithGap(w)}', caseSensitive: false);
+      final m = re.firstMatch(t);
+      if (m != null) {
+        final after = t.substring(m.end).trim();
+        if (kDebugMode) debugPrint('[Wake] hit="$w" -> next="$after"');
+        return after; // (빈 문자열일 수도 있음)
       }
     }
     return null;
@@ -907,8 +900,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     final buf = StringBuffer();
     buf.writeln('너는 "모링"이라는 이름의 친절하고 상냥한 자동차 AI 어시스턴트야.');
     buf.writeln('항상 명확·간결하게, 반말로 대답해. 사용자는 너의 친구야.');
-    buf.writeln('자동차 네비게이션, 운전, 교통 상황에 특히 전문적으로 답변해.');
-    buf.writeln('');
+    buf.writeln('자동차 네비게이션, 운전, 교통 상황에 특히 전문적으로 답변해.\n');
 
     if (_history.isNotEmpty) {
       buf.writeln('--- 대화 맥락 ---');
@@ -1047,7 +1039,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     final original = text;
     String s = text;
 
-    // 1) 괄호/브래킷 메타 제거 (예: [음악], (한숨))
+    // 1) 괄호/브래킷 메타 제거
     s = s.replaceAll(RegExp(r'[\[\(][^\]\)]{0,20}[\]\)]'), '');
 
     // 2) 알려진 노이즈 문구 제거(대소문자 무시)
@@ -1057,20 +1049,20 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
     // 접두사 형태 메타 제거
     s = s.replaceAll(RegExp(r'^(모링|친구)\s*[:：]\s*', caseSensitive: false), '');
 
-    // 3) 동일 글자 반복 축약: "아아아아" -> "아아"
+    // 3) 동일 글자 반복 축약
     s = s.replaceAll(RegExp(r'([가-힣A-Za-z0-9])\1{2,}'), r'\1\1');
 
-    // 4) 짧은 토큰 반복(예: "네 네 네 네") 한 번만 남기기
+    // 4) 짧은 토큰 반복 한 번만 남기기
     s = s.replaceAll(RegExp(r'\b([가-힣A-Za-z]{1,4})\b(?:\s*\1\b){2,}'), r'\1');
 
     // 5) 구두점/공백 정리
     s = s.replaceAll(RegExp(r'\s+'), ' ');
     s = s.replaceAll(RegExp(r'^[\.\s,;:~…·\-]+|[\.\s,;:~…·\-]+$'), '').trim();
 
-    // 6) 과잉 정제로 빈 문자열이면 원문
+    // 6) 빈 문자열이면 원문
     if (s.isEmpty) return original.trim();
 
-    // 7) 어시스턴트 직전 발화와 같으면(잔향) 원문 유지 → 에코가드에서 필터
+    // 7) 직전 어시스턴트 에코면 원문 유지 → 에코가드에서 컷
     if (lastAssistant != null && lastAssistant.trim().isNotEmpty) {
       final a = _normalize(lastAssistant);
       final b = _normalize(s);
@@ -1083,7 +1075,7 @@ class _VoiceAssistantPanelState extends ConsumerState<VoiceAssistantPanel>
       if (re.hasMatch(s)) return '';
     }
 
-    // 너무 짧은 고립 단어(맥락류)만 있을 때 버리기
+    // 너무 짧은 잡단어 컷
     if (s.length <= 3 && (s.contains('맥락') || s.contains('내비'))) return '';
 
     return s.trim();
