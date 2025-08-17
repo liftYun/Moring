@@ -13,10 +13,9 @@
     <!-- 마이크 권한 (STT) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- ✅ 외부 저장소 권한은 불필요: path_provider의 임시/앱 디렉토리만 사용하므로 제거 권장
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/>
+    <!-- 갤러리 접근 권한 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
 
     <!-- 네비게이션 관련 권한 -->

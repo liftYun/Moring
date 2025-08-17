@@ -23,6 +23,22 @@ class _CarInfoPageState extends ConsumerState<CarInfoPage> {
       _selectedIndex = index;
       // TODO: 페이지 전환 로직 추가
     });
+    
+    // 페이지 전환 로직
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/root');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/navigation');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/driving_record');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/mypage');
+        break;
+    }
   }
 
   Future<bool> _deleteCarByVin(String vin) async {

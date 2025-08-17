@@ -17,6 +17,7 @@ import 'package:moring/providers/auth_provider.dart';
 import 'package:moring/providers/token_repository.dart';
 import 'package:moring/providers/car_provider.dart';
 import 'package:moring/providers/api_client.dart';
+import 'package:moring/utils/policy_content.dart';
 
 final pushNotificationAllowedProvider = StateProvider<bool>((ref) {
   return true;
@@ -110,6 +111,94 @@ class MorePage extends ConsumerWidget {
         ),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showPolicySelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '정책 및 약관',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildPolicyOption(context, '개인정보처리방침', Icons.privacy_tip, () {
+              Navigator.pop(context);
+              _showPolicyDialog(context, '개인정보처리방침', PolicyContent.getPrivacyPolicy());
+            }),
+            _buildPolicyOption(context, '이용약관', Icons.description, () {
+              Navigator.pop(context);
+              _showPolicyDialog(context, '이용약관', PolicyContent.getTermsOfService());
+            }),
+            _buildPolicyOption(context, '운전자 안전 정책', Icons.safety_check, () {
+              Navigator.pop(context);
+              _showPolicyDialog(context, '운전자 안전 정책', PolicyContent.getSafetyPolicy());
+            }),
+            _buildPolicyOption(context, '데이터 수집 및 사용 정책', Icons.data_usage, () {
+              Navigator.pop(context);
+              _showPolicyDialog(context, '데이터 수집 및 사용 정책', PolicyContent.getDataPolicy());
+            }),
+            _buildPolicyOption(context, '알림 설정 정책', Icons.notifications_active, () {
+              Navigator.pop(context);
+              _showPolicyDialog(context, '알림 설정 정책', PolicyContent.getNotificationPolicy());
+            }),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(foregroundColor: Colors.white70),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPolicyOption(BuildContext context, String title, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF50C878)),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+      ),
+      trailing: const Icon(Icons.chevron_right, color: Colors.white70),
+      onTap: onTap,
+    );
+  }
+
+  void _showPolicyDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            content,
+            style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF50C878),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -210,17 +299,17 @@ class MorePage extends ConsumerWidget {
 
             // --- 기타 설정 섹션 ---
             _buildSectionHeader(context, ref, ''),
-            _buildTile(
-              icon: Icons.backup,
-              title: '백업 설정',
-              subtitle: '주행 로그 백업을 관리하세요.',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BackupSettingsPage()),
-                );
-              },
-            ),
+            // _buildTile(
+            //   icon: Icons.backup,
+            //   title: '백업 설정',
+            //   subtitle: '주행 로그 백업을 관리하세요.',
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => const BackupSettingsPage()),
+            //     );
+            //   },
+            // ),
             _buildTile(
               icon: Icons.event_note,
               title: '점검 로그',
@@ -248,7 +337,7 @@ class MorePage extends ConsumerWidget {
               title: '정책',
               subtitle: '사용 정책을 확인하세요.',
               onTap: () {
-                // TODO: 정책 페이지 이동 구현
+                _showPolicySelectionDialog(context);
               },
             ),
 

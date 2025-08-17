@@ -14,8 +14,6 @@ import 'package:moring/screens/car/registration_complete.dart';
 import 'package:moring/utils/app_theme.dart';
 import 'providers/auth_provider.dart';
 
-import 'package:moring/sse/sse_bootstrap.dart';
-import 'package:moring/sse/sse_hub.dart';
 // firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -23,11 +21,14 @@ import 'providers/fcm_provider.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'services/local_notification_service.dart';
 
-// ✅ dotenv
+// dotenv
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// ✅ 전역 SSE 오버레이 (미등록 사용자 감지 + 모달 + TTS + "아니요→SMS")
+// 🔁 SSE 전역 부트스트랩 + 전역 모달(비인가 사용자)
+import 'package:moring/sse/sse_bootstrap.dart';
 import 'package:moring/screens/navigation/sse_unknown_face.dart';
+
+// providers
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
@@ -41,7 +42,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ .env를 가장 먼저 로드
+  // .env 먼저 로드
   await dotenv.load(fileName: ".env");
 
   KakaoSdk.init(
@@ -57,31 +58,15 @@ Future<void> main() async {
     debugPrint('Firebase/FCM 초기화 실패: $e');
   }
 
-  // 🆕 일일 백업(4시간 주기)
-  try {
-    await DailyLogBackupService.initialize();
-    debugPrint('✅ 4시간 백업 서비스 초기화 완료');
-  } catch (e) {
-    debugPrint('❌ 4시간 백업 서비스 초기화 실패: $e');
-  }
-
   runApp(const ProviderScope(child: MyApp()));
 }
 
-// lib/main.dart  (MyApp만 교체하면 됩니다)
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authAsync = ref.watch(isLoggedInProvider);
-
-    // 이건 build 안에서 호출하므로 OK
-    ref.listen<String?>(fCMNotifierProvider, (previous, next) {
-      if (next != null) {
-        debugPrint('FCM 토큰 상태 변경: $next');
-      }
-    });
 
     return OverlaySupport.global(
       child: MaterialApp(
@@ -91,19 +76,20 @@ class MyApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
 
-        // ✅ 전역 오버레이는 여기서만 깔기
+        // ✅ 전역 오버레이: 소켓 VIN 스위칭 + 비인가 사용자 모달
         builder: (context, child) => Stack(
           children: [
             if (child != null) child,
-            const SseBootstrap(),            // VIN 전환 전담
-            const UnknownFaceSSEOverlay(),   // 전역 비인가 사용자 모달
+            const SseBootstrap(),          // VIN 변화를 SSEHub에 전달
+            const UnknownFaceSSEOverlay(), // 전체 화면에서 비인가 사용자 모달 처리
           ],
         ),
 
         home: authAsync.when(
           loading: () => const SplashScreen(),
           error: (_, __) => const LoginPage(),
-          data: (loggedIn) => loggedIn ? CarSelectionContainer() : const LoginPage(),
+          data: (loggedIn) =>
+          loggedIn ? CarSelectionContainer() : const LoginPage(),
         ),
         routes: {
           '/login': (context) => const LoginPage(),

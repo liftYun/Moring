@@ -26,6 +26,14 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPage());
+    _scrollCtrl.addListener(() {
+      if (_scrollCtrl.position.pixels >=
+          _scrollCtrl.position.maxScrollExtent - 100 &&
+          !_isLoading &&
+          _hasMore) {
+        _loadPage();
+      }
+    });
   }
 
   Future<void> _loadPage() async {
@@ -40,7 +48,19 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
 
     try {
       final api = ref.read(notificationApiProvider);
-      final fetched = await api.fetchUnreadNotifications(vin: vin);
+      final response = await api.fetchUnreadNotifications(
+        vin: vin,
+        page: _page,
+        size: _size,
+      );
+      
+      final fetched = response['notifications'] as List<UnreadNotification>;
+      final isLast = response['last'] as bool;
+      final isEmpty = response['empty'] as bool;
+      final numberOfElements = response['numberOfElements'] as int;
+      
+      debugPrint('🔔 API Response: last=$isLast, empty=$isEmpty, numberOfElements=$numberOfElements, fetched=${fetched.length}');
+      
       final insertIndex = _notifications.length;
       _notifications.addAll(fetched);
       
@@ -50,8 +70,17 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       for (int i = 0; i < _groupedItems.length; i++) {
         _listKey.currentState?.insertItem(insertIndex + i, duration: const Duration(milliseconds: 300));
       }
-      _hasMore = fetched.length == _size;
-      if (_hasMore && fetched.isNotEmpty) _page++;
+      
+      // 페이지네이션 로직 개선
+      if (isEmpty || isLast) {
+        _hasMore = false;
+        debugPrint('🔔 No more notifications to load (empty=$isEmpty, last=$isLast)');
+      } else {
+        _hasMore = numberOfElements > 0;
+        if (_hasMore && fetched.isNotEmpty) _page++;
+      }
+      
+      debugPrint('🔔 Pagination: hasMore=$_hasMore, page=$_page, fetched=${fetched.length}');
     } catch (e) {
       debugPrint('🔔 loadPage error: $e');
     } finally {
@@ -85,6 +114,9 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       
       // 날짜 헤더 추가
       _groupedItems.add(_buildDateHeader(dateKey));
+      
+      // 해당 날짜의 알림들을 시간순으로 정렬 (최신이 위로)
+      notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       
       // 해당 날짜의 알림들 추가
       for (final notification in notifications) {
@@ -216,10 +248,14 @@ class _NotificationLogPageState extends ConsumerState<NotificationLogPage> {
       padding: const EdgeInsets.all(16),
       itemBuilder: (ctx, idx, anim) {
         if (idx >= _groupedItems.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          );
+          if (_isLoading && _hasMore) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
         }
         
         final item = _groupedItems[idx];

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:moring/utils/base_scaffold.dart';
 
 class CarNotRegisteredPage extends StatefulWidget {
   const CarNotRegisteredPage({Key? key}) : super(key: key);
@@ -39,9 +40,9 @@ class _CarNotRegisteredPageState extends State<CarNotRegisteredPage> {
                 height: 230,
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF23262B),
-                  borderRadius: BorderRadius.circular(20),
+                                 decoration: BoxDecoration(
+                   color: const Color(0xFF23262B),
+                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
@@ -76,7 +77,7 @@ class _CarNotRegisteredPageState extends State<CarNotRegisteredPage> {
                       height: 48,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white24,
+                          backgroundColor: const Color(0xFF50C878),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -91,6 +92,7 @@ class _CarNotRegisteredPageState extends State<CarNotRegisteredPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -107,8 +109,11 @@ class _CarNotRegisteredPageState extends State<CarNotRegisteredPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121217),
+    return BaseScaffold(
+      title: '차량 등록',
+      showNotificationButton: false,
+      showBack: true,
+      onBackButtonPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false),
       body: Center(
         child: Text(
           '등록된 차량이 없습니다.',

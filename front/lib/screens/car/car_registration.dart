@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
@@ -40,7 +41,7 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: const Color(0xFF2196F3),
+              primary: const Color(0xFF50C878),
               onPrimary: Colors.white,
               surface: const Color(0xFF23262B),
               onSurface: Colors.white,
@@ -82,6 +83,108 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
     if (response.statusCode != 200 || response.data['isSuccess'] != true) {
       throw Exception(response.data['message'] ?? '차량 등록 실패');
     }
+  }
+
+    void _showFaceLineMeasurementModal(BuildContext context) {
+    // WidgetsBinding.instance.addPostFrameCallback을 사용하여 다음 프레임에서 모달 표시
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showModalBottomSheet(
+        context: context,
+        barrierColor: Colors.black.withOpacity(0.3),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return Stack(
+            children: [
+              // 1. 블러 처리 레이어
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(color: Colors.transparent),
+              ),
+              // 2. 모달 내용
+              Align(
+                alignment: Alignment.bottomCenter,
+                                 child: Container(
+                   height: 220,
+                   margin: const EdgeInsets.all(16),
+                   padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 18),
+                                       decoration: BoxDecoration(
+                      color: const Color(0xFF23262B),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 24,
+                          offset: Offset(0, -6),
+                        ),
+                      ],
+                    ),
+                   child: Column(
+                     mainAxisSize: MainAxisSize.min,
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                                                                                               const Text(
+                            '10분간 페이스라인 측정 예정입니다.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                       const SizedBox(height: 12),
+                                                                                                                       const Text(
+                             '얼굴을 가리지 말고 운전해 주십시오.',
+                             style: TextStyle(
+                               color: Colors.white,
+                               fontSize: 14,
+                             ),
+                             textAlign: TextAlign.center,
+                           ),
+                       const SizedBox(height: 8),
+                                                                                                                                               const Text(
+                              '(해당 시간 동안 일부 기능이 제한될 수 있습니다.)',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                       const SizedBox(height: 20),
+                       SizedBox(
+                         width: double.infinity,
+                         height: 48,
+                                                  child: ElevatedButton(
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: Colors.white.withOpacity(0.24),
+                             foregroundColor: Colors.white,
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(10),
+                             ),
+                           ),
+                           onPressed: () {
+                             Navigator.pop(context); // 모달 닫기
+                             Navigator.pushReplacementNamed(context, '/registration_complete');
+                           },
+                                                                                                              child: const Text(
+                             '확인',
+                             style: TextStyle(
+                               fontSize: 16,
+                               fontWeight: FontWeight.bold,
+                               color: Colors.white,
+                             ),
+                           ),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   Future<void> _onRegister() async {
@@ -129,17 +232,11 @@ class _CarRegistrationPageState extends ConsumerState<CarRegistrationPage> {
         ref.read(selectedCarIndexProvider.notifier).state = newCarIndex;
       }
 
-      // 4. Provider 동기화가 완료될 때까지 잠시 대기
-      await Future.delayed(const Duration(milliseconds: 100));
+             // 4. Provider 동기화가 완료될 때까지 잠시 대기
+       await Future.delayed(const Duration(milliseconds: 100));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('차량이 등록되었습니다!')),
-      );
-
-      Navigator.pushReplacementNamed(
-        context,
-        '/registration_complete',
-      );
+               // 차량 등록 완료 후 페이스라인 측정 안내 모달 표시
+        _showFaceLineMeasurementModal(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('등록 실패: $e')),

@@ -1,6 +1,7 @@
 // lib/screens/navigation/sse_unknown_face.dart
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/scheduler.dart';               // 👈 추가: SchedulerBinding
 
 import 'package:dio/dio.dart';
@@ -166,20 +167,44 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
                       const SizedBox(height: 16),
                       const Text('등록된 사용자가 아닙니다. 등록하시겠습니까?', style: TextStyle(color: Colors.white, fontSize: 16)),
                       const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('no'),
-                            child: const Text('아니요'),
-                          ),
-                          const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('yes'),
-                            child: const Text('네'),
-                          ),
-                        ],
-                      ),
+                                             Row(
+                         mainAxisAlignment: MainAxisAlignment.end,
+                         children: [
+                           SizedBox(
+                             width: 80,
+                             height: 36,
+                             child: OutlinedButton(
+                               onPressed: () => Navigator.of(context, rootNavigator: true).pop('no'),
+                               style: OutlinedButton.styleFrom(
+                                 foregroundColor: const Color(0xFF50C878),
+                                 side: const BorderSide(color: Color(0xFF50C878), width: 1.5),
+                                 shape: RoundedRectangleBorder(
+                                   borderRadius: BorderRadius.circular(8),
+                                 ),
+                                 padding: EdgeInsets.zero,
+                               ),
+                               child: const Text('아니요'),
+                             ),
+                           ),
+                           const SizedBox(width: 8),
+                           SizedBox(
+                             width: 80,
+                             height: 36,
+                             child: ElevatedButton(
+                               onPressed: () => Navigator.of(context, rootNavigator: true).pop('yes'),
+                               style: ElevatedButton.styleFrom(
+                                 backgroundColor: const Color(0xFF50C878),
+                                 foregroundColor: Colors.black,
+                                 shape: RoundedRectangleBorder(
+                                   borderRadius: BorderRadius.circular(8),
+                                 ),
+                                 padding: EdgeInsets.zero,
+                               ),
+                               child: const Text('네'),
+                             ),
+                           ),
+                         ],
+                       ),
                     ],
                   ),
                 ),
@@ -196,8 +221,8 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
     if (result == 'no') {
       await _sendUnauthorizedSms(p);
     } else if (result == 'yes') {
-      // 등록 플로우 이동 필요 시 여기에 라우팅
-      // navigatorKey.currentState?.pushNamed('/registration');
+      // 페이스라인 측정 모달 띄우기
+      _showFaceLineMeasurementModal(context);
     }
   }
 
@@ -222,8 +247,107 @@ class _UnknownFaceSSEOverlayState extends ConsumerState<UnknownFaceSSEOverlay> {
     }
   }
 
+  /// 🆕 페이스라인 측정 모달 띄우기
+  void _showFaceLineMeasurementModal(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showModalBottomSheet(
+        context: context,
+        barrierColor: Colors.black.withOpacity(0.3),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return Stack(
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(color: Colors.transparent),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 220,
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF23262B),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 24,
+                        offset: Offset(0, -6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        '10분간 페이스라인 측정 예정입니다.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        '얼굴을 가리지 말고 운전해 주십시오.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '(해당 시간 동안 일부 기능이 제한될 수 있습니다.)',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.24),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context); // 모달 닫기
+                          },
+                          child: const Text(
+                            '확인',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
   String _2(int n) => n.toString().padLeft(2, '0');
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) => const SizedBox();
 }

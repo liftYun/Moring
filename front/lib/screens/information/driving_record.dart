@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:moring/utils/base_scaffold.dart';
 
 class DrivingRecordPage extends StatefulWidget {
-  final List<Map<String, dynamic>> logs;
-  const DrivingRecordPage({Key? key, required this.logs}) : super(key: key);
+  final List<Map<String, dynamic>>? logs;
+  const DrivingRecordPage({Key? key, this.logs}) : super(key: key);
 
   @override
   State<DrivingRecordPage> createState() => _DrivingRecordPageState();
@@ -27,8 +27,8 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
   }
 
   void _initializeFilters() {
-    if (widget.logs.isNotEmpty) {
-      final years = widget.logs
+    if (widget.logs != null && widget.logs!.isNotEmpty) {
+      final years = widget.logs!
           .map((log) => log['date'].toString().substring(0, 4))
           .toSet()
           .toList()
@@ -55,7 +55,7 @@ class _DrivingRecordPageState extends State<DrivingRecordPage> {
 
   void _filterLogs() {
     setState(() {
-      _filteredLogs = widget.logs.where((log) {
+      _filteredLogs = (widget.logs ?? []).where((log) {
         if (log['date'] == null || log['date'].isEmpty) return false;
 
         final year = log['date'].toString().substring(0, 4);

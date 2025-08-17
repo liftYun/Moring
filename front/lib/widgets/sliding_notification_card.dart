@@ -56,9 +56,9 @@ class _SlidingNotificationCardState extends ConsumerState<SlidingNotificationCar
     Widget icon;
     String titleText;
     switch (n.notificationDetail) {
-      case 'DISTRACTION_ALERT':
+      case 'SLEEP_ALERT':
         icon = AppIcons.distractionAlert;
-        titleText = '운전 집중 필요';
+        titleText = '졸음 감지 경고';
         break;
       case 'FRONT_ALERT':
         icon = AppIcons.frontAlert;

@@ -61,65 +61,71 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
   Future<bool> _requestPermission(Permission permission) async {
     print('[_requestPermission] 권한 요청 시작: $permission');
     
-    // 먼저 현재 권한 상태 확인
-    final status = await permission.status;
-    print('[_requestPermission] 현재 권한 상태: $status');
-    
-    if (status.isGranted) {
-      print('[_requestPermission] 권한이 이미 허용됨');
-      return true;
-    }
-    
-    // 권한이 거부된 경우 바로 시스템 권한 요청
-    if (status.isDenied) {
-      print('[_requestPermission] 시스템 권한 요청 다이얼로그 표시');
-      final result = await permission.request();
-      print('[_requestPermission] 권한 요청 결과: $result');
-      return result.isGranted;
-    }
-    
-    // 권한이 영구적으로 거부된 경우 커스텀 메시지 표시
-    if (status.isPermanentlyDenied) {
-      print('[_requestPermission] 영구 거부 상태 - 커스텀 다이얼로그 표시');
+    try {
+      // 먼저 현재 권한 상태 확인
+      final status = await permission.status;
+      print('[_requestPermission] 현재 권한 상태: $status');
       
-      if (!mounted) return false;
-      
-      String permissionMessage = '';
-      if (permission == Permission.camera) {
-        permissionMessage = '카메라 권한이 필요합니다.\n소모품 교체 이력을 촬영하기 위해 카메라 접근을 허용해주세요.';
-      } else if (permission == Permission.photos) {
-        permissionMessage = '갤러리 접근 권한이 필요합니다.\n소모품 교체 이력 사진을 선택하기 위해 갤러리 접근을 허용해주세요.';
+      if (status.isGranted) {
+        print('[_requestPermission] 권한이 이미 허용됨');
+        return true;
       }
       
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF232326),
-            title: const Text(
-              '권한 필요',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            content: Text(
-              permissionMessage,
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  '확인',
-                  style: TextStyle(color: Color(0xFF50C878)),
-                ),
+      // 권한이 거부된 경우 바로 시스템 권한 요청
+      if (status.isDenied) {
+        print('[_requestPermission] 시스템 권한 요청 다이얼로그 표시');
+        final result = await permission.request();
+        print('[_requestPermission] 권한 요청 결과: $result');
+        return result.isGranted;
+      }
+      
+      // 권한이 영구적으로 거부된 경우 커스텀 메시지 표시
+      if (status.isPermanentlyDenied) {
+        print('[_requestPermission] 영구 거부 상태 - 커스텀 다이얼로그 표시');
+        
+        if (!mounted) return false;
+        
+        String permissionMessage = '';
+        if (permission == Permission.camera) {
+          permissionMessage = '카메라 권한이 필요합니다.\n소모품 교체 이력을 촬영하기 위해 카메라 접근을 허용해주세요.';
+        } else if (permission == Permission.photos || permission == Permission.storage || permission == Permission.mediaLibrary) {
+          permissionMessage = '갤러리 접근 권한이 필요합니다.\n소모품 교체 이력 사진을 선택하기 위해 갤러리 접근을 허용해주세요.';
+        }
+        
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF232326),
+              title: const Text(
+                '권한 필요',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-            ],
-          );
-        },
-      );
+              content: Text(
+                permissionMessage,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(color: Color(0xFF50C878)),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+        return false;
+      }
+      
+      print('[_requestPermission] 알 수 없는 권한 상태: $status');
+      return false;
+    } catch (e) {
+      print('[_requestPermission] 권한 요청 중 오류 발생: $e');
       return false;
     }
-    
-    return false;
   }
 
   Future<void> _takePicture() async {
@@ -159,12 +165,29 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
   Future<void> _pickImageFromGallery() async {
     print('[_pickImageFromGallery] 함수 호출됨');
     
-    // 권한 요청
-    final hasPermission = await _requestPermission(Permission.photos);
-    print('[_pickImageFromGallery] 권한 상태: $hasPermission');
+    // 여러 권한을 순차적으로 시도
+    List<Permission> permissionsToTry = [
+      Permission.photos,
+      Permission.storage,
+      Permission.mediaLibrary,
+    ];
+    
+    bool hasPermission = false;
+    
+    for (Permission permission in permissionsToTry) {
+      print('[_pickImageFromGallery] 권한 시도: $permission');
+      
+      hasPermission = await _requestPermission(permission);
+      print('[_pickImageFromGallery] 권한 상태: $hasPermission');
+      
+      if (hasPermission) {
+        print('[_pickImageFromGallery] 권한 획득 성공: $permission');
+        break;
+      }
+    }
     
     if (!hasPermission) {
-      print('[_pickImageFromGallery] 권한이 거부됨');
+      print('[_pickImageFromGallery] 모든 권한이 거부됨');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('갤러리 접근 권한이 필요합니다.')),
@@ -246,37 +269,29 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      final List<int>? updatedPartIds = ocrResult['parts']?.cast<int>();
+      // OCR 결과에서 부품 IDs 추출 (parts 또는 partIdList 필드 확인)
+      final List<int>? updatedPartIds = ocrResult['parts']?.cast<int>() ?? ocrResult['partIdList']?.cast<int>();
+      debugPrint("[_onRegister] OCR 결과 전체: $ocrResult");
+      debugPrint("[_onRegister] parts 필드: ${ocrResult['parts']}");
+      debugPrint("[_onRegister] partIdList 필드: ${ocrResult['partIdList']}");
+      debugPrint("[_onRegister] 추출된 부품 IDs: $updatedPartIds");
 
-      final finalResult = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BulkPartRegistrationPage(
-              ocrResult: ocrResult,
-              vin: widget.vin,
-          ),
-        ),
-      );
-
-      debugPrint("[_onRegister] PartOcrResultPage 반환: $finalResult");
-
-      if (finalResult != null) {
-        final String changedAt = finalResult['changedAt'];
-        final List<int> partIdList = finalResult['partIdList'];
-        await _postBatchChangeLogs(changedAt, partIdList);
-
+      if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
+        // OCR 결과를 상위로 전달 (BulkPartRegistrationPage에서 처리)
+        debugPrint("[_onRegister] OCR 결과를 상위로 전달: $ocrResult");
         if (!mounted) return;
-        Navigator.pop(context, finalResult);
+        Navigator.pop(context, ocrResult);
       } else {
-        // 취소 시 빈 리스트 반환
+        debugPrint("[_onRegister] OCR 결과에서 부품 IDs를 찾을 수 없음");
         if (!mounted) return;
-        Navigator.pop(context, []);
+        Navigator.pop(context, null);
       }
     } catch (e) {
       setState(() => _isLoading = false);
+      debugPrint("[_onRegister] 오류 발생: $e");
 
       if (!mounted) return;
-      Navigator.pop(context, []); // 오류 발생 시 빈 리스트 반환
+      Navigator.pop(context, null); // 오류 발생 시 null 반환
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('OCR 요청 실패: $e')),
