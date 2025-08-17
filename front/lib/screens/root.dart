@@ -149,9 +149,20 @@ class _RootPageState extends ConsumerState<RootPage>
   }
   void _handleBack() {
     final nav = Navigator.of(context);
-    if (nav.canPop()) nav.pop();
-    else nav.pushNamedAndRemoveUntil('/carselection', (_) => false);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      // 홈 화면이 아닌 경우 홈 화면으로 이동
+      if (_currentIndex != 0) {
+        setState(() => _currentIndex = 0);
+      } else {
+        // 홈 화면에서 뒤로가기를 누르면 차량 선택 페이지로 이동
+        Navigator.pushReplacementNamed(context, '/carselection');
+      }
+    }
   }
+
+
 
   void _openNotificationPanel() {
     final vin = ref.read(currentVinProvider);

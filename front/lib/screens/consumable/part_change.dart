@@ -62,6 +62,7 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
         _selectedPartIds = List<int>.from(partIdList);
         _ocrRegisteredPartIds = List<int>.from(partIdList);
         print('[initState] OCR 결과에서 부품 IDs 설정: $_selectedPartIds');
+        print('[initState] OCR 등록된 부품 IDs 설정: $_ocrRegisteredPartIds');
       }
       final changedAt = widget.ocrResult!['changedAt'];
       if (changedAt is String && changedAt.isNotEmpty) {
@@ -184,11 +185,14 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
         print('[일괄 등록] 반환할 부품 IDs: $allUpdatedPartIds');
         print('[일괄 등록] OCR 등록된 부품 IDs: $_ocrRegisteredPartIds');
         print('[일괄 등록] 현재 선택된 부품 IDs: $_selectedPartIds');
+        print('[일괄 등록] OCR 등록된 부품 IDs 길이: ${_ocrRegisteredPartIds.length}');
+        print('[일괄 등록] 현재 선택된 부품 IDs 길이: ${_selectedPartIds.length}');
 
         // 잠시 대기 후 결과 반환 (스낵바가 표시될 시간을 줌)
         await Future.delayed(const Duration(milliseconds: 500));
 
         if (!mounted) return;
+        // 변경된 부품들을 표시하고 결과 반환
         Navigator.of(context).pop(allUpdatedPartIds);
       } else {
         throw Exception(response.data['message'] ?? '등록 실패');
@@ -230,8 +234,8 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
 
               if (result != null) {
                 if (result is List<int>) {
-                  // OCR에서 일괄 등록한 경우 - 바로 상위로 전달
-                  print('[OCR 버튼] List<int> 형태로 받음, 바로 상위로 전달: $result');
+                  // OCR에서 일괄 등록한 경우 - 결과 반환
+                  print('[OCR 버튼] List<int> 형태로 받음, 결과 반환: $result');
                   Navigator.of(context).pop(result);
                   return;
                 } else if (result is Map<String, dynamic>) {
@@ -246,6 +250,7 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
                       _ocrRegisteredPartIds = List<int>.from(partIdList);
                     });
                     print('[OCR 버튼] OCR 결과로 부품 선택됨: $_selectedPartIds');
+                    print('[OCR 버튼] OCR 등록된 부품 IDs 설정됨: $_ocrRegisteredPartIds');
 
                     // OCR에서 받은 날짜 정보가 있으면 설정
                     final String? changedAt = result['changedAt'];
@@ -257,6 +262,8 @@ class _BulkPartRegistrationPageState extends ConsumerState<BulkPartRegistrationP
                         _replacementDateController.text = changedAt;
                       }
                     }
+                  } else {
+                    print('[OCR 버튼] OCR 결과에서 부품 IDs를 찾을 수 없음');
                   }
                 }
               }

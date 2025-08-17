@@ -277,10 +277,24 @@ class _PartOcrRegistrationPageState extends ConsumerState<PartOcrRegistrationPag
       debugPrint("[_onRegister] 추출된 부품 IDs: $updatedPartIds");
 
       if (updatedPartIds != null && updatedPartIds.isNotEmpty) {
-        // OCR 결과를 상위로 전달 (BulkPartRegistrationPage에서 처리)
-        debugPrint("[_onRegister] OCR 결과를 상위로 전달: $ocrResult");
-        if (!mounted) return;
-        Navigator.pop(context, ocrResult);
+        // OCR 결과에서 날짜 정보 추출
+        final String? changedAt = ocrResult['changedAt'];
+        final String dateToUse = changedAt ?? DateTime.now().toIso8601String().split('T')[0];
+        
+        // 일괄 등록 수행
+        debugPrint("[_onRegister] 일괄 등록 시작: 부품 IDs=$updatedPartIds, 날짜=$dateToUse");
+        await _postBatchChangeLogs(dateToUse, updatedPartIds);
+        
+                 // 성공 메시지 표시 후 결과 반환
+         if (!mounted) return;
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('교체 이력이 성공적으로 등록되었습니다!')),
+         );
+         
+         // 잠시 대기 후 결과 반환
+         await Future.delayed(const Duration(milliseconds: 500));
+         if (!mounted) return;
+         Navigator.of(context).pop(updatedPartIds);
       } else {
         debugPrint("[_onRegister] OCR 결과에서 부품 IDs를 찾을 수 없음");
         if (!mounted) return;

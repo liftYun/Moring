@@ -34,8 +34,7 @@ class CarSelectionContainer extends ConsumerWidget {
         return BaseScaffold(
           title: '보유 차량',
           showNotificationButton: false,
-          showBack: true,
-          onBackButtonPressed: () => Navigator.pushReplacementNamed(context, '/car_selection'),
+          showBack: false,
           body: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),
             itemCount: cars.length + 1, // +1을 해서 플러스 버튼 추가
