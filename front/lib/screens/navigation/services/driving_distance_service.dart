@@ -95,4 +95,88 @@ class DrivingDistanceService {
     
     return false;
   }
+
+  /// 🆕 속도 상태를 백엔드로 전송
+  /// [isSpeedAbove5] - 속도가 5km/h 이상인지 여부 (true/false)
+  Future<bool> sendSpeedStatus(bool isSpeedAbove5) async {
+    try {
+      // 현재 선택된 차량의 VIN 가져오기
+      final currentCar = _ref.read(currentCarProvider);
+      if (currentCar == null || currentCar.vin.isEmpty) {
+        debugPrint('❌ 현재 차량 정보를 찾을 수 없습니다.');
+        return false;
+      }
+      
+      final vin = currentCar.vin;
+      final speedStatus = isSpeedAbove5 ? 'true' : 'false';
+      
+      debugPrint('🚗 속도 상태 전송 중: VIN=$vin, 속도5km이상=$speedStatus');
+      
+      // API 호출: /api/v1/cars/{vin}/speed-status
+      final response = await _dio.post(
+        '/api/v1/cars/$vin/speed-status',
+        data: {'isSpeedAbove5': isSpeedAbove5},
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+      );
+      
+      // 응답 처리
+      final raw = response.data;
+      late Map<String, dynamic> jsonMap;
+      
+      if (raw is String) {
+        jsonMap = jsonDecode(raw) as Map<String, dynamic>;
+      } else if (raw is Map) {
+        jsonMap = raw.cast<String, dynamic>();
+      } else {
+        throw FormatException('Unexpected response type: ${raw.runtimeType}');
+      }
+      
+      // 성공 여부 확인
+      final isSuccess = jsonMap['isSuccess'] as bool? ?? false;
+      if (!isSuccess) {
+        final message = jsonMap['message'] as String? ?? '속도 상태 전송 실패';
+        debugPrint('❌ 속도 상태 전송 실패: $message');
+        return false;
+      }
+      
+      debugPrint('✅ 속도 상태 전송 성공: VIN=$vin, 속도5km이상=$speedStatus');
+      return true;
+      
+    } catch (e) {
+      debugPrint('❌ 속도 상태 전송 중 오류 발생: $e');
+      return false;
+    }
+  }
+
+  /// 🆕 속도 상태 전송 (재시도 포함)
+  /// [isSpeedAbove5] - 속도가 5km/h 이상인지 여부 (true/false)
+  /// [retryCount] - 재시도 횟수 (기본값: 2)
+  Future<bool> sendSpeedStatusWithRetry(
+    bool isSpeedAbove5, {
+    int retryCount = 2,
+  }) async {
+    for (int i = 0; i < retryCount; i++) {
+      try {
+        final success = await sendSpeedStatus(isSpeedAbove5);
+        if (success) {
+          return true;
+        }
+        
+        if (i < retryCount - 1) {
+          debugPrint('🔄 속도 상태 전송 재시도 중... (${i + 1}/$retryCount)');
+          await Future.delayed(Duration(seconds: 1 * (i + 1))); // 짧은 지수 백오프
+        }
+      } catch (e) {
+        debugPrint('❌ 속도 상태 전송 재시도 실패 (${i + 1}/$retryCount): $e');
+        if (i == retryCount - 1) {
+          return false;
+        }
+        await Future.delayed(Duration(seconds: 1 * (i + 1)));
+      }
+    }
+    
+    return false;
+  }
 }

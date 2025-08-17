@@ -14,6 +14,7 @@ import '../../utils/custom_app_bar.dart';
 import 'services/kakao_api_service.dart';
 import 'services/location_service.dart';
 import 'services/driving_log_service.dart';
+import 'services/driving_distance_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -80,6 +81,11 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
   // 🆕 경로 전용 시간 측정 (목적지가 있을 때 사용)
   DateTime? _routeStartTime;               // 경로 시작 시간 (버튼 클릭 시점)
 
+  // 🆕 속도 상태 전송 관련
+  bool _lastSpeedStatus = false;           // 마지막으로 전송한 속도 상태 (5km/h 이상 여부)
+  Timer? _speedStatusTimer;                // 속도 상태 전송 타이머
+  static const Duration _speedStatusInterval = Duration(seconds: 10); // 10초마다 전송
+
   @override
   void initState() {
     super.initState();
@@ -116,6 +122,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     _searchController.dispose();
     _routeRecalculationTimer?.cancel();
     _timeUpdateTimer?.cancel(); // 🆕 시간 업데이트 타이머 정리
+    _speedStatusTimer?.cancel(); // 🆕 속도 상태 전송 타이머 정리
     _locationSubscription?.cancel();
     _compassSub?.cancel();
 
@@ -219,6 +226,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
       // 실시간 시간 업데이트 타이머 시작
       _startTimeUpdateTimer();
 
+      // 🆕 속도 상태 전송 타이머 시작
+      _startSpeedStatusTimer();
+
       if (mounted) {
         _showSnackBarSafe(SnackBar(
           content: Row(
@@ -246,6 +256,9 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
 
       // 🆕 실시간 시간 업데이트 타이머 정리
       _stopTimeUpdateTimer();
+
+      // 🆕 속도 상태 전송 타이머 정리
+      _stopSpeedStatusTimer();
 
       // 상태 초기화
       _isAutoMeasuring = false;
@@ -507,7 +520,62 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     setState(() {
       _state.currentSpeed = speedKmh.toStringAsFixed(0);
     });
+
+    // 🆕 속도가 5km/h 이상인지 판단
+    bool isSpeedAbove5 = speedKmh >= 5.0;
+    if (isSpeedAbove5) {
+      print('🚗 속도 5km/h 이상: ${speedKmh.toStringAsFixed(1)}km/h');
+    }
+
+    // 🆕 속도 상태가 변경되었는지 확인하고 전송
+    _checkAndSendSpeedStatus(isSpeedAbove5);
   }
+
+  /// 🆕 속도 상태를 확인하고 백엔드로 전송
+  void _checkAndSendSpeedStatus(bool isSpeedAbove5) {
+    // 속도 상태가 변경되었을 때만 전송
+    if (_lastSpeedStatus != isSpeedAbove5) {
+      _lastSpeedStatus = isSpeedAbove5;
+      _sendSpeedStatusToBackend(isSpeedAbove5);
+    }
+  }
+
+  /// 🆕 속도 상태를 백엔드로 전송
+  void _sendSpeedStatusToBackend(bool isSpeedAbove5) async {
+    try {
+      final drivingService = ref.read(drivingDistanceServiceProvider);
+      final success = await drivingService.sendSpeedStatusWithRetry(isSpeedAbove5);
+      
+      if (success) {
+        debugPrint('✅ 속도 상태 전송 성공: ${isSpeedAbove5 ? "5km/h 이상" : "5km/h 미만"}');
+      } else {
+        debugPrint('❌ 속도 상태 전송 실패: ${isSpeedAbove5 ? "5km/h 이상" : "5km/h 미만"}');
+      }
+    } catch (e) {
+      debugPrint('❌ 속도 상태 전송 중 오류: $e');
+    }
+  }
+
+  /// 🆕 주기적 속도 상태 전송 시작
+  void _startSpeedStatusTimer() {
+    _speedStatusTimer?.cancel();
+    _speedStatusTimer = Timer.periodic(_speedStatusInterval, (timer) {
+      if (_isAutoMeasuring && mounted) {
+        // 현재 속도 상태를 다시 전송 (연결 유지를 위해)
+        _sendSpeedStatusToBackend(_lastSpeedStatus);
+      }
+    });
+    debugPrint('🔄 주기적 속도 상태 전송 시작 (${_speedStatusInterval.inSeconds}초 간격)');
+  }
+
+  /// 🆕 주기적 속도 상태 전송 정지
+  void _stopSpeedStatusTimer() {
+    _speedStatusTimer?.cancel();
+    _speedStatusTimer = null;
+    debugPrint('🛑 주기적 속도 상태 전송 정지');
+  }
+
+
 
   void _updateDistanceToDestination() {
     if (!_state.hasDestination || _state.currentPosition == null) return;
@@ -1121,7 +1189,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
             child: IgnorePointer(
               ignoring: true,
               child: VoiceAssistantPanel(
-                showDebugPanel: false,   // 필요 시 true로 바꿔 디버그 카드 확인
+                showDebugPanel: true,    // 디버그 패널 활성화
                 autoStart: true,         // 네비 켜지면 자동 활성화
                 requireWakeWord: true,   // "모링아..."로 깨우기 (false면 항상 대기)
               ),

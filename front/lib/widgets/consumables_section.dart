@@ -35,7 +35,7 @@ class ConsumablesSection extends StatelessWidget {
 
               // 날짜 정보가 없으면 게이지바를 0으로 표시
               final progress = consumable.dueDate != null 
-                  ? 1.0 - (consumable.percentUsed / 100.0)
+                  ? consumable.remainingPercentage
                   : 0.0;
 
               return GestureDetector(
