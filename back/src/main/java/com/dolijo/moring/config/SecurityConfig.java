@@ -105,7 +105,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/notifications/send/**",
                                 "/api/v1/cars/*/driving-status",
-                                "/api/v1/cars/*/unauthorized-driver-popup").permitAll()
+                                "/api/v1/cars/*/unauthorized-driver-popup",
+                                "/api/v1/sms/send/unauthorized-user",
+                                "/api/v1/sms/send/info").permitAll()
                         // 카카오 인가코드를 받아 처리하는 엔드포인트
                         // OAuth2 요청 진입점 허용
                         // OAuth2 로그인 콜백 URI 허용
