@@ -27,10 +27,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.*;
 
-@Service
+@Service/**/
 @Log4j2
 @RequiredArgsConstructor
-@Transactional
 public class SseService {
 
     // 차량별 SSE 연결 관리 (차량 VIN을 키로 사용)
@@ -51,8 +50,14 @@ public class SseService {
         Entry(SseEmitter e, ScheduledFuture<?> h) { this.emitter = e; this.heartbeat = h; }
     }
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-
+//    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private final ScheduledThreadPoolExecutor scheduler =
+            new ScheduledThreadPoolExecutor(Math.max(4, Runtime.getRuntime().availableProcessors()));
+    {
+        scheduler.setRemoveOnCancelPolicy(true);
+        scheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        scheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+    }
 
     /**
      * 차량 SSE 연결 생성
@@ -81,8 +86,10 @@ public class SseService {
             log.error("초기 SSE 메시지 전송 실패: {}", vin, e);
             // 재연결 전송을 위해 일단 주석해둘게용
 //            carConnections.remove(vin);
-            cleanup(vin, "initial-send-fail");
-            return emitter;
+//            cleanup(vin, "initial-send-fail");
+//            return emitter;
+            // 실패 연결을 반환하지 말고 상위로 예외를 던져 컨트롤러가 실패 응답을 내리도록
+            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
 
 //        log.info("차량 SSE 연결 생성: {}", vin);
@@ -97,12 +104,17 @@ public class SseService {
                 // entry.emitter.send(":\n\n");
             } catch (IOException ex) {
                 log.warn("[SSE] heartbeat send fail vin={} - {}", vin, ex.toString());
-                entry.emitter.completeWithError(ex);
                 cleanup(vin, "heartbeat-fail");
             }
         }, HEARTBEAT_SEC, HEARTBEAT_SEC, TimeUnit.SECONDS);
 
-        carConnections.put(vin, new Entry(emitter, hb));
+//        carConnections.put(vin, new Entry(emitter, hb));
+        // 기존 엔트리가 있었다면 정리 후 교체 (원자적 교체)
+        Entry old = carConnections.put(vin, new Entry(emitter, hb));
+        if (old != null) {
+            try { if (old.heartbeat != null) old.heartbeat.cancel(true); } catch (Exception ignore) {}
+            try { old.emitter.complete(); } catch (Exception ignore) {}
+        }
         log.info("차량 SSE 연결 생성: {}", vin);
         return emitter;
     }
@@ -131,9 +143,13 @@ public class SseService {
 
             } catch (IOException e) {
                 log.error("차량에게 일반 알림 전송 실패: {}, 알림유형: {}", vin, notificationDetailType.name(), e);
-                // 전송 실패 시 연결 정리
-                carConnections.remove(vin);
+//                // 전송 실패 시 연결 정리
+//                carConnections.remove(vin);
+//                entry.emitter.completeWithError(e);
+                // 전송 실패 시 연결 정리(하트비트 취소 포함)
                 entry.emitter.completeWithError(e);
+                cleanup(vin, "general-send-fail");
+                throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
             }
         } else {
             log.warn("차량 SSE 연결이 존재하지 않음: {}", vin);
@@ -169,8 +185,11 @@ public class SseService {
                     vin, car.getNickname(), request.getUnauthorizedUserImgUrl());
         } catch (IOException e) {
             log.error("비등록 운전자 인식 SSE 알림 전송 실패: vin={}, nickname={}", vin, car.getNickname(), e);
-            carConnections.remove(vin);
+//            carConnections.remove(vin);
+//            entry.emitter.completeWithError(e);
+//            throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
             entry.emitter.completeWithError(e);
+            cleanup(vin, "unauth-send-fail");
             throw new BaseException(BaseResponseStatus.NO_EXIST_SSE_CONNECTION);
         }
         // 비등록 사용자 SSE 결과 관련 대기상태 저장
@@ -178,10 +197,12 @@ public class SseService {
             String key = authorizedUserStatusKeyPrefix + vin;
             // 초기값은 진짜 null 대신 "null" 문자열로 저장 + TTL 지정된 시간
             redis.opsForValue().set(key, "pending", Duration.ofMinutes(REDIS_KEY_ALIVE_MINUTES));
-            log.info("Redis에 키 설정: {}, 초기값: null, TTL: 1분", key);
+//            log.info("Redis에 키 설정: {}, 초기값: null, TTL: 1분", key);
+            log.info("Redis에 키 설정: {}, 초기값: pending, TTL: {}분", key, REDIS_KEY_ALIVE_MINUTES);
         } catch (Exception e) {
             // 에러 로그에 vin 변수가 들어가야해 하드코딩됨
-            log.error("Redis 키 설정 실패: {}:unauthorizedUser-status", vin, e);
+//            log.error("Redis 키 설정 실패: {}:unauthorizedUser-status", vin, e);
+            log.error("Redis 키 설정 실패: vin={} (authorized status pending 기록 실패)", vin, e);
             throw new BaseException(BaseResponseStatus.REDIS_ERROR);
         }
     }
@@ -192,7 +213,8 @@ public class SseService {
      * @param notificationType 알림 유형
      * @param notificationDetailType 일반 알림 유형
      */
-    private void saveNotification(Car car, NotificationType notificationType, NotificationDetailType notificationDetailType) {
+    @Transactional
+    protected void saveNotification(Car car, NotificationType notificationType, NotificationDetailType notificationDetailType) {
         Notification notification = Notification.builder()
                 .car(car)
                 .notificationType(notificationType)
