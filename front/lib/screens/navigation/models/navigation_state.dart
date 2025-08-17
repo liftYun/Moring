@@ -7,8 +7,9 @@ class NavigationState {
   // 위치 관련 상태
   Position? currentPosition;
   Position? lastPosition;
-  String currentSpeed = "0";
-  
+  // String currentSpeed = "0";
+  double currentSpeed = 0.0;
+
   // 목적지 관련 상태
   String destination = "";
   double destinationLat = 0.0;
@@ -76,8 +77,10 @@ class NavigationState {
   }
   
   String get formattedCurrentSpeed {
-    final speed = double.tryParse(currentSpeed) ?? 0.0;
-    return "${speed.toStringAsFixed(0)}";
+    // final speed = double.tryParse(currentSpeed) ?? 0.0;
+    // return "${speed.toStringAsFixed(0)}";
+
+    return currentSpeed.toStringAsFixed(0);
   }
   
   String get formattedDistanceToDestination {

@@ -2,12 +2,15 @@
 import 'dart:math' as math;
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 
 import 'package:moring/main.dart';
+import 'package:moring/providers/api_client.dart';
+import 'package:moring/providers/car_provider.dart';
 
 // 서비스들
 import '../../utils/custom_app_bar.dart';
@@ -79,6 +82,10 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
 
   // 🆕 경로 전용 시간 측정 (목적지가 있을 때 사용)
   DateTime? _routeStartTime;               // 경로 시작 시간 (버튼 클릭 시점)
+  
+  // 주행 상태 표시
+  bool _lastDrivingStatus = false;
+  bool _hasInitializedDrivingStatus = false;
 
   @override
   void initState() {
@@ -97,6 +104,7 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
         _compassHeadingDeg = (h + 360) % 360;
       }
     });
+
   }
 
   @override
@@ -505,8 +513,30 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     }
 
     setState(() {
-      _state.currentSpeed = speedKmh.toStringAsFixed(0);
+      _state.currentSpeed = speedKmh;
     });
+
+    final isDriving = speedKmh > 5.0;
+
+    // 🆕 첫 번째 위치 업데이트에서 Redis 초기화
+    if (!_hasInitializedDrivingStatus) {
+      _hasInitializedDrivingStatus = true;
+      _lastDrivingStatus = false; // 초기값 설정
+      debugPrint('[초기화] Redis 주행 상태를 false로 초기화');
+      _updateDrivingStatus(false); // 명시적으로 false로 초기화
+      return; // 첫 번째는 초기화만 하고 상태 변경 감지는 스킵
+    }
+
+    // 🆕 더 상세한 로그 추가
+    debugPrint('[속도 체크] 현재속도: ${speedKmh.toStringAsFixed(1)}km/h, isDriving: $isDriving, 이전상태: $_lastDrivingStatus');
+
+    if (_lastDrivingStatus != isDriving) {
+      _lastDrivingStatus = isDriving;
+      debugPrint('[상태 변경] 주행 상태가 변경되었습니다: $_lastDrivingStatus → $isDriving');
+      _updateDrivingStatus(isDriving);
+    } else {
+      debugPrint('[상태 유지] 주행 상태 변경 없음: $isDriving');
+    }
   }
 
   void _updateDistanceToDestination() {
@@ -528,6 +558,42 @@ class _NavigationPageState extends ConsumerState<NavigationPage> with WidgetsBin
     setState(() {
       _state.distanceToDestination = remaining;
     });
+  }
+
+  // 운전 상태 API 갱신 함수 - 더 깔끔한 버전
+  Future<void> _updateDrivingStatus(bool isDriving) async {
+    try {
+      final dio = ref.read(authDioProvider);
+      final vin = ref.read(currentVinProvider);
+      if (vin == null) {
+        debugPrint('[DrivingStatus] VIN이 없습니다');
+        return;
+      }
+
+      // debugPrint('[DrivingStatus] API 호출 시작 - VIN: $vin, isDriving: $isDriving');
+
+      // 🆕 queryParameters 사용 (더 깔끔함)
+      final response = await dio.patch(
+        '/api/v1/cars/$vin/driving-status',
+        queryParameters: {
+          'isDriving': isDriving,
+        },
+        options: Options(
+          headers: {'accept': '*/*'},
+        ),
+      );
+
+      debugPrint('[DrivingStatus] API 응답 성공 - Status: ${response.statusCode}');
+
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint('[DrivingStatus] API 호출 실패:');
+        debugPrint('  - 상태 코드: ${e.response?.statusCode}');
+        debugPrint('  - 응답 메시지: ${e.response?.data}');
+      } else {
+        debugPrint('[DrivingStatus] 네트워크 에러: $e');
+      }
+    }
   }
 
   // ==================== 지도 업데이트 ====================
