@@ -112,7 +112,7 @@ class VoiceAssistantPanel extends ConsumerStatefulWidget {
 
   const VoiceAssistantPanel({
     super.key,
-    this.showDebugPanel = false,
+    this.showDebugPanel = true,
     this.autoStart = true,
     this.requireWakeWord = true,
     this.showBadge = true,
