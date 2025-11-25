@@ -1,30 +1,39 @@
 # 🚘MORING
 
-![Cover.jpg](./img/Cover.jpg)
+<!-- 상단 커버: 가로 길게 -->
+<p align="center">
+  <img src="./img/Cover.jpg" alt="MORING Cover" width="1000" />
+</p>
 
-![MORING - HW
-(잿슨오린나노(developerkit) driver verision540.4.0 )
- 라즈베리파이5
- 카메라(BRIO-100)
- 온습도센서(DHT11)
- 이산화탄소센서(MH-Z19B)
- 부저(active 피애조 부저)
- ](./img/image.png)
+<!-- 아래 2열: 왼쪽 HW, 오른쪽 모바일 앱 -->
+<table>
+  <tr>
+    <!-- HW -->
+    <td align="center" valign="top">
+      <img src="./img/image.png" alt="MORING - HW" width="420" />
+      <br />
+      <b>MORING - HW</b><br />
+      <sub>
+        잿슨오린나노(developerkit) driver verision540.4.0<br />
+        라즈베리파이5<br />
+        카메라(BRIO-100)<br />
+        온습도센서(DHT11)<br />
+        이산화탄소센서(MH-Z19B)<br />
+        부저(active 피애조 부저)
+      </sub>
+    </td>
 
-MORING - HW
-(잿슨오린나노(developerkit) driver verision540.4.0 )
- 라즈베리파이5
- 카메라(BRIO-100)
- 온습도센서(DHT11)
- 이산화탄소센서(MH-Z19B)
- 부저(active 피애조 부저)
- 
-
-![MORING - MOBILE APP](./img/image%201.png)
-
-MORING - MOBILE APP
+    <!-- MOBILE APP -->
+    <td align="center" valign="top">
+      <img src="./img/image%201.png" alt="MORING - MOBILE APP" width="320" />
+      <br />
+      <b>MORING - MOBILE APP</b>
+    </td>
+  </tr>
+</table>
 
 ## 🦺 [ 스마트 드라이빙 케어 ] 서비스 MORING
+
 
 개발 기간 : 2025.07.xx ~ 2025.08.
 
@@ -243,9 +252,11 @@ MORING - MOBILE APP
 
 ## 🔐 로그인 & 온보딩 🔔 알림센터
 
-![로그인](./img/%EB%A1%9C%EA%B7%B8%EC%9D%B8.mp4.gif)
+<p align="center">
+  <img src="./img/%EB%A1%9C%EA%B7%B8%EC%9D%B8.mp4.gif" alt="로그인" width="260" />
+  <img src="./img/%EB%B0%9B%EC%9D%80%EC%95%8C%EB%A6%BC-%ED%99%95%EC%9D%B8.mp4.gif" alt="알림 확인" width="260" />
+</p>
 
-![받은알림-확인.mp4.gif](./img/%EB%B0%9B%EC%9D%80%EC%95%8C%EB%A6%BC-%ED%99%95%EC%9D%B8.mp4.gif)
 
 - **카카오 로그인 / 테스트 로그인**으로 빠른 진입
 - 첫 실행 시 권한/알림 안내까지 one-step 온보딩
@@ -255,9 +266,11 @@ MORING - MOBILE APP
 
 ## 🚗 차량 등록 & 연결
 
-![차량 등록 수동](./img/%EC%B0%A8%EB%9F%89%EB%93%B1%EB%A1%9D%EC%88%98%EB%8F%99.gif)
+<p align="center">
+  <img src="./img/%EC%B0%A8%EB%9F%89%EB%93%B1%EB%A1%9D%EC%88%98%EB%8F%99.gif" alt="차량 등록 수동" width="260" />
+  <img src="./img/%EC%B0%A8%EB%9F%89%EB%93%B1%EB%A1%9D_OCR_(1).mp4.gif" alt="차량 등록 OCR" width="260" />
+</p>
 
-![차량등록 OCR (1).mp4.gif](./img/%EC%B0%A8%EB%9F%89%EB%93%B1%EB%A1%9D_OCR_(1).mp4.gif)
 
 - 차대번호, 애칭, 모델명, 등록일을 직접 입력해 **수동 등록**
 - 차량 등록증 스캔으로 **OCR 자동 등록**도 지원
@@ -270,9 +283,11 @@ MORING - MOBILE APP
 
 ## 👤 미등록 운전자 감지 & 처리
 
-![미등록 운전자 감지 - 예](./img/%EB%AF%B8%EB%93%B1%EB%A1%9D%EC%82%AC%EC%9A%A9%EC%9E%90_%EC%98%88_.mp4.gif)
+<p align="center">
+  <img src="./img/%EB%AF%B8%EB%93%B1%EB%A1%9D%EC%82%AC%EC%9A%A9%EC%9E%90_%EC%98%88_.mp4.gif" alt="미등록 운전자 감지 예" width="260" />
+  <img src="./img/%EB%AF%B8%EB%93%B1%EB%A1%9D%EC%82%AC%EC%9A%A9%EC%9E%90%EB%93%B1%EB%A1%9D_%EC%95%84%EB%8B%88%EC%9A%94_.mp4.gif" alt="미등록 사용자 등록 아니요" width="260" />
+</p>
 
-![미등록사용자등록_아니요_.mp4.gif](./img/%EB%AF%B8%EB%93%B1%EB%A1%9D%EC%82%AC%EC%9A%A9%EC%9E%90%EB%93%B1%EB%A1%9D_%EC%95%84%EB%8B%88%EC%9A%94_.mp4.gif)
 
 - 카메라·얼굴 임베딩으로 **미등록 운전자 감지 시 즉시 경고**
 - 차주/관리자에게 푸시 연계
@@ -282,11 +297,12 @@ MORING - MOBILE APP
 
 ## 🗣️ 내비게이션,음성 비서 (STT/TTS)(SSE 실시간)
 
-![네비 경로 안내](./img/%EB%84%A4%EB%B9%84%EA%B2%BD%EB%A1%9C%EC%95%88%EB%82%B4.gif)
+<p align="center">
+  <img src="./img/%EB%84%A4%EB%B9%84%EA%B2%BD%EB%A1%9C%EC%95%88%EB%82%B4.gif" alt="네비 경로 안내" width="260" />
+  <img src="./img/ai%EC%9D%8C%EC%84%B1%EB%8C%80%ED%99%94.webm.mp4.gif" alt="AI 음성 대화" width="260" />
+  <img src="./img/%EC%9D%BC%EB%B0%98-%EC%95%8C%EB%A6%BC%EC%A0%84%EC%86%A12.mp4.gif" alt="받은 알림 확인" width="260" />
+</p>
 
-![AI 음성 대화](./img/ai%EC%9D%8C%EC%84%B1%EB%8C%80%ED%99%94.webm.mp4.gif)
-
-![받은알림 확인](./img/%EC%9D%BC%EB%B0%98-%EC%95%8C%EB%A6%BC%EC%A0%84%EC%86%A12.mp4.gif)
 
 - **음성으로 목적지·안전·정비 일정 질의/응답**
 - 클로바 CSR + LLM 연동, 주행 중 **핸즈프리 대화형 인터페이스**
@@ -298,11 +314,12 @@ MORING - MOBILE APP
 
 ## 🧾 부품 교체 견적 & 등록 (OCR/수동)
 
-![부품 OCR](./img/%EB%B6%80%ED%92%88%EB%93%B1%EB%A1%9D_%EB%8B%A8%EC%9D%BC_.mp4.gif)
+<p align="center">
+  <img src="./img/%EB%B6%80%ED%92%88%EB%93%B1%EB%A1%9D_%EB%8B%A8%EC%9D%BC_.mp4.gif" alt="부품 단일 등록" width="260" />
+  <img src="./img/%EB%B6%80%ED%92%88%EB%93%B1%EB%A1%9D_%EB%8B%A4%EC%A4%91_.mp4.gif" alt="부품 다중 등록" width="260" />
+  <img src="./img/%EB%B6%80%ED%92%88OCR.mp4.gif" alt="부품 OCR" width="260" />
+</p>
 
-![부품등록_다중_.mp4.gif](./img/%EB%B6%80%ED%92%88%EB%93%B1%EB%A1%9D_%EB%8B%A4%EC%A4%91_.mp4.gif)
-
-![부품OCR.mp4.gif](./img/%EB%B6%80%ED%92%88OCR.mp4.gif)
 
 - 정비 영수증/견적서 **OCR 자동 인식**
 - 인식 부품을 **잔여율·권장 교환주기**와 연동하여 교체 일정 반영
